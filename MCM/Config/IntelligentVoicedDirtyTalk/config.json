@@ -1,0 +1,688 @@
+{
+  "modName": "IntelligentVoicedDirtyTalk",
+  "displayName": "Int. Voiced Dirty Talk",
+  "pages": [
+  
+  
+  
+  {
+	"pageDisplayName": "Assign Voice",
+	"content": [
+		{
+			"id": "VoiceSlotEnum",
+			"text": "Voice Slot",
+			"type": "enum",
+			"help": "Select which voice slot to configure. You can assign each voice slot to one voice type and/or one actor. Actor assignments take priority.",
+			"valueOptions": {
+				"options": ["Select A Slot"],
+				"shortNames": ["Select A Slot"],
+				"sourceType": "PropertyValueInt",
+				"propertyName": "pVoiceSlotUnderInspection"
+			},
+			"position": 0
+		},
+		
+		{
+			"type": "hiddenToggle",
+			"groupControl": 1,
+			"valueOptions": {
+				"sourceType": "PropertyValueBool",
+				"propertyName": "pValidVoiceSlotSelected"
+			}
+		},
+		
+		{
+			"id": "sSampleVoiceSlot:DoNotTouch",
+			"text": "",
+			"type": "text",
+			"help": "The audio for this voice slot is found at (your Skyrim Data folder)/Sound/fx/IVDT/(voice slot name)/. Where the voice slot name is 'F1', 'F2', etc. for female voices and 'M1', 'M2', etc. for male voices.",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"action": {
+				"type": "CallFunction",
+				"function": "PlaySampleFromVoiceSlot",
+				"params": []
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 1
+		},
+		
+		{
+			"text": "Assign To A Voice Type",
+			"type": "header",
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 4
+		},
+		
+		{
+			"id": "sVoiceTypeUnderInspection:DoNotTouch",
+			"text": "Currently Set To",
+			"type": "text",
+			"help": "This voice slot is currently assigned to this voice type. You can change it using the options below.",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 6
+		},
+		
+		{
+			"id": "PresetVoiceTypesMenu",
+			"text": "Pick From List",
+			"type": "menu",
+			"help": "Pick from a list of common voice types (not exhaustive). If your voice type isn't in here, you'll have to use one of the other options below.",
+			"valueOptions": {
+				"options": ["Click Here", "Empty", "FemaleWerewolf", "FemaleVampireLord", "FemaleArgonian", "FemaleCommander", "FemaleCommoner",
+							"FemaleCondescending", "FemaleCoward", "FemaleDarkElf", "FemaleElfHaughty", "FemaleEvenToned", "FemaleKhajiit", "FemaleNord",
+							"FemaleOrc", "FemaleShrill", "FemaleSoldier", "FemaleSultry", "FemaleYoungEager", "MaleWerewolf", "MaleVampireLord", "MaleArgonian",
+							"MaleBrute", "MaleCommander", "MaleCommoner", "MaleCommonerAccented", "MaleCondescending", "MaleCoward", "MaleDarkElf", "MaleDrunk",
+							"MaleElfHaughty", "MaleEvenToned", "MaleEvenTonedAccented", "MaleGuard", "MaleKhajiit", "MaleNord", "MaleNordCommander", "MaleOrc",
+							"MaleSlyCynical", "MaleSoldier", "MaleYoungEager"],
+				"sourceType": "PropertyValueString",
+				"propertyName": "pVoiceTypeFromList"
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 10
+		},
+		
+		{
+			"id": "sVoiceTypeManualEntry:DoNotTouch",
+			"text": "Enter Manually",
+			"type": "input",
+			"help": "Use a text box to manually enter the name of the voice type. The text must match exactly or it won't work when you go to start a scene.",
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 12
+		},
+		
+		{
+			"id": "sTargetVoiceType:DoNotTouch",
+			"text": "Use Target's Voice Type",
+			"type": "text",
+			"help": "Click here to assign to this voice type.",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"action": {
+				"type": "CallFunction",
+				"function": "UpdateCurrentSlotWithNewVoiceType",
+				"params": ["{value}"]
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 14
+		},
+		
+		{
+			"text": "Assign To An Actor",
+			"type": "header",
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 5
+		},
+		
+		{
+			"id": "sActorUnderInspection:DoNotTouch",
+			"text": "Currently Set To",
+			"type": "text",
+			"help": "This voice slot is currently assigned to this actor. You can change it using the options below.",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 7
+		},
+		
+		{
+			"id": "sActorManualEntry:DoNotTouch",
+			"text": "Enter Manually",
+			"type": "input",
+			"help": "Use a text box to manually enter the name of the actor. The text must match exactly or it won't work when you go to start a scene.",
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 11
+		},
+		
+		{
+			"id": "sAssignToTargetActor:DoNotTouch",
+			"text": "Assign To Target Actor",
+			"type": "text",
+			"help": "Click this to assign this voice slot to this target actor.",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"action": {
+				"type": "CallFunction",
+				"function": "UpdateAssignedActorName",
+				"params": ["{b}False", ""]
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 13
+		},
+		
+		{
+			"id": "sTargetActor:DoNotTouch",
+			"text": "Target Actor",
+			"type": "text",
+			"help": "Click this to switch the target actor between the PC and SexLab's current NPC target (if applicable).",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"action": {
+				"type": "CallFunction",
+				"function": "UpdateTargetActor",
+				"params": ["{value}"]
+			},
+			"groupCondition": 1,
+			"groupBehavior": "hide",
+			"position": 15
+		}
+	]
+  },
+  
+  
+  
+  {
+	"pageDisplayName": "Assign Voice As Default",
+	"cursorFillMode": "topToBottom",
+	"content": [
+		{
+			"id": "iFemaleDefaultVoice:DefaultVoices",
+			"text": "Default Female Voice",
+			"type": "slider",
+			"help": "The voice slot assigned to a humanoid actress if she doesn't have one. Slot 0 is reserved to indicate no voice at all.",
+			"valueOptions": {
+				"min": 0,
+				"max": 2,
+				"step": 1,
+				"formatString": "Slot {0}",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iMaleDefaultVoice:DefaultVoices",
+			"text": "Default Male Voice",
+			"type": "slider",
+			"help": "The voice slot assigned to a humanoid actor if he doesn't have one. Slot 0 is reserved to indicate no voice at all.",
+			"valueOptions": {
+				"min": 0,
+				"max": 8,
+				"step": 1,
+				"formatString": "Slot {0}",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iFemaleCreatureDefaultVoice:DefaultVoices",
+			"text": "Default Female Creature Voice",
+			"type": "slider",
+			"help": "The voice slot assigned to a creature actress if she doesn't have one. Slot 0 is reserved to indicate no voice at all.",
+			"valueOptions": {
+				"min": 0,
+				"max": 2,
+				"step": 1,
+				"formatString": "Slot {0}",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iMaleCreatureDefaultVoice:DefaultVoices",
+			"text": "Default Male Creature Voice",
+			"type": "slider",
+			"help": "The voice slot assigned to a creature actor if he doesn't have one. Slot 0 is reserved to indicate no voice at all.",
+			"valueOptions": {
+				"min": 0,
+				"max": 8,
+				"step": 1,
+				"formatString": "Slot {0}",
+				"sourceType": "ModSettingInt"
+			}
+		}
+	]
+  },
+  
+  
+  
+  {
+	"pageDisplayName": "Dialogue Options",
+	"cursorFillMode": "topToBottom",
+	"content": [
+		
+		{
+			"text": "Sexual Chemistry",
+			"type": "header"
+		},
+		
+		{
+			"id": "iChemistryLevel:DialogueOptions",
+			"text": "Chemistry Level",
+			"type": "slider",
+			"help": "Controls how 'into it' partners are on a scale of 0-10. 0 means no chemistry, very little dialogue. 10 means great chemistry, full dirty talk. -1 means this value will auto-populate per scene, i.e. partners will have to be 'trained' and relationships will be factored in as well as speech skill. Actions during sex can increase this value.",
+			"valueOptions": {
+				"min": -1,
+				"max": 10,
+				"step": 1,
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "Optional Features",
+			"type": "header"
+		},
+	
+		{
+			"id": "bAllowGreets:DialogueOptions",
+			"text": "Allow Greets",
+			"type": "toggle",
+			"help": "Unused by IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bAllowAttacks:DialogueOptions",
+			"text": "Allow Attacks",
+			"type": "toggle",
+			"help": "Unused by IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bAllowJokes:DialogueOptions",
+			"text": "Allow Jokes",
+			"type": "toggle",
+			"help": "Unused by IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+	
+		{
+			"id": "bKeepLoversTitles:DialogueOptions",
+			"text": "Keep Other Titles For Lover",
+			"type": "toggle",
+			"help": "Unused by IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bAggressiveDialogue:DialogueOptions",
+			"text": "Aggressive Dialogue",
+			"type": "toggle",
+			"help": "Unused by IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "Timing",
+			"type": "header"
+		},
+		
+		{
+			"id": "fSpacingMultiplier:DialogueOptions",
+			"text": "Dialogue Spacing",
+			"type": "slider",
+			"help": "Unused by IVDT Hentai",
+			"valueOptions": {
+				"min": 1.0,
+				"max": 5.0,
+				"step": 0.1,
+				"formatString": "x{1}",
+				"sourceType": "ModSettingFloat"
+			}
+		},
+	
+		{
+			"id": "fForeplayDuration:DialogueOptions",
+			"text": "Foreplay Duration",
+			"type": "slider",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"min": 3,
+				"max": 120,
+				"step": 0.1,
+				"formatString": "{1} minute(s)",
+				"sourceType": "ModSettingFloat"
+			}
+		},
+		
+		{
+			"id": "fPenetrativeSexDuration:DialogueOptions",
+			"text": "Penetrative Sex Duration",
+			"type": "slider",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"min": 3,
+				"max": 120,
+				"step": 0.1,
+				"formatString": "{1} minute(s)",
+				"sourceType": "ModSettingFloat"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "Enjoyment And Intensity",
+			"type": "header"
+		},
+		
+		{
+			"id": "iIntensityThreshold:DialogueOptions",
+			"text": "Intensity Threshold",
+			"type": "slider",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"min": 0,
+				"max": 80,
+				"step": 1,
+				"formatString": "{0}% enjoyment",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iAnalIntensityThreshold:DialogueOptions",
+			"text": "Anal Intensity Thresh.",
+			"type": "slider",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"min": 0,
+				"max": 80,
+				"step": 1,
+				"formatString": "{0}% enjoyment",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iFemaleCloseThreshold:DialogueOptions",
+			"text": "Close To Orgasm Thresh.",
+			"type": "slider",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"min": 80,
+				"max": 100,
+				"step": 1,
+				"formatString": "{0}% enjoyment",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "Male Orgasm",
+			"type": "header"
+		},
+		
+		{
+			"id": "iOKWithVaginalCum:DialogueOptions",
+			"text": "Vaginal Cum OK",
+			"type": "enum",
+			"help": "Controls when females are OK with vaginal cum. When they are OK with it, they may ask for it and will react positively to it. When they are not, they will ask him to pull out and will be unamused if he fails. Note: if PC is a victim, she will always be not ok with vaginal cum.",
+			"valueOptions": {
+				"options": ["Always", "Never", "Only In Wedlock", "Only For Her Lovers", "Only Frequent Partners (4-7+ Times)", "After Much Sex In Wedlock (4-7+ Times)", "After Much Sex With Lover (4-7+ Times)", "Lovers Or Frequent Partners"],
+				"shortNames": ["Always", "Never", "In Wedlock Only", "For Lovers Only", "For Frequent Partners", "Deep Into Wedlock", "Seasoned Lovers", "Lovers Or Frequents"],
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "Asses And Anal",
+			"type": "header"
+		},
+		
+		{
+			"id": "iBootyGirls:DialogueOptions",
+			"text": "Ass Girls",
+			"type": "enum",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"options": ["Women With >= 75 Weight", "Women With >= 50 Weight", "Women With >= 25 Weight", "All Women", "No Women"],
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iAnalAnimationFilter:DialogueOptions",
+			"text": "Anal Animations",
+			"type": "enum",
+			"help": "Controls which animations are considered anal. For male-only scenes, this setting is ignored and anything tagged anal or vaginal is considered anal. Exceptions are animations tagged 'LeadIn' or if its stage 1 of the animation (to compensate for the fact some animations have a lead-in stage). Confusingly, some animations are tagged both 'Vaginal' and 'Anal'.",
+			"valueOptions": {
+				"options": ["Disable", "Tagged 'Anal'", "Tagged 'Anal' But Not 'Vaginal'", "Tagged 'Anal' Or 'Vaginal'", "Considered Anal By SexLab"],
+				"shortNames": ["Disable", "Anal", "Anal, No Vaginal", "Anal Or Vaginal", "Per SexLab"],
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iChanceForAnal:DialogueOptions",
+			"text": "Chance For Anal",
+			"type": "slider",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"min": 0,
+				"max": 100,
+				"step": 1,
+				"formatString": "{0}% chance",
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iAnalSurpriseReaction:DialogueOptions",
+			"text": "Surprise Anal Reaction",
+			"type": "enum",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"options": ["Welcoming", "Make Scene Aggressive", "Reprimanding", "Reprimanding Then Aggressive", "Reprimanding Then Welcoming"],
+				"shortNames": ["Welcoming", "Aggressive", "Reprimanding", "Reprimand+Agg.", "Reprimand+Wel."],
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "Stealth Sex",
+			"type": "header"
+		},
+		
+		{
+			"id": "bStealthInPublic:DialogueOptions",
+			"text": "Stealth In Public",
+			"type": "toggle",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bStealthInUncleared:DialogueOptions",
+			"text": "Stealth In Uncleared Locations",
+			"type": "toggle",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bNoStealthInDaylight:DialogueOptions",
+			"text": "Except In Broad Daylight",
+			"type": "toggle",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bStealthyMaleOrgasm:DialogueOptions",
+			"text": "Stealthy Male Orgasm",
+			"type": "toggle",
+			"help": "Unused in IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "bStealthyFemaleOrgasm:DialogueOptions",
+			"text": "Stealthy Female Orgasm",
+			"type": "toggle",
+			"help": "Unused option in IVDT Hentai",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		}
+		
+	]
+  },
+  
+  
+  
+  {
+	"pageDisplayName": "Voice System Management",
+	"cursorFillMode": "topToBottom",
+	"content": [
+		{
+			"text": "What To Do With SexLab Voices?",
+			"type": "header"
+		},
+		
+		{
+			"id": "bMuteSexLabVoices:VoiceSystemManagement",
+			"text": "Mute SexLab Voices While Playing",
+			"type": "toggle",
+			"help": "If on, IVDT will automatically mute the original SexLab voices while sex scenes using the IVDT voices are playing. If off, IVDT will not do any muting. Only takes effect for new scenes. Unmuting will always happen after the last IVDT scene finishes to ensure the SexLab voices are never stuck muted.",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "sUnmuteSexLabVoices:DoNotTouch",
+			"text": "",
+			"type": "text",
+			"help": "Click this to unmute the SexLab voices NOW. You can do this anytime, but its definitely a good idea to do this before uninstalling the mod to be safe. Worst case you'll have to reinstall the mod just to click this button.",
+			"valueOptions": {
+				"sourceType": "ModSettingString"
+			},
+			"action": {
+				"type": "CallFunction",
+				"function": "UnmuteSexLabVoicesFromMCM",
+				"params": []
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "When To Play Audio?",
+			"type": "header"
+		},
+		
+		{
+			"id": "bRequireVoiceForBothActors:VoiceSystemManagement",
+			"text": "Require Voice For Both Actors",
+			"type": "toggle",
+			"help": "If true, scenes with 2+ actors must have both a male and female voice if its a boy/girl scene and 2+ male voices if its a gay scene. If the requirement is not met, IVDT will not play audio at all for the scene (in which case you can use the SexLab voices instead).",
+			"valueOptions": {
+				"sourceType": "ModSettingBool"
+			}
+		},
+		
+		{
+			"id": "iAllowGroupSex:VoiceSystemManagement",
+			"text": "Group Sex",
+			"type": "enum",
+			"help": "whether to play sound during group sex. in IVDT hentai, only voices can be played for the 2nd male position. while rest can only play cum sound.",
+			"valueOptions": {
+				"options": ["Never (2 Actors Max)", "Always (No Constraints)", "3 Actors Max"],
+				"shortNames": ["Never", "Always", "3 Max"],
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"id": "iAllowSoloMasturbation:VoiceSystemManagement",
+			"text": "Solo Masturbation",
+			"type": "enum",
+			"help": "IVDT doesn't play a lot of audio for masturbation scenes. This option was added to allow you to decide whether you want IVDT to play audio at all for solo masturbation since its not all that much.",
+			"valueOptions": {
+				"options": ["Never", "Always", "Female Masturbation Only", "Male Masturbation Only"],
+				"shortNames": ["Never", "Always", "Female Only", "Male Only"],
+				"sourceType": "ModSettingInt"
+			}
+		},
+		
+		{
+			"type": "empty"
+		},
+		
+		{
+			"text": "How The Audio Should Be Played",
+			"type": "header"
+		},
+		
+		{
+			"id": "iMasterVolume:VoiceSystemManagement",
+			"text": "Master Volume",
+			"type": "slider",
+			"help": "Controls the volume of the Female PC voices and sound effects played by the mod. Male Volume will always use full volume to counteract the lower volume from distance",
+			"valueOptions": {
+				"min": 0,
+				"max": 100,
+				"step": 1,
+				"formatString": "{0}%",
+				"sourceType": "ModSettingInt"
+			}
+		}
+	]
+  }
+  
+  
+  
+  ]
+}
