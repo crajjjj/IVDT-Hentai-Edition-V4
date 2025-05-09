@@ -1,5 +1,6 @@
 Scriptname IVDTSceneTrackerScript extends ActiveMagicEffect  
 {Each instance of this script tracks a single SexLab scene (or more colloquially called fuck) and controls/plays the dialogue for it.}
+
 ;References
 SexLabFramework Property SexLab Auto 
 IVDTControllerScript Property MasterScript Auto
@@ -1460,9 +1461,9 @@ Bool Function IshugePP()
 		;miscutil.PrintConsole ("DEBUG : current TNG_L : " + tngl)
 		;miscutil.PrintConsole ("DEBUG : current isBig : " + isBig)
 		Return isBig
-	else
-		Return false
 	EndIf	
+	
+	Return false
 endif
 EndFunction
 
@@ -1492,7 +1493,9 @@ bool function isDP()
 
 if stagelabel == "DP" || stagelabel == "TP"
 return true
+
 else
+
 return CurrentPenetrationLvl() >= 2 && currentAnimation.HasTag("Vaginal") && currentAnimation.HasTag("Anal") && (currentAnimation.HasTag("MMF") || currentAnimation.HasTag("FMM") || currentAnimation.HasTag("FMMM")|| currentAnimation.HasTag("MMMF") || currentAnimation.HasTag("FMMMM")|| currentAnimation.HasTag("MMMMF"))
 endif
 EndFunction
@@ -3781,6 +3784,7 @@ Bool Function HasDeviousGag(Actor char)
 		return false
 	endif
 	if has_MagicEffect(char, 0x2b077, "Devious Devices - Integration.esm") 	&& Char == MainfemaleActor			;devious gag
+	
 			return true
 		endif
 		return false
@@ -4081,20 +4085,8 @@ Armor LewdArmor
 		endif
 		
 	
-	;miscutil.PrintConsole ("Armor Switching  ")
-	;miscutil.PrintConsole ("BaseArmor  : "+ BaseArmor.getname())
-	;miscutil.PrintConsole ("LewdArmor  : "+ LewdArmor.getname())
-
-
-;	if LewdArmor != none && ArmorSlotsToSwitch[slotindex] as int == 32
-;		SwappingChar.addItem(LewdArmor , abSilent=true)
-;		SwappingChar.EquipItem(LewdArmor)
-;		SwappingChar.unEquipItem(BaseArmor)
-		
-
-;		BaseArmorArr = papyrusutil.pushform(BaseArmorArr , BaseArmor)
-;		LewdArmorArr = papyrusutil.pushform(LewdArmorArr , LewdArmor)
-;	endif
+	
+	
 	slotindex += 1
 	endwhile
 SwappedUpperArmor = true
@@ -4160,6 +4152,7 @@ Int Function CurrentPenetrationLvl()
 		else 
 			return 0
 		endif
+		
 	endif
 	return 0
 EndFunction
