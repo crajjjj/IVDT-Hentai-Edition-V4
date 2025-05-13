@@ -1,4 +1,4 @@
-Scriptname IVDTSceneTrackerScript extends ActiveMagicEffect  
+	Scriptname IVDTSceneTrackerScript extends ActiveMagicEffect  
 {Each instance of this script tracks a single SexLab scene (or more colloquially called fuck) and controls/plays the dialogue for it.}
 
 ;References
@@ -29,6 +29,8 @@ Int sceneID = -1
 sslThreadController sexLabThreadController = None
 sslBaseAnimation currentAnimation = None
 sslBaseAnimation previousAnimation = None
+bool GreetedMalePartner = false
+
 
 ;Config
 Float dialogueSpacingMultiplier = 1.0
@@ -37,7 +39,7 @@ Int analIntensityThreshold = 40
 Int femaleCloseToOrgasmThreshold = 80
 Int analAnimationFilter = 2 ;Different values indicate different criteria for if an animation is considered anal
 Int okWithVaginalCumCode = -1 ;-1 = setting not loaded in yet, 0 = no, 1 = yes
-
+float timeOfLastKneeJerkReaction
 ;Main female's personality for the scene
 Bool withMaleLover = False
 Bool withMaleThane = False
@@ -91,8 +93,7 @@ Float timeSoundWasQueued = 0.0 ;The timestamp at which queuedSound originally at
 Float queuedSoundMaxWait = 0.0 ;The longest the queuedSound can sit in the queue before we give up on trying to play it
 bool inserted = false
 ;for new anim stage label
-string stagelabel = ""
-string Previousstagelabel = ""
+string Primarystagelabel = ""
 String Stagelabelminusone = ""
 bool teasedClosetoorgasm = true
 bool ASLpreviouslyintense = False
@@ -104,15 +105,9 @@ Bool ASLCurrentlyintense = false
 
 Bool ASLIsinSpanking = false
 int CameInsideCount = 0
-Bool ASLDoneLeakingCum = false
-Bool Reactedtofemaleorgasm = true
-Bool Reactedtomaleorgasm = true
-Bool PauseExpressionUpdate = false
-int NormalExpressionPath = 1
-int NormalExpressionLookleftorRight = 1 ; 1 = left , 2 = right , 3=straight
+Bool ReacttoFemaleOrgasmNext = false
+Bool ReacttoMaleOrgasmNext = false
 Float Volume
-Bool RunningMFEEAhegao = false
-Bool RunningMFEETongueOut = false
 
 
 Actor ActorOne = none
@@ -126,66 +121,51 @@ Float Actor3BaseScale = 0.0
 Float Actor4BaseScale = 0.0
 Float Actor5BaseScale = 0.0
 
-float timeOfLastNormalExpressionUpdate = 0.0
-float timeOfLastAhegaoExpressionUpdate = 0.0
-float timeOfLastKneeJerkReaction = 0.0
 Sound PreviousSound = none
 	
 Actor[] ActorsInPlay
 ;JSONUtil configs
 String ConfigFile  = "IVDTHentai/Config.json"
+String AnimSpeedFile  = "HentairimEnjoyment/AnimSpeed.json"
+String TimerConfigFile  = "IVDTHentai/Timers.json"
 String VoiceVariationFile  = "IVDTHentai/VoiceVariation.json"
-String RaceBaseExpressionFile  = "IVDTHentai/VanillaRaceBaseExpression.json"
 String DDGagFile  = "IVDTHentai/DDGagConfig.json"
 String ArmorSwappingFile  = "IVDTHentai/ArmorSwapping.json"
-String ExpressionsNGFile  = "IVDTHentai/HentaiExpressionsNG.json"
-String MFEEFile  = "IVDTHentai/MFEEExpressions.json"
 String LactateFile  = "IVDTHentai/Lactate.json"
-String EnableErinMFEE  = "IVDTHentai/EnableErinMFEE.json"
 int cumleakcount = 0
 Bool MaleisCommenting = false
-Bool MaintainTongue = false
 int cycle = 0
-Bool SkiptoAggressiveStage = false
+
 int	EnableAutoAdvanceStage  ;done
 int EnableTagScaling ;done
-int	EnableHentaiIVDTNormalExpressions  ;done
-int	EnableHentaiIVDTAhegaoExpressions  ;done
-int	EnableTongue ;done
 int	EnableBrokenStatus ;done
 int BrokenStatusVictimOnly ;done
 int HoursSinceLastSexToResetBrokenStatus  ;done
-int MinOrgasmsToBroken ;done
-int MaxOrgasmsToBroken ;done
+;int MinOrgasmsToBroken ;done
+;int MaxOrgasmsToBroken ;done
 int	EnableHugePPScenario ;done
 int	EnableVictimScenario ;done
-float   ChanceToStickoutTongueDuringIntense  ;done
-float   ChanceToStickOutTongueDuringAttacking ;done
 float 	ChanceTohaveSpanking ;done
 float	ChanceToCommentUnamused  ;done
 int		MinSpankCount ;done
 Int		MaxSpankCount ;done
-float	ChanceToCommentonLIStage ;done
+float	ChanceToCommentonLeadinStage ;done
 float	ChanceToCommentonNonIntenseStage  ;done
-float	ChanceToCommentononIntenseStage ;done
+float	chancetocommentonintensestage ;done
 float	ChanceToCommentononAttackingStage  ;done
-float	ChanceToCommentononBlowjobStage ;done
+float	ChanceToCommentonBlowjobStage ;done
 float	ChanceToCommentWhenCloseToOrgasm ;done
 float	ChanceToCommentWhenMaleCloseToOrgasm   ;done
 float ChanceToOrgasmSquirt ;done
 int EnableThickCumLeak ;done
 float ChanceToLeakThickCum ;done
-float ChanceToLeakOralCum ;done
+
 int FemaleOrgasmHypeEnjoyment ;done
 int MaleOrgasmHypeEnjoyment ;done
-int EnableSuccubusHeartMilkSperm ; done
 int EnableDDGagVoice ;done
 Int EnableMaleVoice ;done
 float ChanceForMaleToComment ; done
-Armor Tongue
 
-int FHUTongueType = 7
-int EnableNPCExpressions
 String[] ArmorSlotsToSwitch
 Int[] ValidSlots
 form[] BaseArmorArr 
@@ -198,43 +178,21 @@ Bool ShouldInitialize = false
 Bool Initialized = false
 int AggressiveChancetoMoveBackAStage 
 int EnjoymentForAggressiveToMoveBackAStage
-int UseHentaiExpressionNG
-String[] Blowjoboverride
-String[] BrokenOverride
-String[] TongueOutOverride
-String[] MFEEBrokenOverride
-String[] MFEETongueOutOverride
-string ExpressionGroup = "A"
+
 Int Type = 0
- Int     hentaiexpressionngkneejerkspeed
- Int     hentaiexpressionngspeechspeed
- Int     hentaiexpressionngintensespeed
- Int     hentaiexpressionngnonintensespeed
- Int    hentaiexpressionngnonpenetrationspeed
 Faction SchlongFaction
 Keyword TNG_XL
 Keyword TNG_L
 Keyword TNG_Gentlewoman
-
 int HugePPSchlongSize
 int EnableGhostActors
+int MoanOnly
+int donotadvanceifpcclosetoorgasm 
+int donotadvanceifnpcclosetoorgasm 
+
 
 	Float nextUpdateInterval = 1.0
-;Vanilla Race Expression Values
-int Vbigaah
-int Veh
-int Vsquint
-int Vblink
-int Vbrowup
-int Vbrowin
-int Vlookup
-int Vlookdown
-int Vlookleftright
-int Vaah
-int Voh
-int Vohq
-int Veee
-int Vmaxexpressionstrength
+
 Armor MilkR
 Armor MilkL
 EffectShader NippleLeakCBBE
@@ -243,7 +201,7 @@ int AlwaysLactate
 int ChancetoLactateDuringOrgasm
 int ChanceToLactateDuringIntense
 int ChancetoStopLactate 
-Bool HasMFEE = false
+int donotadvanceifpartnerclosetoorgasm
 String Property NINODE_ROOT = "NPC" AutoReadOnly
 String Property RACEMENUHH_KEY = "RaceMenuHH.esp" AutoReadOnly
 String Property INTERNAL_KEY = "internal" AutoReadOnly
@@ -251,54 +209,27 @@ Bool CommentedClosetoOrgasm = false
 ;SOS
 
 Form ArmortoSwitch
+
+Faction HentairimResistance
+Faction HentairimBroken
+
 	
 int gender = 0	
 Bool NotifiedBrokenstatus = false
+int hypebeforeorgasm
 
-	
 ;Bool ASLshouldplayfemaleorgasm = true ;often enoough SLSO doesnt reset enjoyment before orgasm and orgasm talk can complete, causing near orgasm talk after orgasm
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
-
+	playerCharacter = Game.GetPlayer()
 	actorWithSceneTrackerSpell = akTarget
-	mainFemaleActor = akTarget ;Temporary default until FindActorsAndVoices is called
+	mainFemaleActor = playerCharacter ;Temporary default until FindActorsAndVoices is called
 	PerformInitialization()
 
 EndEvent
 
-Function InitializeExpressionValues()
-Race FemaleActorRace = mainFemaleActor.GetRace()
-String FemaleRaceName = FemaleActorRace.GetName()
-
-NormalExpressionPath = Utility.RandomInt(1,3)
-NormalExpressionLookleftorRight = Utility.RandomInt(1,3)
-
-if FemaleRaceName =="Elin" || FemaleRaceName =="Erin"
-;elin expression config
-	RaceBaseExpressionFile = "IVDTHentai/ElinRaceBaseExpression.json"
-else
-;vanilla race expression config
-	RaceBaseExpressionFile = "IVDTHentai/VanillaRaceBaseExpression.json"
-endif
-
-Vbigaah = JsonUtil.GetIntValue(RaceBaseExpressionFile, "bigaah"  , 0)
-Veh = JsonUtil.GetIntValue(RaceBaseExpressionFile, "eh"  , 0)
-Vsquint = JsonUtil.GetIntValue(RaceBaseExpressionFile, "squint"  , 0)
-Vblink = JsonUtil.GetIntValue(RaceBaseExpressionFile, "blink"  , 0)
-Vbrowup = JsonUtil.GetIntValue(RaceBaseExpressionFile, "browup"  , 0)
-Vbrowin = JsonUtil.GetIntValue(RaceBaseExpressionFile, "browin"  , 0)
-Vlookup = JsonUtil.GetIntValue(RaceBaseExpressionFile, "lookup"  , 0)
-Vlookdown = JsonUtil.GetIntValue(RaceBaseExpressionFile, "lookdown"  , 0)
-Vlookleftright = JsonUtil.GetIntValue(RaceBaseExpressionFile, "lookleftright"  , 0)
-Vaah = JsonUtil.GetIntValue(RaceBaseExpressionFile, "aah"  , 0)
-Voh = JsonUtil.GetIntValue(RaceBaseExpressionFile, "oh"  , 0)
-Vohq = JsonUtil.GetIntValue(RaceBaseExpressionFile, "ohq"  , 0)
-Veee = JsonUtil.GetIntValue(RaceBaseExpressionFile, "eee"  , 0)
-Vmaxexpressionstrength = JsonUtil.GetIntValue(RaceBaseExpressionFile, "maxexpressionstrength"  , 0)
-
-
-endfunction
-
+int EnablePrintDebug
+int useblowjobsoundforkissing
 Function InitializeConfigValues()
 
 ;Store Actor Base Scaling for reset later after animation ends,
@@ -328,70 +259,61 @@ endif
 
 NotificationifFileisBad()
 
-MinOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile, "minorgasmstobroken"  , 9999)
-MaxOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile, "maxorgasmstobroken"  , 9999)
+;MinOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile, "minorgasmstobroken"  , 9999)
+;MaxOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile, "maxorgasmstobroken"  , 9999)
 HoursSinceLastSexToResetBrokenStatus = JsonUtil.GetIntValue(ConfigFile, "hourssincelastsextoresetbrokenstatus" ,9999)
 
 EnableAutoAdvanceStage = JsonUtil.GetIntValue(ConfigFile,"enableautoadvancestage",0)
+donotadvanceifpartnerclosetoorgasm =  JsonUtil.GetIntValue(ConfigFile,"donotadvanceifpartnerclosetoorgasm",0)
+donotadvanceifpcclosetoorgasm =  JsonUtil.GetIntValue(ConfigFile,"donotadvanceifpcclosetoorgasm",0)
+donotadvanceifnpcclosetoorgasm =  JsonUtil.GetIntValue(ConfigFile,"donotadvanceifnpcclosetoorgasm",0)
 EnableTagScaling = JsonUtil.GetIntValue(ConfigFile,"enabletagscaling",0)
-EnableHentaiIVDTNormalExpressions = JsonUtil.GetIntValue(ConfigFile,"enablehentaiivdtnormalexpressions",0)
-EnableHentaiIVDTAhegaoExpressions = JsonUtil.GetIntValue(ConfigFile,"enablehentaiivdtahegaoexpressions",0)
-EnableTongue = JsonUtil.GetIntValue(ConfigFile,"enabletongue",0)
 ChanceToOrgasmSquirt = JsonUtil.GetIntValue(ConfigFile,"chancetoorgasmsquirt",0) as float/100
 EnableBrokenStatus = JsonUtil.GetIntValue(ConfigFile,"enablebrokenstatus",0)
 BrokenStatusVictimOnly = JsonUtil.GetIntValue(ConfigFile,"brokenstatusvictimonly",0)
 EnableThickCumLeak = JsonUtil.GetIntValue(ConfigFile,"enablethickcumleak",0)
 ChanceToLeakThickCum = JsonUtil.GetIntValue(ConfigFile,"chancetoleakthickcum",0) as float/100
-ChanceToLeakOralCum = JsonUtil.GetIntValue(ConfigFile,"chancetoleakoralduringintense",0) as float/100
 HoursSinceLastSexToResetBrokenStatus = JsonUtil.GetIntValue(ConfigFile,"hourssincelastsextoresetbrokenstatus",0)
-MaxOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile,"maxorgasmstobroken",9999)
-MinOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile,"minorgasmstobroken",9999)
+;MaxOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile,"maxorgasmstobroken",9999)
+;MinOrgasmsToBroken = JsonUtil.GetIntValue(ConfigFile,"minorgasmstobroken",9999)
 EnableHugePPScenario = JsonUtil.GetIntValue(ConfigFile,"enablehugeppscenario",0)
 EnableVictimscenario = JsonUtil.GetIntValue(ConfigFile,"enablevictimscenario",0)
-ChanceToStickoutTongueDuringIntense = JsonUtil.GetIntValue(ConfigFile,"chancetostickouttongueduringintense",0) as float/100
-ChanceToStickOutTongueDuringAttacking = JsonUtil.GetIntValue(ConfigFile,"chancetostickouttongueduringattacking",0) as float/100
 ChanceTohaveSpanking = JsonUtil.GetIntValue(ConfigFile,"chancetohavespanking",0) as float/100
 MinSpankCount = JsonUtil.GetIntValue(ConfigFile,"minspankcount",0)
 MaxSpankCount = JsonUtil.GetIntValue(ConfigFile,"maxspankcount",0)
 ChanceToCommentUnamused = JsonUtil.GetIntValue(ConfigFile,"chancetocommentunamused",0) as float/100
-ChanceToCommentonLIStage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentonlistage",0) as float/100
+ChanceToCommentonLeadinStage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentonleadinstage",0) as float/100
 ChanceToCommentonNonIntenseStage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentonnonintensestage",0) as float /100
-ChanceToCommentononIntenseStage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentononintensestage",0) as float /100
+chancetocommentonintensestage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentonintensestage",0) as float /100
 ChanceToCommentononAttackingStage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentononattackingstage",0) as float /100
-ChanceToCommentononBlowjobStage = JsonUtil.GetIntValue(ConfigFile,"chancetocommentononblowjobstage",0) as float /100
+ChanceToCommentonBlowjobStage = JsonUtil.GetIntValue(ConfigFile,"ChanceToCommentonBlowjobStage",0) as float /100
 ChanceToCommentWhenCloseToOrgasm = JsonUtil.GetIntValue(ConfigFile,"chancetocommentwhenclosetoorgasm",0) as float /100
 ChanceToCommentWhenMaleCloseToOrgasm = JsonUtil.GetIntValue(ConfigFile,"chancetocommentwhenmaleclosetoorgasm",0) as float /100
 FemaleOrgasmHypeEnjoyment = JsonUtil.GetIntValue(ConfigFile,"femaleorgasmhypeenjoyment",0) 
 MaleOrgasmHypeEnjoyment = JsonUtil.GetIntValue(ConfigFile,"maleorgasmhypeenjoyment",0) 
-EnableSuccubusHeartMilkSperm  = JsonUtil.GetIntValue(ConfigFile,"enablesuccubusheartmilksperm",0) 
 EnableDDGagVoice = JsonUtil.GetIntValue(DDGagFile,"enableddgagvoice",0) 
 EnableMaleVoice = JsonUtil.GetIntValue(ConfigFile,"enablemalevoice",0)  
-ChanceForMaleToComment = JsonUtil.GetIntValue(ConfigFile,"chanceformaletocomment",0) as float /100
-FHUTongueType = JsonUtil.GetIntValue(ConfigFile,"fhutonguetype",7)  
-EnableNPCExpressions = JsonUtil.GetIntValue(ConfigFile,"enablenpcexpressions",0)  
+ChanceForMaleToComment = JsonUtil.GetIntValue(ConfigFile,"chanceformaletocomment",0) as float /100  
 ArmorSlotsToSwitch = papyrusutil.stringsplit(JsonUtil.GetStringValue(ArmorSwappingFile,"armorslots","") ,",")
 
 EnableArmorSwapping = JsonUtil.GetIntValue(ConfigFile,"enablearmorswapping",0)  
 VoiceVariation = JsonUtil.GetStringValue(VoiceVariationFile,"voicevariation","NA")  
 AggressiveChancetoMoveBackAStage =  JsonUtil.GetIntValue(ConfigFile,"aggressivechancetomovebackastage",0)  
 EnjoymentForAggressiveToMoveBackAStage = JsonUtil.GetIntValue(ConfigFile,"enjoymentforaggressivetomovebackastage",0)  
-UseHentaiExpressionNG = JsonUtil.GetIntValue(ConfigFile,"usehentaiexpressionng",0)  
 
-
-hentaiexpressionngkneejerkspeed = JsonUtil.GetIntValue(ConfigFile,"hentaiexpressionngkneejerkspeed",0)  
-hentaiexpressionngspeechspeed = JsonUtil.GetIntValue(ConfigFile,"hentaiexpressionngspeechspeed",0)  
-hentaiexpressionngintensespeed = JsonUtil.GetIntValue(ConfigFile,"hentaiexpressionngintensespeed",0)  
-hentaiexpressionngnonintensespeed = JsonUtil.GetIntValue(ConfigFile,"hentaiexpressionngnonintensespeed",0)  
-hentaiexpressionngnonpenetrationspeed = JsonUtil.GetIntValue(ConfigFile,"hentaiexpressionngnonpenetrationspeed",0)   
 
 HugePPSchlongSize = JsonUtil.GetIntValue(ConfigFile,"hugeppschlongsize",0)
 EnableGhostActors  = JsonUtil.GetIntValue(ConfigFile,"enableghostactors",0)  
-
+MoanOnly  = JsonUtil.GetIntValue(ConfigFile,"moanonly",0) 
+hypebeforeorgasm = JsonUtil.GetIntValue(ConfigFile,"hypebeforeorgasm",0) 
 EnableLactate = JsonUtil.GetIntValue(LactateFile,"enablelactating",0)
 AlwaysLactate = JsonUtil.GetIntValue(LactateFile,"alwayslactate",0)
 ChancetoLactateDuringOrgasm = JsonUtil.GetIntValue(LactateFile,"chancetolactateduringorgasm",0)
 ChanceToLactateDuringIntense = JsonUtil.GetIntValue(LactateFile,"chancetolactateduringintense",0)
 ChancetoStopLactate = JsonUtil.GetIntValue(LactateFile,"chancetostoplactate",0)  
+useblowjobsoundforkissing = JsonUtil.GetIntValue(ConfigFile,"useblowjobsoundforkissing",0) 
+EnablePrintDebug =  JsonUtil.GetIntValue(ConfigFile,"printdebug",1)  
+InitializeTimerConfig() 
  
 endfunction
 
@@ -412,7 +334,7 @@ Function PerformInitialization()
 	
 	;Fourth, pull the MCM settings we need to cache
 	PullMCMConfigOptions()
-	
+
 	;always run male at full volume
 	LowPrioritySoundsMale.setvolume(1.0)
 	HighPrioritySoundsMale.setvolume(1.0)
@@ -423,82 +345,52 @@ Function PerformInitialization()
 	
 	;Then, set up some other one-time config on scene start
 	hoursSinceLastSex = SexLab.HoursSinceLastSex(mainFemaleActor)
-	
-	;Then, initialize the variables responsible for the personality of the actors. These can change from scene to scene based on circumstances
-	DeterminePersonalityForScene()
-	
+		
 	;Last item of set up: register for events
 	RegisterForTheEventsWeNeed()
 
 	;After set up, greet our partner if applicable
-	
+
 	InitializeConfigValues()
-	initializeFHUTongueType()
-	InitializeExpressionValues()
 	
 	 ;Make sure everything is up to date before we make our greeting
-	
-	;check if has MFEE
-	if MuFacialExpressionExtended.GetVersion() > 0 && JsonUtil.GetIntValue(EnableErinMFEE,"enablemfee",0) > 0   &&  (mainFemaleActor.GetRace().getname() =="Erin" || mainFemaleActor.GetRace().getname() =="Elin" )
-		HasMFEE = true
-	endif
-	
+
 	;initialize storageutil to set if its orgasming
-	StorageUtil.SetIntValue(None, "ASLOrgasm", 0)
-	StorageUtil.SetIntValue(None, "ASLMaleOrgasm", 0)
-	StorageUtil.SetStringValue(None, "ASLFemaleSpeech", "")
-	StorageUtil.SetIntValue(None, "FemaleMakingSound", 1)
-	StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet", 1)
-	if 	StorageUtil.GetIntValue(None, "ASLTargetOrgasmtoBroken") == 0
-		StorageUtil.SetIntValue(None, "ASLTargetOrgasmtoBroken" , Utility.RandomInt(MinOrgasmsToBroken, MaxOrgasmsToBroken))
+	if hypebeforeorgasm == 1
+		StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet", 1)
 	endif
+	;if 	StorageUtil.GetIntValue(None, "ASLTargetOrgasmtoBroken") == 0
+	;	StorageUtil.SetIntValue(None, "ASLTargetOrgasmtoBroken" , Utility.RandomInt(MinOrgasmsToBroken, MaxOrgasmsToBroken))
+;	endif
 
 	
 	;initialize broken status
-	if hoursSinceLastSex >= HoursSinceLastSexToResetBrokenStatus as float
-		StorageUtil.SetIntValue(None, "ASLTotalOrgasmtoBroken" , 0)
-		StorageUtil.SetIntValue(None, "ASLTargetOrgasmtoBroken" , Utility.RandomInt(MinOrgasmsToBroken, MaxOrgasmsToBroken))
-		StorageUtil.SetIntValue(None, "ASLisBroken" , 0)
-	else
-		ASLRefreshBrokenStatus()
-	endif
-	
-	if EnableHentaiIVDTNormalExpressions == 1 || EnableHentaiIVDTAhegaoExpressions == 1
-		StorageUtil.SetIntValue(None, "DisableSLSOExpression" , 1)
-	endif
-	
-	if EnableHentaiIVDTNormalExpressions == 1 && !equippedtongue()
-		UpdateNormalExpression()
-	endif
-	if EnableHentaiIVDTAhegaoExpressions == 1 && equippedtongue()
-		UpdateAhegaoExpression()
-	endif
-	
+	;if hoursSinceLastSex >= HoursSinceLastSexToResetBrokenStatus as float
+	;	StorageUtil.SetIntValue(None, "ASLTotalOrgasmtoBroken" , 0)
+	;	StorageUtil.SetIntValue(None, "ASLTargetOrgasmtoBroken" , Utility.RandomInt(MinOrgasmsToBroken, MaxOrgasmsToBroken))
+		;StorageUtil.SetIntValue(None, "ASLisBroken" , 0)
+;	else
+
 	ASLUPDATE()
-	SetActorScale()
-	ResetHentaiExpressionGroup()
-	
-	Blowjoboverride = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsNGFile,"blowjobphonemeoverride","") ,",")
-	BrokenOverride = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsNGFile,"brokenmodifieroverride","") ,",")
-	TongueOutOverride = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsNGFile,"tongueoutphonemeoverride","") ,",")
-	
-	MFEETongueOutOverride = papyrusutil.stringsplit(JsonUtil.GetStringValue(MFEEFile,"tongueoutphonemeoverride","") ,",")
-	MFEEBrokenOverride = papyrusutil.stringsplit(JsonUtil.GetStringValue(MFEEFile,"brokenmodifieroverride","") ,",")
-	
+
 	;Set Schlong Faction
 	schlongfaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
 	;TNG
 	TNG_XL = Game.GetFormFromFile(0xFE5, "TheNewGentleman.esp") as Keyword
 	TNG_L = Game.GetFormFromFile(0xFE4, "TheNewGentleman.esp") as Keyword
 	TNG_Gentlewoman = Game.GetFormFromFile(0xFF8, "TheNewGentleman.esp") as Keyword
+	;Hentairim Enjoyment 
+	HentairimResistance = Game.GetFormFromFile(0x854, "Hentairim Enjoyment Expressions Traits.esp") as Faction	
+	HentairimBroken = Game.GetFormFromFile(0x853, "Hentairim Enjoyment Expressions Traits.esp") as Faction
 
 	;Lactate
 	MilkR = Game.GetFormFromFile(0x812, "IVDTHentaiLactate.esp") as Armor
 	MilkL = Game.GetFormFromFile(0x813, "IVDTHentaiLactate.esp") as Armor
 	NippleLeakCBBE  = game.GetFormFromFile(0x814, "IVDTHentaiLactate.esp") as EffectShader
 	SetGhostActor()
-	Initialized = true
 
+	Initialized = true
+	printdebug("initialized complete")
 
 EndFunction
 
@@ -514,50 +406,27 @@ Function PullMCMConfigOptions()
 
 EndFunction
 
-Function initializeFHUTongueType()
-
-if FHUTongueType == 0
-	FHUTongueType = Utility.RandomInt(1, 10)
-endif	
-
-if FHUTongueType == 1
-	Tongue = Game.GetFormFromFile(0x263B2, "sr_fillherup.esp") as Armor
-elseif  FHUTongueType == 2
-	Tongue = Game.GetFormFromFile(0x263B3, "sr_fillherup.esp") as Armor
-elseif  FHUTongueType == 3
-	Tongue = Game.GetFormFromFile(0x263B4, "sr_fillherup.esp") as Armor
-elseif  FHUTongueType == 4
-	Tongue = Game.GetFormFromFile(0x263B5, "sr_fillherup.esp") as Armor
-elseif  FHUTongueType == 5
-	Tongue = Game.GetFormFromFile(0x263B6, "sr_fillherup.esp") as Armor	
-elseif  FHUTongueType == 6
-	Tongue = Game.GetFormFromFile(0x263B7, "sr_fillherup.esp") as Armor	
-elseif  FHUTongueType == 7
-	Tongue = Game.GetFormFromFile(0x263B8, "sr_fillherup.esp") as Armor	
-elseif  FHUTongueType == 8
-	Tongue = Game.GetFormFromFile(0x263B9, "sr_fillherup.esp") as Armor	
-elseif  FHUTongueType == 9
-	Tongue = Game.GetFormFromFile(0x263BA, "sr_fillherup.esp") as Armor	
-elseif  FHUTongueType == 10
-	Tongue = Game.GetFormFromFile(0x263BB, "sr_fillherup.esp") as Armor	
-endif
-
-endfunction
+int PCPosition
 
 Function FindActorsAndVoices()
-	playerCharacter = Game.GetPlayer()
-
+	
+	
 	Actor[] actorList = sexLabThreadController.Positions
 	Int actorCount = actorList.Length
 	Int actorIndex = 0
-	
-	mainFemaleActor = playerCharacter
+
 	mainFemaleVoice = MasterScript.GetVoiceForActress(playerCharacter)
 	
 	;Go through the list of all actors in the scene and get data on their gender and voices
 	;PC is always main female
 	While actorIndex < actorCount
+	
 		Actor actorInQuestion = actorList[actorIndex]
+		if actorInQuestion == playerCharacter
+			PCPosition = actorIndex
+		endif
+		
+		
 		if DefaultMaleVoice == none
 			DefaultMaleVoice = MasterScript.GetDefaultMaleVoice(actorInQuestion)
 		endif
@@ -574,35 +443,6 @@ Function FindActorsAndVoices()
 
 		actorIndex += 1
 	EndWhile
-
-	;If we still don't have a female voice, then this is a male-only scene and we need to make the guy, the girl... and potentially find a new guy (absolute genius)
-	;If mainFemaleVoice == None && mainMaleVoice != None
-	;	maleOnlyScene = True
-	
-		;Make the guy the girl...
-	;	mainFemaleActor = mainMaleActor
-	;	mainFemaleVoice = fakeFemaleVoice
-	;	mainFemaleVoice.SetUpVoiceFromMaleVoice(mainMaleVoice)
-	;	mainMaleActor = None
-	;	mainMaleVoice = None
-		
-		;And find a new guy--if appplicable. that may be the only guy
-	;	actorIndex = 0
-	;	While actorIndex < actorCount
-	;		Actor actorInQuestion = actorList[actorIndex]
-		
-	;		If MasterScript.IsMale(actorInQuestion) && actorInQuestion != mainFemaleActor && mainMaleVoice == None
-	;			mainMaleVoice = MasterScript.GetVoiceForActor(actorInQuestion)
-				
-	;			If mainMaleVoice != None
-	;				mainMaleActor = actorInQuestion
-	;			EndIf
-	;		EndIf
-		
-	;		actorIndex += 1
-	;	EndWhile
-	;EndIf
-	
 			
 	if mainMaleActor == None
 		if mainFemaleActor == actorList[0]
@@ -611,43 +451,9 @@ Function FindActorsAndVoices()
 			mainMaleActor = actorList[0]
 		endif
 	endif
-	if !mainMaleActor.hasspell(SceneTrackerSpell)
-		mainMaleActor.AddSpell(SceneTrackerSpell, abVerbose = False)
-	endif
-EndFunction
-
-Function DeterminePersonalityForScene()
-	isBootyGirl = DetermineIfBootyGirl(mainFemaleActor)	
-
-	If mainMaleActor != None
-		Bool withMalePlayer = (mainMaleActor == playerCharacter)
 	
-		withMaleLover = mainFemaleActor.GetRelationshipRank(mainMaleActor) >= 4 || mainFemaleActor.HasAssociation(SpouseAssocation, mainMaleActor)
-		withMaleThane = withMalePlayer && mainFemaleActor.IsInFaction(PlayerHousecarlFaction)
-		withMaleOfInterest = withMalePlayer && !withMaleLover && !mainMaleActor.IsInFaction(PlayerMarriedFaction) && AreAssumedToBeFrequentPartners(mainFemaleActor, mainMaleActor)
-
-	EndIf
-EndFunction
-
-Bool Function DetermineIfBootyGirl(Actor theActor)
-	;The below option is controlled in the MCM and has these values: 0 = women with weight >=75, 1 = >=50, 2 = >=25, 3 = all women, 4 = no women
-	Int bootyGirlSelectionMethod = MasterScript.ConfigOptions.GetModSettingInt("iBootyGirls:DialogueOptions")
-	
-	If bootyGirlSelectionMethod == 0
-		Return theActor.GetActorBase().GetWeight() >= 75
-	ElseIf bootyGirlSelectionMethod == 1
-		Return theActor.GetActorBase().GetWeight() >= 50
-	ElseIf bootyGirlSelectionMethod == 2
-		Return theActor.GetActorBase().GetWeight() >= 25
-	Else
-		Return bootyGirlSelectionMethod == 3
-	EndIf
-EndFunction
-
-
-
-Int Function GetChemistryLevelForSpeechLevel(Actor theActor)
-	Return (theActor.GetActorValue("Speechcraft") * 0.066) as Int ;1 extra point of chemistry for every 15 levels of speech
+	printdebug("mainfemaleactor :" + mainFemaleActor.getleveledactorbase().GetName())
+	printdebug("mainmaleactor :" + mainMaleActor.getleveledactorbase().GetName())
 EndFunction
 
 Function RegisterForTheEventsWeNeed()
@@ -674,12 +480,6 @@ Event IVDTSceneEnd(string eventName, string argString, float argNum, form sender
 	ResetActorScale()
 	ResetGhostActor()
 	
-	MfgConsoleFuncExt.resetmfg(mainFemaleActor)
-	MfgConsoleFuncExt.resetmfg(mainMaleActor)
-	MuFacialExpressionExtended.RevertExpression(mainFemaleActor) 
-	StorageUtil.unSetIntValue(None, "DisableSLSOExpression")
-	StorageUtil.unsetStringValue(None, "ASLFemaleSpeech")
-	StorageUtil.unSetIntValue(None, "FemaleMakingSound")
 	MasterScript.RegisterThatSceneIsEnding(maleOnlyScene)
 	RemoveTracker()
 	
@@ -692,12 +492,6 @@ Function ASLEndScene()	;manually end scene
 	RestoreArmor()
 	ResetActorScale()
 	ResetGhostActor()
-	MfgConsoleFuncExt.resetmfg(mainFemaleActor)
-	MfgConsoleFuncExt.resetmfg(mainMaleActor)
-	MuFacialExpressionExtended.RevertExpression(mainFemaleActor) 
-	StorageUtil.unSetIntValue(None, "DisableSLSOExpression")
-	StorageUtil.unsetStringValue(None, "ASLFemaleSpeech")
-	StorageUtil.unSetIntValue(None, "FemaleMakingSound")
 	MasterScript.RegisterThatSceneIsEnding(maleOnlyScene)
 	RemoveTracker()
 	
@@ -710,7 +504,7 @@ Event IVDTOnOrgasm(Form actorRef, Int thread)
 		
 		Return
 	EndIf
-
+	
 	if ASLCanAccumulateBrokenPoints()
 	
 		if  ishugepp() || GetMainNPCTrait() == "+The Penetrator"
@@ -723,111 +517,72 @@ Event IVDTOnOrgasm(Form actorRef, Int thread)
 	endif
 	
 	Actor actorHavingOrgasm = actorRef as Actor
-	if EnableHentaiIVDTNormalExpressions == 1 && usehentaiexpressionng != 1
-			MakeOrgasmFace()
-	endif
-	
-	if actorHavingOrgasm != mainFemaleActor
-		GiveSHMilkSperm(actorHavingOrgasm)
-	endif
-	
-	
-	If ( actorHavingOrgasm == mainMaleActor || (MasterScript.IsMale(actorHavingOrgasm) || hasSchlong(actorHavingOrgasm))) && actorHavingOrgasm != mainFemaleActor && !femaleisgiving()
-	
 
-			StorageUtil.SetIntValue(None, "ASLMaleOrgasm", 1)
-			;if its NOuveau Riche
-			if GetMainNPCTrait() == "+The Nouceau Riche"
-				mainFemaleActor.additem(Game.GetFormFromFile(0xF, "Skyrim.esm") , utility.Randomint(1,100))
-			elseif GetMainNPCTrait() == "+The Gifter"
-				mainFemaleActor.additem(Game.GetFormFromFile(0x2E4E3, "Skyrim.esm") , 1)
+	
+	
+	;If ( actorHavingOrgasm == mainMaleActor || (MasterScript.IsMale(actorHavingOrgasm) || hasSchlong(actorHavingOrgasm))) && actorHavingOrgasm != mainFemaleActor && !femaleisgiving()
+	If actorHavingOrgasm != mainFemaleActor 
+	printdebug("non PC ORGASM!" )
+			RecordMaleOrgasm()
+
+
+			if IsSuckingoffOther() || IsgettingPenetrated()
+				If mainMaleVoice != None && actorHavingOrgasm == mainMaleActor
+					PlaySound(mainMaleVoice.Orgasm, mainMaleActor, requiredChemistry = 0, soundPriority = 3, waitForCompletion = False, debugtext ="MaleOrgasm")	
+				elseif DefaultMaleVoice != None
+					PlaySound(DefaultMaleVoice.Orgasm, actorHavingOrgasm, requiredChemistry = 0, soundPriority = 3, waitForCompletion = False, debugtext ="DefaultMaleOrgasm")
+				EndIf	
 			endif
 			
-			If mainMaleVoice != None && actorHavingOrgasm == mainMaleActor
-				PlaySound(mainMaleVoice.Orgasm, mainMaleActor, requiredChemistry = 0, soundPriority = 3, waitForCompletion = False, debugtext ="MaleOrgasm")	
-			elseif DefaultMaleVoice != None
-				PlaySound(DefaultMaleVoice.Orgasm, actorHavingOrgasm, requiredChemistry = 0, soundPriority = 3, waitForCompletion = False, debugtext ="DefaultMaleOrgasm")
-			EndIf	
-	
-			if !HasDeviousGag(mainFemaleActor) && SexLabThreadController.TotalTime - timeOfLastKneeJerkReaction > 2.0 && mainFemaleEnjoyment <= FemaleOrgasmHypeEnjoyment
-				;leak cum when bursting at seams 
-				;miscutil.PrintConsole ("Main FemaleisBurstingAtSeams  : " + MainFemaleisBurstingAtSeams())	
+			if  SexLabThreadController.TotalTime - timeOfLastKneeJerkReaction > 2.0 && mainFemaleEnjoyment <= FemaleOrgasmHypeEnjoyment
+
 				if MainFemaleisBurstingAtSeams() && CurrentPenetrationLvl() > 1
-				;miscutil.PrintConsole ("leaking from burst seam")
 				
 					float AdditionalHugePPChanceLeak = 1
 					
 						if ishugePP()
 							AdditionalHugePPChanceLeak = 2
-						endif
-					ChangeHentaiExpression("hugeppgape")	
+						endif	
 
-					PlaySound(mainFemaleVoice.SurprisedByMaleOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3)
-					
-						; chance to cum leak from mouth if is doggy position and is intense and hashugepp
-					if   Utility.RandomFloat(0.0, 1.0) < ChanceToLeakOralCum * AdditionalHugePPChanceLeak && (currentanimation.HasTag("Doggy")|| currentanimation.HasTag("Doggystyle") || currentanimation.HasTag("Doggy Style") ) && (stagelabel == "FA" || stagelabel == "FV" || stagelabel == "DP" || stagelabel == "TP") 
-						;miscutil.PrintConsole (" leaking Oral")
-						ASLAddTongue()
-						ASLAddOralLeak()
-						ChangeHentaiExpression("hugeppgape")
+						PlaySound(mainFemaleVoice.SurprisedByMaleOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext ="SurprisedByMaleOrgasm")
 
-						PlaySound(mainFemaleVoice.MaleOrgasmOral, mainFemaleActor, requiredChemistry = 0, soundPriority = 3 , debugtext= "MaleOrgasmOral")
-						
-						Utility.Wait(Utility.RandomFloat(1.0, 3.0))
-						ASLAddCumPool()
-						PlaySound(mainFemaleVoice.MaleOrgasmOral, mainFemaleActor, requiredChemistry = 0, soundPriority = 3 , debugtext= "MaleOrgasmOral" )
-						
-						Utility.Wait(Utility.RandomFloat(1.0, 3.0))
-						ASLRemoveOralLeak()
-						if !ASLIsBroken()
-							ASLRemoveTongue()
-						endif
-					else
 						;miscutil.PrintConsole (" leaking pussy")
 						ASLAddThickCumleak()
 						ASLAddCumPool()
-						
-					endif
-						
-						
-						
-				elseif 	stagelabel == "LI" && !femaleisvictim()
-					ChangeHentaiExpression("wantmore")
+
+				elseif 	!IsSuckingoffOther() || !IsgettingPenetrated() && !femaleisvictim() && moanonly != 1
+
 					PlaySound(mainFemaleVoice.ReadyToGetGoing, mainFemaleActor, requiredChemistry = 2 , debugtext= "ReadyToGetGoing")	
-	
-				elseif ishugepp() && SexLabThreadController.TotalTime - timeOfLastStageStart > 2
-					ChangeHentaiExpression("hugeppgape")
-
-					PlaySound(mainFemaleVoice.SurprisedByMaleOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext= "SurprisedByMaleOrgasm")
-					
-				ElseIf (stagelabel == "TP" ||  stagelabel == "SR")  && Utility.RandomFloat(0.0, 1.0) < 0.5  && SexLabThreadController.TotalTime - timeOfLastStageStart > 2
-					ChangeHentaiExpression("kneejerk")
-
-					PlaySound(mainFemaleVoice.MaleOrgasmNonOral, mainFemaleActor, requiredChemistry = 0, soundPriority = 3 , debugtext= "MaleOrgasmNonOral")	
-					
-				ElseIf stagelabel == "SB" ||  stagelabel == "FB" || stagelabel == "TP" ||  stagelabel == "SR" 	&& SexLabThreadController.TotalTime - timeOfLastStageStart > 2
+				
+				ElseIf IsSuckingoffOther() 	&& SexLabThreadController.TotalTime - timeOfLastStageStart > 2
 					Utility.Wait(Utility.RandomFloat(0.5, 1.5))
-					ChangeHentaiExpression("kneejerk")
 
 					PlaySound(mainFemaleVoice.MaleOrgasmOral, mainFemaleActor, requiredChemistry = 0, soundPriority = 3 , debugtext= "MaleOrgasmOral")	
-					
-				elseif CurrentPenetrationLvl() > 1  && SexLabThreadController.TotalTime - timeOfLastStageStart > 2
-					ChangeHentaiExpression("kneejerk")
+				
+				elseif ishugepp() && SexLabThreadController.TotalTime - timeOfLastStageStart > 2 && moanonly != 1
 
-					PlaySound(mainFemaleVoice.MaleOrgasmNonOral, mainFemaleActor, requiredChemistry = 0, soundPriority = 3, debugtext= "MaleOrgasmNonOral")
-					
+					PlaySound(mainFemaleVoice.SurprisedByMaleOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext= "SurprisedByMaleOrgasm")
+
+				elseif CurrentPenetrationLvl() > 1  && SexLabThreadController.TotalTime - timeOfLastStageStart > 2
+					if moanonly == 1
+						PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0, soundPriority = 3 , debugtext= "MaleOrgasmNonOral")
+					else
+						PlaySound(mainFemaleVoice.MaleOrgasmNonOral, mainFemaleActor, requiredChemistry = 0, soundPriority = 3, debugtext= "MaleOrgasmNonOral")
+					endif
 
 				EndIf
 				
 			endif
 			timeOfLastKneeJerkReaction = SexLabThreadController.TotalTime
-			StorageUtil.SetIntValue(None, "ASLMaleOrgasm", 0)
-			RecordMaleOrgasm()
-			Reactedtomaleorgasm = false
+
+			if Utility.RandomFloat(0.0, 1.0) <= 0.5
+				ReacttoMaleOrgasmNext = true
+			endif 
+
 			teasedClosetoorgasm = false
 			
 	ElseIf actorHavingOrgasm == mainFemaleActor
-	
+	printdebug("PC ORGASM! ")
 		;break immediately if NPC is the breaker
 		if GetMainNPCTrait()== "+The Breaker" && !ASLisBroken()
 			StorageUtil.SetIntValue(None, "ASLTotalOrgasmtoBroken" , StorageUtil.GetIntValue(None, "ASLTargetOrgasmtoBroken")) 
@@ -838,32 +593,33 @@ Event IVDTOnOrgasm(Form actorRef, Int thread)
 		endif
 
 		ASLAddOrgasmSSquirt()
-		;ASLHandleFemaleOrgasmReaction()
-			MakeOrgasmFace()
-			StorageUtil.SetIntValue(None, "ASLOrgasm" , 1)
-		if !HasDeviousGag(mainFemaleActor) && !IsUnconcious()
-			Reactedtofemaleorgasm = false
-			
-			if femaleisgiving() 
-				Reactedtofemaleorgasm = true
-			endif
-			
-			ChangeHentaiExpression("orgasm")
-			PlaySound(mainFemaleVoice.Orgasm, mainFemaleActor, requiredChemistry = 0, soundPriority = 3, debugtext ="FemaleOrgasm" , Force = true) ;, waitForCompletion = False)	
-
-		endif
 		
-	;	if hasSchlong(mainFemaleActor) && DefaultMaleVoice != None
-	;		PlaySound(DefaultMaleVoice.Orgasm, actorHavingOrgasm, requiredChemistry = 0, soundPriority = 3, waitForCompletion = False, debugtext ="DefaultMaleOrgasm")
-	;	endif
-			
-			StorageUtil.SetIntValue(None, "ASLOrgasm" , 0)
-			StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 1)
+		if !IsUnconcious()
+			if moanonly == 1
+				PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0, soundPriority = 3 , debugtext= "Oh")
+			else
+				PlaySound(mainFemaleVoice.Orgasm, mainFemaleActor, requiredChemistry = 0, soundPriority = 3, debugtext ="FemaleOrgasm" , Force = true) ;, waitForCompletion = False)	
+			endif
+		endif
+			if hypebeforeorgasm == 1
+				StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 1)
+			endif
 			CommentedClosetoOrgasm = false
 		timeOfLastKneeJerkReaction = SexLabThreadController.TotalTime
 		RecordFemaleOrgasm()
 		ASLRemoveOrgasmSSquirt()
-		ASLRefreshBrokenStatus()
+		
+		
+		;chance to create reaction next cycle
+		float ChancetoReact = 0.6
+
+		if ASLCurrentlyintense
+			ChancetoReact = ChancetoReact / 2
+		endif
+
+		if ChancetoReact <= Utility.RandomFloat(0.0, 1.0)
+			ReacttoFemaleOrgasmNext = true
+		endif 
 	EndIf
 	
 EndEvent
@@ -877,9 +633,7 @@ Event IVDTOnStageStart(string eventName, string argString, float argNum, form se
 EndEvent
 
 Event OnUpdate()
-	;non PC actor updates
-
-
+printdebug(" Updating")
 while Initialized == false ; wait until initialization complete
 	Utility.Wait(1)
 endwhile
@@ -890,38 +644,31 @@ if SexLab.FindPlayerController() == -1
 	ASLEndScene()
 endif
 
-if actorWithSceneTrackerSpell == mainMaleActor
-		;miscutil.PrintConsole ("on update with MALE")
-
-		PhaseFemaleexpressions()		
-elseif actorWithSceneTrackerSpell == mainFemaleActor
-
-;miscutil.PrintConsole ("-----------------IVDT CYCLE-------------------- " )
-
+if actorWithSceneTrackerSpell == mainFemaleActor
 
 	if ShouldInitialize == true && currentstage == 1
 
 		PerformInitialization()
 	endif
-
-Race MaleActorRace = mainMaleActor.GetRace()
-String MaleRaceName = MaleActorRace.GetName()
-
-Bool mainFemaleIsVictim = SexLab.IsVictim(sceneID, mainFemaleActor)
-	;---First, update status
-
+	;update enjoyment
+	mainFemaleEnjoyment = GetActorEnjoyment(mainFemaleActor)
+	mainMaleEnjoyment = GetActorEnjoyment(mainMaleActor)
+	printdebug(" PC Enjoyment = " + mainFemaleEnjoyment)
+	printdebug(" main Male Enjoyment = " + mainMaleEnjoyment)
 	;calculate timers for auto advancing stages
 		cycle = cycle + 1
 	
 	if cycle <= 1
 		ASLUpdate()
-	elseif (GetMainNPCTrait() == "Aggressive+" || GetMainNPCTrait() == "Impatient+" )&& SkiptoAggressiveStage == false && cycle >= 2 && MainMaleCanControl()
-		SkiptoAggressiveStage()
 	elseif ASLProcessStageAdvancing()
 		cycle = 0
-
+		
 		if ShouldMovebackAStage()
 			sexLabThreadController.advancestage(true)
+		elseif	IsfinalStage() ;end stage if is last stage.
+			printdebug(" Last Stage. Ending Sex Scene")
+			ASLEndScene()
+			sexLabThreadController.EndAnimation(true)
 		else
 			sexLabThreadController.advancestage()
 		endif
@@ -929,12 +676,12 @@ Bool mainFemaleIsVictim = SexLab.IsVictim(sceneID, mainFemaleActor)
 
 	ASLUpdate()
 
-;=========================run section for anim stage labels=======================
-	; Debug.Notification("Streak: " + penetrativeStreakDuration + ", Limit: " + streakTooLongDuration)	
+;=========================run Dirty Talk & sex Effects=======================	
 	;run lactating
 
-	if mainFemaleActor.IsEquipped(MilkL) || mainFemaleActor.IsEquipped(MilkR)
-		if ChancetoStopLactate <= Utility.RandomInt(1, 100) && GetMainNPCTrait() != "+The Milker" ;cant start lactating until scene ends with the milker
+	if (mainFemaleActor.IsEquipped(MilkL) || mainFemaleActor.IsEquipped(MilkR)) && !ASLcurrentlyIntense
+		if Utility.RandomInt(1, 100) <= ChancetoStopLactate && GetMainNPCTrait() != "+The Milker" ;cant start lactating until scene ends with the milker
+			printdebug(" Stop Lactating")
 			StopLactate()
 		endif
 	else
@@ -943,97 +690,89 @@ Bool mainFemaleIsVictim = SexLab.IsVictim(sceneID, mainFemaleActor)
 		endif	
 	endif
 	
-	while StorageUtil.GetIntValue(None, "ASLOrgasm") == 1
-		Utility.Wait(1) ;wait until female orgasm complete before proceeding
-	;	miscutil.PrintConsole ("waiting for orgasm to finish: " + SexLabThreadController.TotalTime)
-	;miscutil.PrintConsole ("waiting for orgasm to finish " )
-	endwhile
-	;if SexLabThreadController.TotalTime - timeOfLastRecordedFemaleOrgasm >= 8
-	if EnableHentaiIVDTNormalExpressions == 1 && !equippedtongue()
-		UpdateNormalExpression()
+	;chance for male voice
+	if AllowMaleVoice()
+		PlayMaleComments()
 	endif
 	
-	if EnableHentaiIVDTAhegaoExpressions == 1 && equippedtongue()
-		UpdateAhegaoExpression()
-	endif
-
+	;if gagged, override everything else
 	if HasDeviousGag(mainFemaleActor) 
+	
 		StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 0)
 		if EnableDDGagVoice == 1
-			ASLPlayGagSound()
+			PlayGaggedSound()
 		else
 			Utility.Wait(8) ; dont play any voice if gagged
-		endif
-	;endif 
-
-	elseif Reactedtofemaleorgasm == false && Utility.RandomFloat(0.0, 1.0) < 0.5
+		endif 
+	elseif IsKissing()  ;kissing 
+	
+		PlayKissing()
+	elseif MoanOnly == 1	
 		
+		PlayMoanonly()
+	;if reacting to female orgasm
+	elseif ReacttoFemaleOrgasmNext == true 
+	
 		ASLHandleFemaleOrgasmReaction()
-		nextUpdateInterval = Utility.RandomFloat(0.5, 1.0)
-	elseif	Reactedtomaleorgasm == false && Utility.RandomFloat(0.0, 1.0) < 0.6 && !FemaleisGiving()
 		
-	;miscutil.PrintConsole ("Handle Male Orgasm" + SexLabThreadController.TotalTime)
-	;	miscutil.PrintConsole ("seconds after Male orgasm :" + (SexLabThreadController.TotalTime - timeOfLastMaleOrgasm))
-	;	miscutil.PrintConsole ("Playing Handle Male Orgasm" )
-	;	miscutil.PrintConsole ("SexLabThreadController.TotalTime : " + SexLabThreadController.TotalTime )
-	;	miscutil.PrintConsole ("timeOfLastMaleOrgasm :" + timeOfLastMaleOrgasm )
-	;	Utility.Wait(Utility.RandomFloat(1.0, 3.0))
+	;if reacting to male orgasm
+	elseif	ReacttoMaleOrgasmNext == true
 
 		ASLHandleMaleOrgasmReaction()
-		nextUpdateInterval = Utility.RandomFloat(0.1, 1.0)
-	elseif stagelabel == "LI"
-		;miscutil.PrintConsole ("Debug : Playing LI")
-		ASLPlayLI()
-		nextUpdateInterval = Utility.RandomFloat(1.0, 2.0)
-
-	elseif stagelabel == "SA" || stagelabel == "SV" 
-		;miscutil.PrintConsole ("Debug : Playing SA SV")
-		ASLPlaySASV()
-		nextUpdateInterval = Utility.RandomFloat(0.1, 1.0)
-	elseif stagelabel == "FA" || stagelabel == "FV" 
-		;miscutil.PrintConsole ("Debug : Playing FA FV")
-		if FemaleisGiving()
-			ASLPlaySASV()
-		else
-			ASLPlayFAFV()
-		endif
-		nextUpdateInterval = 0.1
-	elseif stagelabel == "EN"
-		;miscutil.PrintConsole ("Debug : Playing EN")
-		ASLPlayEN()
-		nextUpdateInterval = 0.1
-	elseif stagelabel == "SB" || stagelabel == "FB"
-		;miscutil.PrintConsole ("Playing SB FB")
-		ASLPlaySBFB()
-		nextUpdateInterval = Utility.RandomFloat(0.1, 0.5)
-	elseif stagelabel == "DP"
-		;miscutil.PrintConsole ("Debug : Playing DP")
-		ASLPlayDP() 
-		nextUpdateInterval = 0.1
-	elseif stagelabel == "TP"
-		if Utility.RandomFloat(0.0, 1.0) < 0.75
-			;miscutil.PrintConsole ("Debug : Playing TP")
-			ASLPlaySBFB()
-			nextUpdateInterval = Utility.RandomFloat(0.1, 0.5)
-		else
-			;miscutil.PrintConsole ("Debug : Playing DP")
-			ASLPlayDP() 
-			nextUpdateInterval = 0.1
-		endif 
 		
-	elseif stagelabel == "SR"
-	;	if Utility.RandomFloat(0.0, 1.0) < 0.25 && currentstage > 1
-			;miscutil.PrintConsole ("Debug : Playing FA FV")
-		;	ASLPlayFAFV()
-		;	nextUpdateInterval = 0.1
-		;else
-			;miscutil.PrintConsole ("Debug : Playing SB FB")
-			ASLPlaySBFB()
-			nextUpdateInterval = Utility.RandomFloat(0.1, 0.3)
-	;	endif
+	elseif IsSuckingoffOther() ;blowjob always first because muffled by cock
+	
+		PlayBlowjob()
+			
+	elseif IsCunnilingus() && !ASLcurrentlyintense ;Cunnilingus
+		
+		PlayCunnilingus()
 
+	elseif ASLisBroken() && !ASLCurrentlyintense
+	
+		PlayBroken()
+	
+	elseif IsCowgirl() ;cowgirl or femdom
+	
+		PlayCowgirl()
+		
+	elseif IsgettingPenetrated() && IshugePP() ; Huge pp Penetration
+	
+		PlayGettingFuckedbyHugePP()	
+		
+	elseif IsGettingDoublePenetrated() ; double penetratino
+	
+		PlayGettingFuckedDouble()
+		
+	elseif IsGettingInsertedBig() ; Fisting or huge objects
+	
+		PlayStimulatedHard() 
+		
+	elseif IsgettingPenetrated() ; Penetration
+
+		PlayGettingFucked()
+	
+	elseif IsGivingAnalPenetration() || IsGivingVaginalPenetration() ;fucking others with penis
+		
+		PlayFuckingOthers()
+	
+	elseif IsGettingStimulated() ;Getting Stimulated like fingering but no penetration
+	
+		PlayGettingStimulated()
+		
+	elseif IsStimulatingOthers() ;Stimulating others with finger handjob footjob titfuck
+		
+		PlayStimulatingOthers()
+		
+	elseif IsEnding()
+		
+		PlayEnding()
+		
+	elseif IsLeadIN()
+		
+		PlayLeadIn()
 	endif
-
+	nextUpdateInterval = NextUpdateInterval()
 endif
 
 if actorWithSceneTrackerSpell == mainMaleActor
@@ -1047,16 +786,13 @@ EndEvent
 
 Function RemoveTracker()
 	; Debug.Notification("Removing IVDT tracker from " + mainFemaleActor.GetActorBase().GetName())
-	StorageUtil.UnSetIntValue(None, "ASLOrgasm")
-	StorageUtil.UnSetIntValue(None, "ASLMaleOrgasm")
+
 	StorageUtil.UnSetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet")
 	StorageUtil.unSetStringValue(None, "Scenario")
 	StopLactate()
-	ASLRemoveTongue()
 	ASLRemoveOrgasmSSquirt()
 	ASLRemoveThickCumleak()
 	ASLRemoveCumPool()
-	ASLRemoveOralLeak()
 	;Perform needed clean up first
 	UnregisterForUpdate()
 	LowPrioritySounds.UnMute()
@@ -1071,7 +807,7 @@ EndFunction
 Function RecordMaleOrgasm()
 	;Ordering of some these statements matter because some depend on the others...
 	
-	if CurrentPenetrationLvl() > 1 && !FemaleisGiving()
+	if IsgettingPenetrated()
 		CameInsideCount = CameInsideCount + 1
 	endif
 	
@@ -1101,8 +837,6 @@ EndFunction
 Function PlaySound(Sound theSound, Actor actorMakingSound, Int requiredChemistry = 0, Int soundPriority = 0, Float maxQueueDuration = 5.0, Bool waitForCompletion = True , string debugtext = "None" , Bool Force = false , Bool SkipWait = false)
 
 	Sound soundToPlay = thesound
-	
-
 
 	If soundToPlay == None
 	
@@ -1110,28 +844,22 @@ Function PlaySound(Sound theSound, Actor actorMakingSound, Int requiredChemistry
 	EndIf
 	; male or other playing sound
 	if actorMakingSound != mainFemaleActor && (currentlyPlayingSoundCountMale == 0 || soundpriority > 1) ;others playing sound. 
-	
+		Printdebug("Non PC Playing voice : " + debugtext)
 		currentlyPlayingSoundCountMale = currentlyPlayingSoundCountMale + 1
 		
 		;lower down voice of female moan when male says something
 	
 		
-	;	if soundPriority >2
-	;		LowPrioritySoundsMale.mute()	
-	;	endif
-		
 		MasterScript.PlaySound(soundToPlay, actorMakingSound, waitForCompletion)
 	
 		currentlyPlayingSoundCountMale = currentlyPlayingSoundCountMale - 1
 		
-	;	if currentlyPlayingSoundCountMale == 0
-	;		LowPrioritySoundsMale.unmute()
-	;	endif
 
 		
 	;female playing sound
 	elseif actorMakingSound == mainFemaleActor && (currentlyPlayingSoundCount == 0 || soundpriority > 1)	 ;Female play sound
-		StorageUtil.SetIntValue(None, "FemaleMakingSound" ,1)
+		Printdebug("PC Playing voice : " + debugtext)
+		ChangePCExpressions(debugtext)
 		
 		currentlyPlayingSoundCount = currentlyPlayingSoundCount + 1
 
@@ -1173,19 +901,19 @@ EndFunction
 
 
 Bool Function IsEarlyToCum()
-	Return currentstage <= 2
+	Return currentstage <= 2 && maleOrgasmCount < 2
 EndFunction
 
 
 Bool Function ShouldPlayMaleOrgasmHype()
-	return mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && teasedClosetoorgasm == false && !FemaleisGiving() ;Male is not close enough yet
+	return mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && teasedClosetoorgasm == false
 
 EndFunction
 
 ;make romantic comment
 Function MakeRomanticCommentIfRightTime(Bool forceComment = False)
-	ChangeHentaiExpression("Amused")
-	PlaySound(mainFemaleVoice.LoveyDovey, mainFemaleActor, requiredChemistry = 0)
+
+	PlaySound(mainFemaleVoice.LoveyDovey, mainFemaleActor, requiredChemistry = 0, debugtext="LoveyDovey")
 	
 	timeOfLastRomanticRemark = SexLabThreadController.TotalTime
 	
@@ -1196,7 +924,7 @@ Bool Function ShouldMakeRomanticComment()
 		return false
 	elseIf SexLabThreadController.TotalTime - timeOfLastRomanticRemark < 60 ;Too soon. Romantic comments should be spaced out and rare
 		Return False
-	ElseIf withMaleLover && (currentAnimation.HasTag("Kissing") || currentAnimation.HasTag("cunnilingus")) && stagelabel == "LI" && Currentstage <= 2
+	ElseIf !IsgettingPenetrated() && Currentstage <= 2
 		Return Utility.RandomFloat(0.0, 1.0) < 0.1
 	else 
 		return false
@@ -1205,45 +933,48 @@ EndFunction
 
 
 Bool Function FemaleIsSatisfied()
-	;If either the male or the female have cummed a bunch, or its been more than 10 minutes, then we're satisfied
-	;...This function doesn't take regard to any impending orgasms or high levels of enjoyment. It's assumed those are taken into account where this is called
-	Return !femaleisvictim() && mainFemaleEnjoyment <= 30
+
+	Return femaleRecordedOrgasmCount > utility.randomint(2,4)
+endfunction
+
+Bool Function MaleIsSatisfied()
+
+	Return maleOrgasmCount >  utility.randomint(2,4)
 endfunction
 
 
 Bool Function PossiblyAskForCumInSpecificLocation()
-	ChangeHentaiExpression("wantmore")
-	if stagelabel == "DP"
+
+	if IsGettingDoublePenetrated()
 		if Utility.RandomFloat(0.0, 1.0) < 0.3
-			PlaySound(mainFemaleVoice.AskForAnalCum, mainFemaleActor, requiredChemistry = 3)
+			PlaySound(mainFemaleVoice.AskForAnalCum, mainFemaleActor, requiredChemistry = 3 , debugtext = "AskForAnalCum")
 		else	
-			PlaySound(mainFemaleVoice.AskForVaginalCum, mainFemaleActor, requiredChemistry = 4)
+			PlaySound(mainFemaleVoice.AskForVaginalCum, mainFemaleActor, requiredChemistry = 4 , debugtext = "AskForVaginalCum")
 		endif
-	elseif stagelabel == "TP" || stagelabel == "SR"
-			PlaySound(mainFemaleVoice.AskForOralCum, mainFemaleActor, requiredChemistry = 2)
-	elseif CurrentPenetrationLvl() == 2   ;Ask for vaginal cum	
-			PlaySound(mainFemaleVoice.AskForVaginalCum, mainFemaleActor, requiredChemistry = 4)
-	elseif CurrentPenetrationLvl() == 1  ;Ask for oral cum
-			PlaySound(mainFemaleVoice.AskForOralCum, mainFemaleActor, requiredChemistry = 2)
-	ElseIf CurrentPenetrationLvl() == 3 ;Ask for anal cum
-			PlaySound(mainFemaleVoice.AskForAnalCum, mainFemaleActor, requiredChemistry = 3)
+	elseif IsGettingVaginallyPenetrated()
+		PlaySound(mainFemaleVoice.AskForVaginalCum, mainFemaleActor, requiredChemistry = 4 , debugtext = "AskForVaginalCum")
+	elseif IsGettingAnallyPenetrated()
+		PlaySound(mainFemaleVoice.AskForAnalCum, mainFemaleActor, requiredChemistry = 3 , debugtext = "AskForAnalCum")
+   
+	elseif IsSuckingoffOther()
+		PlaySound(mainFemaleVoice.AskForOralCum, mainFemaleActor, requiredChemistry = 2 , debugtext = "AskForOralCum")	
 	endif
 
 
 EndFunction
 
-;Returns whether a remark was made
 Bool Function PossiblyRemarkOnCumLocation()
-	ChangeHentaiExpression("Ending")
 	;Go ahead with remark
 	If locationOfLastMaleOrgasm == 1
-		PlaySound(mainFemaleVoice.CameInMouth, mainFemaleActor, requiredChemistry = 0)
+		PlaySound(mainFemaleVoice.CameInMouth, mainFemaleActor, requiredChemistry = 0 , debugtext = "CameInMouth")
+		Utility.Wait(Utility.RandomFloat(0.75, 1.75))
 		Return True
 	ElseIf locationOfLastMaleOrgasm == 2 
-		PlaySound(mainFemaleVoice.CameInPussy, mainFemaleActor, requiredChemistry = 0)
+		PlaySound(mainFemaleVoice.CameInPussy, mainFemaleActor, requiredChemistry = 0 , debugtext = "CameInPussy")
+		Utility.Wait(Utility.RandomFloat(0.75, 1.75))
 		Return True
 	ElseIf locationOfLastMaleOrgasm == 3 
-		PlaySound(mainFemaleVoice.CameInAss, mainFemaleActor, requiredChemistry = 0)
+		PlaySound(mainFemaleVoice.CameInAss, mainFemaleActor, requiredChemistry = 0 , debugtext = "CameInAss")
 		
 		Utility.Wait(Utility.RandomFloat(0.75, 1.75))
 		
@@ -1255,49 +986,6 @@ Bool Function PossiblyRemarkOnCumLocation()
 EndFunction
 
 
-
-
-
-
-Bool Function FemaleCanAttackFromPosition(sslBaseAnimation theAnimation)
-	; theAnimation.HasTag("Missionary") || theAnimation.HasTag("Laying") || theAnimation.HasTag("Standing") ;Blacklist
-	If theAnimation.HasTag("Doggystyle") || theAnimation.HasTag("Doggy Style") || theAnimation.HasTag("Cowgirl") ;Whitelist
-		Return True
-	Else
-		Return False
-	EndIf
-EndFunction
-
-;Determine if we should start or continue an attack, based on what value is passed into the parameter.
-Bool Function ShouldGoOnTheAttack(sslBaseAnimation theAnimation , Bool startOfAttack = True)
-	Bool mainFemaleIsVictim = SexLab.IsVictim(sceneID, mainFemaleActor)
-	if	mainFemaleIsVictim 
-		return false
-	;attack when female controlling and is not victim. 
-	elseif !ASLCurrentlyintense && (theAnimation.HasTag("Cowgirl") || theAnimation.HasTag("FemDom") || theAnimation.HasTag("Fem Dom") || theAnimation.HasTag("Amazon"))
-	return true
-	
-	;female taking the penetration role as futa or strapon
-	elseif ActorsInPlay[0] != mainFemaleActor && (theAnimation.HasTag("Anal") || theAnimation.HasTag("Vaginal"))
-		return true
-	;Don't attack if there's no male, we don't have the energy, we're too close to orgasm, sex is just getting started/resumed, or we want to get back to foreplay
-	ElseIf mainMaleActor == None ;|| !currentlyIntense || femaleCloseToOrgasm || inRefractoryPeriod || mainMaleEnjoyment < 25 || FemaleReadyToReturnToForeplay()
-		Return False
-	
-	;If male near orgasm, don't attack if we don't want the male to cum inside
-	ElseIf mainMaleEnjoyment > 70  && !okwithvaginalcum() ; !(cumLocationDecision == 2 || cumLocationDecision == 3)
-		Return False
-	
-	ElseIf chemistryLevel < 5 || CurrentPenetrationLvl() <= 1 || currentStage == 1 || !FemaleCanAttackFromPosition(currentAnimation) || femaleAnalCommunication < 0
-		Return False
-	
-	Else
-		Return MasterScript.ConfigOptions.GetModSettingBool("bAllowAttacks:DialogueOptions")
-	EndIf
-EndFunction
-
-
-
 Function PlaySpankingSequence(Bool aggressiveLineAtStart = True)
 	;spanking scenario
 int spanksCompleted = 0
@@ -1307,146 +995,39 @@ SpankTarget = Utility.RandomInt(MinSpankCount, MaxSpankCount)
 		
 		if AllowMaleVoice()
 		;	miscutil.PrintConsole ("Playing Male Comments spanking sequence")
-			PlaySound(mainMaleVoice.StrugglingSubtle, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False)
+			PlaySound(mainMaleVoice.StrugglingSubtle, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False , debugtext = "StrugglingSubtle")
 		endif
 	While spanksCompleted < SpankTarget
 		ASLIsinSpanking = true
-		UpdateNPCExpression(mainMaleActor)
 		PlaySound(MasterScript.Sounds.Smack, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1 ,waitForCompletion = false)
-		ChangeHentaiExpression("kneejerk")
 
-		PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , SkipWait = true)
-		if EnableHentaiIVDTNormalExpressions == 1 && equippedtongue()
-			UpdateAhegaoExpression(true)
-		elseif EnableHentaiIVDTNormalExpressions == 1
-			UpdateNormalExpression(true)
-		endif
+		PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , SkipWait = true, debugtext = "Oh")
 		spanksCompleted += 1
 	
 	EndWhile
 		ASLIsinSpanking = false
-		if	EnableHentaiIVDTNormalExpressions == 1
-			UpdateNormalExpression(true)
-		endif
+		
 	if Utility.RandomFloat(0.0, 1.0) < 0.7
-		ChangeHentaiExpression("intensepenetrationcomments")
 		PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0)
-	else
-		ASLPlayPenetrationComments()
 		
 	endif
 
 EndFunction
 
-Function PlayBreathySound(Bool playIntenseVersion)
-	ChangeHentaiExpression("grunt")
-	If playIntenseVersion
-		PlaySound(mainFemaleVoice.BreathyIntense, mainFemaleActor, requiredChemistry = 0)
-	Else
-		PlaySound(mainFemaleVoice.BreathySoft, mainFemaleActor, requiredChemistry = 0)
-	EndIf
-EndFunction
-
-Bool Function OKWithVaginalCum()
-
-Bool mainFemaleIsVictim = SexLab.IsVictim(sceneID, mainFemaleActor)
-
-if MainFemaleisSuccubus()
-return true
-endif
-
-if mainFemaleIsVictim
-return false
-endif
-
-
-	If okWithVaginalCumCode >= 0 ;Decision already made. 1 = yes, 0 = no.
-		Return okWithVaginalCumCode == 1
-	EndIf
-	
-	;Decision not yet made. Consult user setting to settle this debate!
-	Bool itsOK = UserSettingPOLLSaysOKForVaginalCum()
-	
-	;Remember the setting so we don't have to poll for it next time
-	If itsOK
-		okWithVaginalCumCode = 1
-	Else
-		okWithVaginalCumCode = 0
-	EndIf
-	
-	Return itsOK
-EndFunction
-
-Bool Function UserSettingPOLLSaysOKForVaginalCum() ;Don't use this unless you know what you're doing (for performance reasons). Use OKWithVaginalCum() instead.
-	Int usersBlessedChoice = MasterScript.ConfigOptions.GetModSettingInt("iOKWithVaginalCum:DialogueOptions")
-	
-	;Based on user's choice, decide whether its ok. God bless the user. Customer is always right
-	If usersBlessedChoice == 0
-		Return True
-	ElseIf usersBlessedChoice == 1
-		Return False
-	ElseIf usersBlessedChoice == 2
-		Return AreMarried(mainFemaleActor, mainMaleActor)
-	ElseIf usersBlessedChoice == 3
-		Return withMaleLover
-	ElseIf usersBlessedChoice == 4
-		Return AreAssumedToBeFrequentPartners(mainFemaleActor, mainMaleActor)
-	ElseIf usersBlessedChoice == 5
-		Return AreMarried(mainFemaleActor, mainMaleActor) && AreAssumedToBeFrequentPartners(mainFemaleActor, mainMaleActor)
-	ElseIf usersBlessedChoice == 6
-		Return withMaleLover && AreAssumedToBeFrequentPartners(mainFemaleActor, mainMaleActor)
-	ElseIf usersBlessedChoice == 7
-		Return withMaleLover || AreAssumedToBeFrequentPartners(mainFemaleActor, mainMaleActor)
-	EndIf
-EndFunction
-
-Bool Function AreMarried(Actor actor1, Actor actor2)
-	If actor1 == playerCharacter
-		Return actor2.IsInFaction(PlayerMarriedFaction)
-	ElseIf actor2 == playerCharacter
-		Return actor1.IsInFaction(PlayerMarriedFaction)
-	Else
-		Return actor1.HasAssociation(SpouseAssocation, actor2)
-	EndIf
-EndFunction
-
-Bool Function AreAssumedToBeFrequentPartners(Actor actor1, Actor actor2)
-	If actor1 == playerCharacter
-		Return SexLab.PlayerSexCount(actor2)
-	ElseIf actor2 == playerCharacter
-		Return SexLab.PlayerSexCount(actor1)
-	Else
-		Return actor1.HasAssociation(SpouseAssocation, actor2)
-	EndIf
-EndFunction
-
-
-Bool Function IsAggressivehugePP()
-
-	Race MaleActorRace = mainMaleActor.GetRace()
-	String MaleRaceName = MaleActorRace.GetName()
-
-	if currentlyintense && IshugePP()
-		Return True 
-	else 
-		Return False
-	endif
-EndFunction
-
 Bool Function IshugePP()
 
-	if EnableHugePPScenario != 1 
-		return false
-	endif
-	if !mainMaleActor
-		return false
-	endif
-	Race MaleActorRace = mainMaleActor.GetRace()
-	String MaleRaceName = MaleActorRace.GetName()
+if EnableHugePPScenario != 1 
+	return false
+endif
 
-	if stringutil.find(MaleRaceName ,"Brute") > 0 || stringutil.find(MaleRaceName ,"Spider") > 0 || stringutil.find(MaleRaceName ,"Lurker") > 0 || stringutil.find(MaleRaceName ,"Daedroth") > 0  ||  stringutil.find(MaleRaceName ,"Horse") > 0 || stringutil.find(MaleRaceName ,"Bear") > 0 || stringutil.find(MaleRaceName ,"Chaurus") > 0 || stringutil.find(MaleRaceName ,"Dragon") > 0 || MaleRaceName ==  "Frost Atronach" || stringutil.find(MaleRaceName ,"Giant") > 0 || MaleRaceName ==  "Mammoth" || MaleRaceName ==  "Sabre Cat" || stringutil.find(MaleRaceName ,"Troll") > 0 || MaleRaceName ==  "Werewolf" || stringutil.find(MaleRaceName ,"Gargoyle") > 0 || MaleRaceName ==  "Dwarven Centurion" || stringutil.find(MaleRaceName ,"Ogre") > 0 ||  MaleRaceName ==  "Ogrim" || MaleRaceName ==  "Nest Ant Flier" || stringutil.find(MaleRaceName ,"OGrim") > 0
-		Return True 
-	else 
+Race MaleActorRace = mainMaleActor.GetRace()
+String MaleRaceName = MaleActorRace.GetName()
+
+if stringutil.find(MaleRaceName ,"Brute") > -1 || stringutil.find(MaleRaceName ,"Spider") > -1 || stringutil.find(MaleRaceName ,"Lurker") > -1 || stringutil.find(MaleRaceName ,"Daedroth") > -1  ||  stringutil.find(MaleRaceName ,"Horse") > -1 || stringutil.find(MaleRaceName ,"Bear") > -1 || stringutil.find(MaleRaceName ,"Chaurus") > -1 || stringutil.find(MaleRaceName ,"Dragon") > -1 || MaleRaceName ==  "Frost Atronach" || stringutil.find(MaleRaceName ,"Giant") > -1 || MaleRaceName ==  "Mammoth" || MaleRaceName ==  "Sabre Cat" || stringutil.find(MaleRaceName ,"Troll") > -1 || MaleRaceName ==  "Werewolf" || stringutil.find(MaleRaceName ,"Gargoyle") > -1 || MaleRaceName ==  "Dwarven Centurion" || stringutil.find(MaleRaceName ,"Ogre") > -1 ||  MaleRaceName ==  "Ogrim" || MaleRaceName ==  "Nest Ant Flier" || stringutil.find(MaleRaceName ,"OGrim") > -1
+
+Return True 
+
+else 
 	;if Schlong is big
 	If (SchlongFaction)
 		Return mainMaleActor.GetFactionRank(SchlongFaction) >= HugePPSchlongSize
@@ -1461,11 +1042,17 @@ Bool Function IshugePP()
 		;miscutil.PrintConsole ("DEBUG : current TNG_L : " + tngl)
 		;miscutil.PrintConsole ("DEBUG : current isBig : " + isBig)
 		Return isBig
-	EndIf	
+	EndIf
 	
 	Return false
 endif
 EndFunction
+
+
+Bool Function IsLeadIN()
+	return stringutil.find(Labelsconcat ,"1F") == -1 && stringutil.find(Labelsconcat ,"1S") == -1 && stringutil.find(Labelsconcat ,"BST") == -1
+endfunction 
+
 
 Bool Function Ishumanoidrace()
 
@@ -1477,1436 +1064,681 @@ Return True
 else 
 Return False
 endif
-Return False
 EndFunction
 
 Bool Function FemaleIsVictim()
-return SexLab.IsVictim(sceneID, mainFemaleActor) && !MainFemaleisSuccubus() && !ASLisBroken() && EnableVictimScenario == 1
+return SexLab.IsVictim(sceneID, mainFemaleActor) && !ASLisBroken() && EnableVictimScenario == 1
 EndFunction
 
 Bool Function MaleIsVictim()
 return SexLab.IsVictim(sceneID, mainMaleActor) && EnableVictimScenario == 1
 EndFunction
 
-bool function isDP()
-;check if its double penetration
 
-if stagelabel == "DP" || stagelabel == "TP"
-return true
-
-else
-
-return CurrentPenetrationLvl() >= 2 && currentAnimation.HasTag("Vaginal") && currentAnimation.HasTag("Anal") && (currentAnimation.HasTag("MMF") || currentAnimation.HasTag("FMM") || currentAnimation.HasTag("FMMM")|| currentAnimation.HasTag("MMMF") || currentAnimation.HasTag("FMMMM")|| currentAnimation.HasTag("MMMMF"))
-endif
-EndFunction
-
-Function MakeOrgasmFace()
-if usehentaiexpressionng == 1
-	return
-endif
-Race FemaleActorRace = mainFemaleActor.GetRace()
-String FemaleRaceName = FemaleActorRace.GetName()
-int blink = 0
-int browin = 0
-int browup = 0
-
-	if FemaleRaceName =="Elin" || FemaleRaceName =="Erin"
-
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 11, vlookup) ;look up
-		blink = Utility.Randomint(vblink*80/100, vblink)
-		browin = Utility.Randomint(vbrowin*80/100, vbrowin)
-		browup = Utility.Randomint(vbrowup*80/100, vbrowup)
-
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-	
-		if EquippedTongue()
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah) ; big aah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Vohq) ; oh q
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Veee*30/100) ; eee
-		else
-			if normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*20/100, Vaah*50/100)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*90/100, Vohq)) ; ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*20/100, vbigaah*50/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ; oh
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,0) ; eh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Utility.Randomint(Veee*70/100, Veee)) ; eee
-			endif
-		
-		endif	
-	else ;vanilla race
-		blink = Utility.Randomint(vblink*80/100, vblink)
-		browin = Utility.Randomint(vbrowin*80/100, vbrowin)
-		browup = Utility.Randomint(vbrowup*80/100, vbrowup)
-			
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		if EquippedTongue()	
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,0); aah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah); big ah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Veh); eh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0) ; oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ;OhQ
-		else	
-			
-			if normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*90/100, vbigaah))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*20/100, Voh*50/100)) ; oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*90/100, Vohq)) ; ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,0)  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*90/100, Vaah)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*90/100, Vohq)) ; ohq
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*50/100, Vaah*60/100)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*50/100, vbigaah*60/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(0, Voh*40/100)) ; oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ; ohq
-			endif
-		endif	
-	endif
-	
-
-
-
-
-endfunction
-
-Function RunNPCUpdates()
-
-	Actor[] actorList = sexLabThreadController.Positions
-	Int actorCount = actorList.Length
-	Int actorIndex = 0
-	
-	
-	;Go through the list of all actors in the scene and get data on their gender and voices
-	;PC is always main female
-	While actorIndex < actorCount
-		
-		Actor actorInQuestion = actorList[actorIndex]
-			if actorInQuestion != mainFemaleActor
-				MfgConsoleFunc.ResetPhonemeModifier(actorInQuestion)
-				UpdateNPCExpression(actorInQuestion)
-			endif
-		actorIndex += 1
-	EndWhile
-
-EndFunction
-
-
-
-Function UpdateNPCExpression(Actor Char , bool Orgasming = false)
-;Simple set of NPC expressions
-
-if EnableNPCExpressions != 1 ||  gender >= 2
-return
-endif
-
-;if NPC is dead from sex
-if Char.GetActorValuePercentage("Health") <= 1
-	Char.SetExpressionOverride(4 ,100) ;surprised
-	MfgConsoleFunc.SetPhoneme(Char,11,100) ;oh
-	MfgConsoleFunc.SetModifier(mainFemaleActor, 11, 100) ;look up
-	return
-endif
-
-int intensitymodifier 
-
-	if ASLcurrentlyIntense
-		intensitymodifier = 2
-		else 
-		intensitymodifier = 1
-	endif
-
-		;open mouth modifier
-		if normalexpressionpath == 1
-			MfgConsoleFunc.SetPhoneme(Char,0,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;aah
-		elseif normalexpressionpath == 2
-			MfgConsoleFunc.SetPhoneme(Char,1,Utility.Randomint(15*intensitymodifier, 45*intensitymodifier)) ;big aah
-		elseif normalexpressionpath == 3
-			MfgConsoleFunc.SetPhoneme(Char,11,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;oh
-		endif
-		
-		;eee twist
-		if MaleIsVictim()
-			MfgConsoleFunc.SetPhoneme(Char,5,Utility.Randomint(20*intensitymodifier, 50*intensitymodifier)) ;eee
-		endif
-	if Orgasming
-		if MaleIsVictim()
-			Char.SetExpressionOverride(1,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;fear
-		else
-			Char.SetExpressionOverride(2 * Utility.Randomint(0,1) ,Utility.Randomint(35*intensitymodifier, 50*intensitymodifier)) ;anger or happy
-		endif
-	elseif	ASLIsinSpanking || femaleisvictim() 
-		Char.SetExpressionOverride(2 * Utility.Randomint(0,1) ,Utility.Randomint(35*intensitymodifier, 50*intensitymodifier)) ;anger or happy
-		MfgConsoleFunc.SetPhoneme(Char,5,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;eee
-	elseif MaleIsVictim()
-		if Utility.Randomint(1,2) == 1
-			Char.SetExpressionOverride(1,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;fear
-		else
-			Char.SetExpressionOverride(3,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;sad
-		endif
-	elseif ShouldGoOnTheAttack(currentAnimation)
-		Char.SetExpressionOverride(4 / Utility.Randomint(1,2) ,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;surprised or happy
-	else
-		Char.SetExpressionOverride(2 ,Utility.Randomint(25*intensitymodifier, 50*intensitymodifier)) ;happy
-	endif	
-	
-
-endfunction
-
-
-function UpdateNormalExpression(bool ForceChange = false)
-
-if UseHentaiExpressionNG == 1
-	return
-elseif EnableHentaiIVDTNormalExpressions != 1
-	return
-endif
-
-Race FemaleActorRace = mainFemaleActor.GetRace()
-String FemaleRaceName = FemaleActorRace.GetName()
-int blink = 0
-int browin = 0
-int browup = 0
-int squint = 0
-int surprise = 0
-
-
-if IsUnconcious()
-	MfgConsoleFunc.SetModifier(mainFemaleActor, 0, 100) ;left blink
-	MfgConsoleFunc.SetModifier(mainFemaleActor, 1, 100) ;right blink
-	MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(0, Vaah*50/100)) ; aah
-	if ( stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" || stagelabel == "TP" ) ;Involve oral		
-			if FemaleRaceName =="Elin"  || FemaleRaceName =="Erin"
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Voh) ; oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,vaah)  ; aah
-			else
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0); oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,0) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah)  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ; ohq
-			endif
-	endif
-elseif !EquippedTongue() && StorageUtil.GetIntValue(None, "ASLOrgasm") == 0 && 	(sexLabThreadController.TotalTime - timeOfLastNormalExpressionUpdate >= 3 || ForceChange == true) && PauseExpressionUpdate == false
-
-;eyes modifier for both elin and vanilla
-	if ASLIsBroken()
-
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 11, Vlookup) ;look up
-	elseif !ASLIsBroken()	
-		if currentAnimation.hastag("Cowgirl") && CurrentPenetrationLvl() > 1
-
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 8, vlookdown) ;look down
-		elseif  (currentAnimation.HasTag("Doggy") || currentAnimation.HasTag("Doggystyle") || currentAnimation.HasTag("Doggy Style")) && CurrentPenetrationLvl() > 1 && !FemaleisGiving()
-			if NormalExpressionLookleftorRight == 1
-				MfgConsoleFunc.SetModifier(mainFemaleActor, 9, vlookleftright) ;look left 
-			elseif NormalExpressionLookleftorRight == 2
-				MfgConsoleFunc.SetModifier(mainFemaleActor, 10, vlookleftright) ; look right	
-			endif
-	endif
-
-	endif
-
-	if FemaleRaceName =="Elin"  || FemaleRaceName =="Erin"
-	 
-		if stagelabel == "EN"
-			blink = Utility.Randomint(vblink*60/100, vblink)	
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,vaah*50/100)  ; aah
-			
-			if Previousstagelabel == "FB" || Previousstagelabel == "SB"
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,voh); oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Vaah); aah
-		else
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,vaah*50/100)  ; aah
-		endif
-			
-			
-		elseif ASLIsBroken()
-		blink = Utility.Randomint(vblink*40/100, vblink)
-		browin = Utility.Randomint(vbrowin*70/100, vbrowin)
-		browup = Utility.Randomint(Vbrowup*70/100, Vbrowup)
-		surprise =  Utility.Randomint(Vmaxexpressionstrength*70/100, Vmaxexpressionstrength)
-		
-	;Eyes Modifier
-
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R	
-	
-	;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" || stagelabel == "TP";Involve oral		
-			surprise =  Utility.Randomint(Vmaxexpressionstrength*70/100, Vmaxexpressionstrength)
-			
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Voh) ; oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,vaah)  ; aah
-
-	;No Oral Stage Phoneme	
-
-		else
-		
-			if normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*70/100, Vaah)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*10/100, Vohq*50/100)) ; ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*20/100, vbigaah*50/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(voh*60/100, Voh)) ; oh
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Utility.Randomint(Veh*50/100, Veh)) ; eh
-
-			endif
-
-
-		endif
-			
-
-		elseif ASLcurrentlyintense 
-
-		blink = Utility.Randomint(0, vblink)
-		browin = Utility.Randomint(Vbrowin*70/100, Vbrowin)
-		browup = Utility.Randomint(vbrowup*70/100, vbrowup)
-	; eyes modifier
-
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		
-		if normalexpressionpath >= 2
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink			
-		else
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, 0) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, 0) ;right blink	
-		endif
-		
-		
-		;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" ;Involve oral		
-			surprise =  Utility.Randomint(Vmaxexpressionstrength*70/100, Vmaxexpressionstrength)
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,voh); oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Vaah); aah
-			
-		;No Oral Stage Phoneme	
-		else
-			if ishugepp()
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Utility.Randomint(Veee*50/100, Veee)) ; eee
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*50/100, Vohq)) ; ohq
-			elseif normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*70/100, Vaah)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*10/100, Vohq*50/100)) ; ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*20/100, vbigaah*50/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(voh*60/100, Voh)) ; oh
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Utility.Randomint(Veh*50/100, Veh)) ; eh
-
-			endif
-
-		endif
-		else
-	;non intense stage
-		blink = Utility.Randomint(0, vblink*40/100)
-		browin = Utility.Randomint(0, vbrowin*30/100)
-		browup = Utility.Randomint(0, vbrowup*30/100)
-		squint =  Utility.Randomint(Vsquint*40/100, vsquint)
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-
-		
-		if !ShouldGoOnTheAttack(currentAnimation)
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		endif
-		
-		;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" || stagelabel == "TP" ;Involve oral		
-			surprise =  Utility.Randomint(vmaxexpressionstrength*70/100, vmaxexpressionstrength)
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Voh); oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Voh); aah
-
-		;No Oral Stage Phoneme	
-		else
-			if normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*20/100, Vaah*50/100)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*00/100, Vohq*20/100)) ; ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*10/100, vbigaah*30/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(voh*20/100, Voh*60/100)) ; oh
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Utility.Randomint(Veh*20/100, Veh*60/100)) ; eh
-
-			endif
-
-		endif
-		
-		
-	endif
-
-		if stagelabel == "EN"
-		blink = Utility.Randomint(vblink*60/100, vblink)
-	
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		endif
-	
-		if ASLIsBroken()
-		mainFemaleActor.SetExpressionOverride(4,vmaxexpressionstrength)
-		elseIF	ASLIsinSpanking
-			if femaleisvictim()
-				mainFemaleActor.SetExpressionOverride(6,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			else
-				mainFemaleActor.SetExpressionOverride(4,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			endif
-		elseif IsaggressivehugePP()
-			if normalexpressionpath <=2
-				mainFemaleActor.SetExpressionOverride(4,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-			else
-				mainFemaleActor.SetExpressionOverride(3,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			endif
-		
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 11, Utility.Randomint(Vlookup*70/100, Vlookup)) ;look up
-		elseif MainFemaleisSuccubus()
-
-		mainFemaleActor.SetExpressionOverride(2,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-
-		elseif femaleisvictim() 
-			if normalexpressionpath == 1  && !ASLcurrentlyIntense
-				;disgust when victim
-				mainFemaleActor.SetExpressionOverride(6,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			elseif normalexpressionpath == 2
-				;sad when victim
-				mainFemaleActor.SetExpressionOverride(3,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			else
-				; fear when victim
-				mainFemaleActor.SetExpressionOverride(1,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			endif
-		
-		mainFemaleActor.SetExpressionOverride(3,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-
-		elseif ShouldGoOnTheAttack(currentAnimation)
-		;happy while attacking 
-		mainFemaleActor.SetExpressionOverride(2,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Utility.Randomint(0, Veee)) ; eee
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(0, Vohq)) ; ohq
-		else
-		;happy or surprised for consensual
-			if normalexpressionpath == 1 
-				mainFemaleActor.SetExpressionOverride(2,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			elseif normalexpressionpath == 2
-				mainFemaleActor.SetExpressionOverride(4,Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			else
-				mainFemaleActor.SetExpressionOverride(4/Utility.Randomint(1, 2),Utility.Randomint(vmaxexpressionstrength*50/100, vmaxexpressionstrength))
-			endif
-	endif
-
-else ;non elin human race
-	;broken expression
-	if stagelabel == "EN"
-		
-		blink = Utility.Randomint(vblink*60/100, Vblink)
-	
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		if Previousstagelabel == "FB" || Previousstagelabel == "SB"
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah)  ; bigaah
-		else
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,vaah*50/100)  ; aah
-		endif
-	elseif ASLIsBroken();
-		blink = Utility.Randomint(vblink*40/100, vblink*80/100)
-		browin = Utility.Randomint(vbrowin*70/100, vbrowin)
-		browup = Utility.Randomint(Vbrowup*70/100, Vbrowup)
-		surprise =  Utility.Randomint(vmaxexpressionstrength*70/100, vmaxexpressionstrength)
-	
-	;Eyes Modifier
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R	
-	
-	;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" ;Involve oral		
-			surprise =  Utility.Randomint(vmaxexpressionstrength*70/100, vmaxexpressionstrength)
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0); oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,0) ; aah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah)  ; bigaah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ; ohq
-	;No Oral Stage Phoneme	
-		else
-		
-			if normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*20/100, vbigaah*60/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*70/100, Voh)) ; oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*60/100, Vohq)) ; ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*20/100, vbigaah*60/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*60/100, Vaah)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*60/100, Vohq)) ; ohq
-		;	MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,0)  ; bigaah
-			;MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0); oh
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*0/100, Vaah*40/100)) ; aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*0/100, vbigaah*50/100))  ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*0/100, Voh*40/100)) ; oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*0/100, Vohq*40/100)) ; ohq
-			endif
-
-
-		endif
-	elseif ASLcurrentlyintense 
-
-		blink = Utility.Randomint(0, vblink)
-		browin = Utility.Randomint(vbrowin*70/100, vbrowin)
-		browup = Utility.Randomint(vbrowup*70/100, vbrowup)
-	; eyes modifier
-
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		
-		if normalexpressionpath >= 2
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink			
-		else
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, 0) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, 0) ;right blink	
-		endif
-		;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" || stagelabel == "TP" ;Involve oral		
-			;surprise =  Utility.Randomint(vmaxexpressionstrength*70/100, vmaxexpressionstrength)
-
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0); oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,0) ; aah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah)  ; bigaah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ; ohq
-
-		;No Oral Stage Phoneme	
-		else
-			if normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,0); big aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*20/100, voh * 70/100)); oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(vohq*60/100, Vohq)); ohq
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*40/100, Vaah*80/100)); ah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*20/100, voh*60/100)); oh
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(0, Vaah*50/100)); ah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(0, voh*50/100)); oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(0, vbigaah*50/100)) ; bigaah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(0, Vohq)); ohq
-			endif
-		endif
-	else
-	;non intense stage
-		blink = Utility.Randomint(0, Vblink*40/100)
-			
-		
-		;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" || stagelabel == "TP";Involve oral		
-
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0); oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,0) ; aah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah)  ; bigaah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ; ohq
-
-		;No Oral Stage Phoneme	
-		else
-			
-			if	ShouldGoOnTheAttack(currentAnimation)
-				if normalexpressionpath == 1
-					MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*30/100, voh*60/100)); oh
-				elseif	normalexpressionpath == 2
-					MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*0/100, vbigaah*40/100))  ; bigaah
-				elseif	normalexpressionpath == 3	
-					MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*0/100, Vaah*35/100)); ah
-				endif
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Utility.Randomint(0, Veee*50/100)) ; eee
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Utility.Randomint(0,Veh*50/100)); eh
-			elseif normalexpressionpath == 1
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*30/100, voh*60/100)); oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Utility.Randomint(Vohq*40/100, Vohq)); ohq
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*0/100, vbigaah*40/100))  ; bigaah
-			elseif normalexpressionpath == 2
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(vaah*30/100, vaah*80/100)) ;aah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*20/100, vbigaah*60/100))  ; bigaah
-			elseif normalexpressionpath == 3
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(Vaah*0/100, Vaah*35/100)); ah
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,Utility.Randomint(voh*0/100, voh*35/100)); oh
-				MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,Utility.Randomint(vbigaah*0/100, vbigaah*45/100)) ; bigaah
-			endif
-		endif
-		
-		
-	endif
-
-
-	
-	IF	ASLIsinSpanking
-		mainFemaleActor.SetExpressionOverride(6,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-		
-	elseif IsaggressivehugePP()
-		if normalexpressionpath <=2
-			mainFemaleActor.SetExpressionOverride(4,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-		else
-			mainFemaleActor.SetExpressionOverride(1,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-		endif
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Utility.Randomint(Veee*60/100, Veee)) ; eee
-	elseif MainFemaleisSuccubus()
-		mainFemaleActor.SetExpressionOverride(2,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-	elseif femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < 0.5
-		mainFemaleActor.SetExpressionOverride(1,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-	elseif femaleisvictim()
-		mainFemaleActor.SetExpressionOverride(3,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-	elseif ShouldGoOnTheAttack(currentAnimation)
-		mainFemaleActor.SetExpressionOverride(2,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-			
-	else
-		mainFemaleActor.SetExpressionOverride(Utility.Randomint(1, 5),Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-	endif
-
-
-
-endif
-
-	timeOfLastNormalExpressionUpdate = sexLabThreadController.TotalTime
-endif	
-
-
-endfunction
-
-
-;variety ahegao expressions
-Function UpdateAhegaoExpression(Bool ForceChange = false)
-
-if UseHentaiExpressionNG == 1
-	return
-elseif EnableHentaiIVDTAhegaoExpressions != 1
-	return
-endif
-
-Race FemaleActorRace = mainFemaleActor.GetRace()
-String FemaleRaceName = FemaleActorRace.GetName()
-int blink = 0
-int browin = 0
-int browup = 0
-int squint = 0
-
-
-if  EquippedTongue() && StorageUtil.GetIntValue(None, "ASLOrgasm") == 0 && 	(sexLabThreadController.TotalTime - timeOfLastAhegaoExpressionUpdate >= 3 || ForceChange == true) && PauseExpressionUpdate == false
-;if Ahegao is trigged by SLS or tongue
-
-if !ASLIsBroken()	
-	if currentAnimation.hastag("Cowgirl") && CurrentPenetrationLvl() > 1
-
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 8, Vlookdown) ;look down
-	elseif  (currentAnimation.HasTag("Doggy") || currentAnimation.HasTag("Doggystyle") || currentAnimation.HasTag("Doggy Style")) && CurrentPenetrationLvl() > 1 && !FemaleisGiving()
-		if NormalExpressionLookleftorRight == 1
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 9, vlookleftright) ;look left 
-		elseif NormalExpressionLookleftorRight == 2  ;look right 
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 10, vlookleftright)
-		
-		endif
-	endif
-
-endif
-int surprise = 0
-;if its elin race
-if FemaleRaceName =="Elin" || FemaleRaceName =="Erin"
-
-
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah) ; big aah
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Vohq) ; oh q
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Veee*30/100) ; eee
-	if stagelabel == "EN"
-		blink = Utility.Randomint(vblink*60/100, Vblink)
-	
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-	
-	elseif ASLIsBroken();currentlyintense 
-		blink = Utility.Randomint(vblink*20/100, Vblink)
-		browin = Utility.Randomint(vbrowin*40/100, vbrowin)
-		browup = Utility.Randomint(vbrowup*40/100, vbrowup)
-		surprise =  Utility.Randomint(vmaxexpressionstrength*70/100, vmaxexpressionstrength)
-		
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 11, Vlookup) ;look up
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		
-
-		
-
-
-	;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" ;Involve oral
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,voh)  ; oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Vaah) ; aah
-
-		endif
-		
-		
-	else
-		blink = Utility.Randomint(0, vblink*80/100)
-		browin = Utility.Randomint(vbrowin*20/100, vbrowin*60/100)
-		browup = Utility.Randomint(vbrowup*20/100, vbrowup *60/100)
-		surprise =  0
-		
-		if normalexpressionpath >= 2
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink			
-		else
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 0, 0) ;left blink
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 1, 0) ;right blink	
-		endif
-		
-		if !ShouldGoOnTheAttack(currentAnimation)
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 5, browin) ;brow in R
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-			MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		endif
-		
-		
-			;Oral Stage Phoneme
-		if  stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" ;Involve oral	
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,voh) ; oh
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,vaah); aah
-			
-		endif
-	endif
-	
-
-
-		
-	if ASLisBroken()
-		mainFemaleActor.SetExpressionOverride(4,surprise)
-		
-	elseif IsaggressivehugePP()
-		
-			if normalexpressionpath <=2
-				mainFemaleActor.SetExpressionOverride(4,Utility.Randomint(Vmaxexpressionstrength*50/100, Vmaxexpressionstrength))
-			else
-				mainFemaleActor.SetExpressionOverride(Utility.Randomint(1, 3),Vmaxexpressionstrength)
-			endif
-	elseif MainFemaleisSuccubus()
-		mainFemaleActor.SetExpressionOverride(2,Vmaxexpressionstrength)
-
-	elseif femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < 0.5	
-		mainFemaleActor.SetExpressionOverride(1,Vmaxexpressionstrength)
-
-	elseif femaleisvictim()
-		mainFemaleActor.SetExpressionOverride(3,Vmaxexpressionstrength)
-
-	elseif ShouldGoOnTheAttack(currentAnimation)
-		mainFemaleActor.SetExpressionOverride(2,Vmaxexpressionstrength)
-
-	else
-		mainFemaleActor.SetExpressionOverride(Utility.Randomint(1, 5),Vmaxexpressionstrength)
-
-	endif
-else
-
-	;non Elin human race
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,0); aah
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah); big ah
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Veh); eh
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,11,0) ; oh
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,0) ;OhQ
-	
-	if stagelabel == "EN"
-		blink = Utility.Randomint(vblink*60/100, Vblink)
-	
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0, blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-	elseif ASLisBroken()
-	
-		blink =  Utility.Randomint(vblink*40/100, vblink)
-		browin = Utility.Randomint(Vbrowin*70/100, Vbrowin)
-		browup = Utility.Randomint(vbrowup*70/100, vbrowup)
-		squint =  Utility.Randomint(0, Vsquint*40/100)
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 11, Vlookup) ;look up
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0,blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5,browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 12, squint) ;left squint
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 13, squint) ;right squint
-		; intense
-	elseif ASLcurrentlyintense 
-		blink = Utility.Randomint(vblink*20/100, vblink*60/100)
-		browin = Utility.Randomint(Vbrowin*70/100, Vbrowin)
-		browup = Utility.Randomint(vbrowup*70/100, vbrowup)
-		squint =  Utility.Randomint(Vsquint*60/100, Vsquint*80/100)
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0,blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5,browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 12, squint) ;left squint
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 13, squint) ;right squint
-	; non intense
-	else
-		blink = Utility.Randomint(0, VBlink*40/100)
-		browin = Utility.Randomint(0, browin*40/100)
-		browup = Utility.Randomint(0, browup*40/100)
-		squint =  Utility.Randomint(Vsquint*40/100, Vsquint)
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 11, 0) ;look up
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 0,blink) ;left blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 1, blink) ;right blink
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 4, browin) ;brow in L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 5,browin) ;brow in R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 6, browup) ;Brow Up L
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 7, browup) ;Brow Up R
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 12, squint) ;left squint
-		MfgConsoleFunc.SetModifier(mainFemaleActor, 13, squint) ;right squint
-		
-	endif
-		
-	if IshugePP()
-		mainFemaleActor.SetExpressionOverride(Utility.Randomint(1, 3),Vmaxexpressionstrength)
-
-	elseif MainFemaleisSuccubus()
-		mainFemaleActor.SetExpressionOverride(2,Vmaxexpressionstrength)
-
-	elseif femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < 0.5
-		mainFemaleActor.SetExpressionOverride(1,Vmaxexpressionstrength)
-
-	elseif femaleisvictim()
-		mainFemaleActor.SetExpressionOverride(3,Vmaxexpressionstrength)
-
-	elseif ShouldGoOnTheAttack(currentAnimation)
-		mainFemaleActor.SetExpressionOverride(2,Vmaxexpressionstrength)
-		MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Veee * 60/100) ; eee
-	else
-		mainFemaleActor.SetExpressionOverride(Utility.Randomint(1, 5),Vmaxexpressionstrength)
-	endif
-	
-endif	
-
-timeOfLastAhegaoExpressionUpdate = sexLabThreadController.TotalTime
-	
-endif	
-endfunction
-
-;new functions for using Anim stage labels
-;things to DO
-;BLOW JOB
-
-
-	
 Function ASLUPDATE()
 ;check if thread is still running for PC
 bool StageTransitioning = false
 
 if SexLab.FindPlayerController() == -1
+
 ASLEndScene()
 else
 	
 	;initialize certain variables if different animation or stage
 	if currentAnimation != SexLabThreadController.Animation || currentStage != SexLabThreadController.Stage
-			currentStage = SexLabThreadController.Stage
-			currentAnimation = SexLabThreadController.Animation	
-			timeOfLastStageStart = sexLabThreadController.TotalTime
-			
-			if ishugepp()
-				StorageUtil.SetIntValue(None, "HentaiHugePP", 1)
-			else
-				StorageUtil.SetIntValue(None, "HentaiHugePP", 0)
-			endif
-			
-			Previousstagelabel = stagelabel
-			stagelabel = animstagelabels.getlabel(CurrentAnimation , currentstage)
-		;miscutil.PrintConsole ("DEBUG : Different Stage or Animation. Setting Stage Variables")
+		currentStage = SexLabThreadController.Stage
+		currentAnimation = SexLabThreadController.Animation	
+		timeOfLastStageStart = sexLabThreadController.TotalTime
+		
+		if ishugepp()
+			StorageUtil.SetIntValue(None, "HentaiHugePP", 1)
+		else
+			StorageUtil.SetIntValue(None, "HentaiHugePP", 0)
+		endif
+		printdebug("ishugepp Scenario : " + ishugepp()) 
+		UpdateLabels(CurrentAnimation , currentstage , PCPosition) ;update only for PC
+		PrimaryStageLabel = GetPrimaryLabel()		
+
 		;multiply stage timers for certain NPC traits
 		float TimerMultiplier = 1
 		;longer timers for Aggressive NPC
 	if MainMaleCanControl()
-		if GetMainNPCTrait() == "Aggressive+" && (stagelabel == "FA" ||  stagelabel == "FV" || (stagelabel == "DP" && Currentstage > 1) || (stagelabel == "SR" && Currentstage > 1) || (stagelabel == "TP" && Currentstage > 1))
+	
+		if GetMainNPCTrait() == "Aggressive+" && IsgettingPenetrated()
 			TimerMultiplier = 2
-		elseif GetMainNPCTrait() == "Aggressive+" && stagelabel == "LI"
+		elseif GetMainNPCTrait() == "Aggressive+" && !IsgettingPenetrated()
 			TimerMultiplier = 0.5
-		elseif GetMainNPCTrait() =="Rape Loving+" && femaleisvictim() && CurrentPenetrationLvl() >= 2 && stagelabel != "EN"
+		elseif GetMainNPCTrait() == "Impatient+" && !IsgettingPenetrated()
+			TimerMultiplier = 0.5
+		elseif GetMainNPCTrait() =="Rape Loving+" && femaleisvictim() && IsgettingPenetrated()
 			TimerMultiplier = 1.5
-		elseif GetMainNPCTrait() =="Pussy Loving+" && CurrentPenetrationLvl() == 2 && stagelabel != "EN"
+		elseif GetMainNPCTrait() =="Pussy Loving+" && IsGettingVaginallyPenetrated()
 			TimerMultiplier = 2
-		elseif GetMainNPCTrait() =="Anal Loving+" && CurrentPenetrationLvl() == 3 && stagelabel != "EN" 
+		elseif GetMainNPCTrait() =="Anal Loving+"  && IsGettingAnallyPenetrated()
 			TimerMultiplier = 2
-		elseif GetMainNPCTrait() =="+The Penetrator" && CurrentPenetrationLvl() >= 2 && stagelabel != "EN"
+		elseif GetMainNPCTrait() =="+The Penetrator" && IsgettingPenetrated()
 			TimerMultiplier = 1.5
-		elseif GetMainNPCTrait() =="Oral Loving+" && CurrentPenetrationLvl() >= 1 && (currentAnimation.hastag("aggressive") ||currentAnimation.hastag("forced") || currentAnimation.hastag("rape")) && stagelabel != "EN"
+		elseif GetMainNPCTrait() =="Oral Loving+" && IsSuckingoffOther()
 			TimerMultiplier = 2
-		elseif GetMainNPCTrait() =="Sexually Frustrated+"	&& CurrentPenetrationLvl() >= 2
+		elseif GetMainNPCTrait() =="Sexually Frustrated+" && IsgettingPenetrated()
 			TimerMultiplier = 1.5 
-		elseif GetMainNPCTrait() =="+The Nut Gobbler" && CurrentPenetrationLvl() == 1
+		elseif GetMainNPCTrait() =="+The Nut Gobbler" && IsSuckingoffOther()
 			TimerMultiplier = 2 
-		elseif GetMainNPCTrait() =="+Cowgirl" && currentAnimation.hastag("cowgirl") && CurrentPenetrationLvl() >= 2
+		elseif GetMainNPCTrait() =="+Cowgirl" && IsCowgirl()
 			TimerMultiplier = 2
-		elseif GetMainNPCTrait() =="+In Heat"&& currentAnimation.hastag("cowgirl") && CurrentPenetrationLvl() >= 2
+		elseif GetMainNPCTrait() =="+In Heat" && IsgettingPenetrated()
 			TimerMultiplier = 1.3
 		endif
 	endif
-			;miscutil.printconsole("StageLabel : " + stagelabel +"TimerMultiplier :" + TimerMultiplier )
-		if actorWithSceneTrackerSpell == mainFemaleActor
-			ASLStagetimetoadvance = sexLabThreadController.TotalTime  + (sexLabThreadController.gettimer() * TimerMultiplier)
-			SetActorScale()
-			StageTransitioning = true
-			
+		printdebug("Stage Timer : " + GetPrimaryLabel() +" : "+ GetTimer())
+		printdebug(" Main NPC Trait From Hentairim traits - " + GetMainNPCTrait() + " . " + " Stage time multiplier = " + TimerMultiplier)
+
+		ASLStagetimetoadvance = sexLabThreadController.TotalTime  + (GetTimer() * TimerMultiplier)
 		
-				if stagelabel == "None" 
-					if currentstage ==  CurrentAnimation.stagecount
-					stagelabel = "EN"
-					else
-					stagelabel = "LI"
-					endif
-				endif
-			;set intensity
-			ASLpreviouslyintense = ASLcurrentlyIntense
+		printdebug("Stage Time to Advance (Seconds): " + GetTimer() * TimerMultiplier )
+		
+		SetActorScale()
+		StageTransitioning = true
 
-			if stagelabel == "FA" ||  stagelabel == "FV" || (stagelabel == "DP" && Currentstage > 1) || (stagelabel == "SR" && Currentstage > 1) || (stagelabel == "TP" && Currentstage > 1) || stagelabel == "FB"
-				ASLCurrentlyintense = true
-			else
-				ASLCurrentlyintense = false
-			endif
-		elseif actorWithSceneTrackerSpell == mainMaleActor
-			
-			stagelabel = animstagelabels.getlabel(CurrentAnimation , currentstage)
-			
-			if stagelabel == "None" 
-				if currentstage ==  CurrentAnimation.stagecount
-					stagelabel = "EN"
-				else
-					stagelabel = "LI"
-				endif
-			endif
-			;set intensity
-			ASLpreviouslyintense = ASLcurrentlyIntense
+		;set intensity
+		ASLpreviouslyintense = ASLcurrentlyIntense
 
-			if stagelabel == "FA" ||  stagelabel == "FV" || (stagelabel == "DP" && Currentstage > 1) || (stagelabel == "SR" && Currentstage > 1) || (stagelabel == "TP" && Currentstage > 1) || stagelabel == "FB"
-				ASLCurrentlyintense = true
-			else
-				ASLCurrentlyintense = false
-			endif
-			
-			
+		if Isintense() 
+			ASLCurrentlyintense = true
+		else
+			ASLCurrentlyintense = false
 		endif
+		printdebug("Stage is intense? : " + ASLCurrentlyintense)
+	endif
 
-	endif
-	
-	;set intense as false if weak NPC
-	if GetMainNPCTrait() != "Weak+"
-		ASLCurrentlyintense = false
-	endif
-	
-	mainFemaleEnjoyment = GetActorEnjoyment(mainFemaleActor)
-	mainMaleEnjoyment = GetActorEnjoyment(mainMaleActor)
-	
 	
 
 	
 ;calculate time needed to advance stage
-	;miscutil.PrintConsole ("DEBUG : current anim stage : " + currentstage)
-	;miscutil.PrintConsole ("DEBUG : ASL stage is : " + stagelabel)
+	if StageTransitioning && actorWithSceneTrackerSpell == mainFemaleActor
 
-
-if StageTransitioning && actorWithSceneTrackerSpell == mainFemaleActor
-	;miscutil.PrintConsole ("DEBUG : Stage Transitioning")
-	ASLPlayStageTransition()
-endif
-;miscutil.PrintConsole ("DEBUG : ASL Updating Step 3")
+		printdebug("Stage Transitioning")
+		ASLPlayStageTransition()
+	endif
 
 endif
 endfunction
 
-Function ASLPlayLI() ;Leadin
+Function PlayLeadIn() ;no relevant tags
+printdebug("Play Lead In")
 
-if ASLIsBroken()
-ASLPlayBrokenVoice()
-	;miscutil.PrintConsole ("IVDT is playing animstagelabelPlayLI")
-elseif currentstage > 1 && femaleCloseToOrgasm()		
-	ASLPlayFemaleOrgasmHype()
-else
+if currentstage < 3 && !femaleisvictim() ;greets only on first 2 stages	
 
-if currentstage < 3 ;greets only on first 2 LI stages	
-		;unamused lines if is victim
-	if AllowMaleVoice()
-		ASLPlayMaleComments()
-	endif
 	if  ShouldMakeRomanticComment()
 		MakeRomanticCommentIfRightTime()
-	;If FemaleIsVictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentUnamused && !femaleCloseToOrgasm() 
-		;PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0)
-	;greet huge PP
-	elseif ishugepp() && shouldgoontheattack(currentAnimation) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLIStage
-		ChangeHentaiExpression("Greeting")
-		PlaySound(mainFemaleVoice.GreetLoadedFamiliar, mainFemaleActor, requiredChemistry = 1)
+	elseif ishugepp() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLeadinStage
+		PlaySound(mainFemaleVoice.GreetLoadedFamiliar, mainFemaleActor, requiredChemistry = 1, debugtext = "GreetLoadedFamiliar")
 	;make greeting at 7% chance at 1st stage
-	elseif !femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLIStage && Currentstage == 1
+	elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLeadinStage && Currentstage == 1
 		ASLMakeGreetingToMalePartner()
 	endif
 endif	
 	
 	
-	if Previousstagelabel == "EN" ; for some reason if the EN stage was extended into LI	
-		ChangeHentaiExpression("Panting")
-		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0)
-	elseif Utility.RandomFloat(0.0, 1.0) < 0.5 && mainFemaleEnjoyment >= 30 && Currentstage > 2
-		ChangeHentaiExpression("Grunt")
-		PlaySound(mainFemaleVoice.ForeplayIntense, mainFemaleActor, requiredChemistry = 0)
-	elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLIStage * 2 && mainFemaleEnjoyment >= 50 && !FemaleIsVictim()
-		ChangeHentaiExpression("WantMore")
-		PlaySound(mainFemaleVoice.ReadyToGetGoing, mainFemaleActor, requiredChemistry = 0)	
+	if PrevEndingLabel == "ENO" || PrevEndingLabel == "ENI"; for some reason if the EN stage was extended into LI	
+		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 , debugtext = "AfterOrgasmExclamations")
+	elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLeadinStage * 2 && mainFemaleEnjoyment >= 50 && !FemaleIsVictim()
+		PlaySound(mainFemaleVoice.ReadyToGetGoing, mainFemaleActor, requiredChemistry = 0 , debugtext = "ReadyToGetGoing")	
 	else
 		
 		PlayBreathyorforeplaysound()
 
 	endif
-endif
-endfunction
-
-Function ASLPlaySBFB() ;blowjob
-
-if FemaleisGiving()
-	MfgConsoleFunc.SetPhoneme(mainMaleActor,1,100) ; big aah
-endif
-
-if	mainFemaleActor.IsEquipped(Tongue)  
-ASLRemoveTongue()
-endif
-	;miscutil.PrintConsole ("IVDT is playing ASLPlaySBFB")
-
-If femaleCloseToOrgasm() && (stagelabel == "SR" || stagelabel == "TP") ;When female close to orgasm
-	ASLPlayFemaleOrgasmHype()	
-else	
-	if !femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonLIStage && Currentstage == 1 && stagelabel != "TP" && stagelabel != "SR"
-		ASLMakeGreetingToMalePartner()
-	endif
-
-if VoiceVariation == "A"
-	if ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
-		ASLPlayMaleClosetoOrgasmComments()
-	elseif ActorsInPlay[0] != mainFemaleActor
-		PlayBreathyorforeplaysound()
-	elseif !femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononBlowjobStage && ShouldPlayMaleOrgasmHype()
-		PossiblyAskForCumInSpecificLocation()
-	elseif Utility.RandomFloat(0.0, 1.0) <= ChanceToCommentononBlowjobStage && (stagelabel == "FB" || stagelabel == "SR" || stagelabel == "TP")
-		ChangeHentaiExpression("intensepenetrationcomments")
-		PlaySound(mainFemaleVoice.AppreciatePartner, mainFemaleActor, requiredChemistry = 0)
-	elseif Utility.RandomFloat(0.0, 1.0) <= ChanceToCommentononBlowjobStage && !femaleisvictim() && !ASLIsBroken() && !ASLcurrentlyIntense
-		ChangeHentaiExpression("penetrationcomments")
-		PlaySound(mainFemaleVoice.BlowjobRemarks, mainFemaleActor, requiredChemistry = 0)
-	elseif (stagelabel == "FB" || stagelabel == "SR" || stagelabel == "TP")
-		ChangeHentaiExpression("intensegrunt")
-		PlaySound(mainFemaleVoice.BlowjobActionIntense, mainFemaleActor, requiredChemistry = 0)
-	else
-		ChangeHentaiExpression("grunt")
-		PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0)
-	endif
-else	
-	if ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
-		ASLPlayMaleClosetoOrgasmComments()
-	elseif FemaleisGiving()
-		PlayBreathyorforeplaysound()
-	elseif !femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononBlowjobStage && ShouldPlayMaleOrgasmHype() 
-		PossiblyAskForCumInSpecificLocation()
-	elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononBlowjobStage && currentstage > 1 && !femaleisvictim() && !ASLIsBroken()
-		ChangeHentaiExpression("penetrationcomments")
-		PlaySound(mainFemaleVoice.BlowjobRemarks, mainFemaleActor, requiredChemistry = 0)
-	elseif stagelabel == "FB" || stagelabel == "SR" || stagelabel == "TP"
-		ChangeHentaiExpression("intensegrunt")
-		PlaySound(mainFemaleVoice.BlowjobActionIntense, mainFemaleActor, requiredChemistry = 0)
-	else
-		ChangeHentaiExpression("grunt")
-		PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0)
-	endif
-endif
-endif	
 
 endfunction
 
-Function ASLPlaySASV() ; play voices for SA SV
-	;miscutil.PrintConsole ("IVDT is playing ASLPlaySASV")
-;lactate throughout the scene if have hentai lactate mod
-if  GetMainNPCTrait() == "+The Milker" 
-	Lactate()
-endif 
-;add tongue immediately if is penetrator
-if GetMainNPCTrait() =="+The Penetrator" 
-	ASLAddTongue()
-endif
+Function PlayKissing()
+printdebug("Play Kissing")
 
-if shouldgoontheattack(currentAnimation) 	;go on the attack scenario
-	;miscutil.PrintConsole ("IVDT is playing ASLPlayGoOnTheAttack")
-	ASLPlayGoOnTheAttack()
-elseif ASLIsBroken()
-	ASLPlayBrokenVoice()
-elseif ishugePP()	
-	;miscutil.PrintConsole ("IVDT is playing ASLPlayHugePPPenetrationSound")
-	ASLPlayHugePPPenetrationSound()
+if  ShouldMakeRomanticComment()
+	MakeRomanticCommentIfRightTime()
+else		
+;dont say make any noise while kissing. let Enjoyment make the kissing sound
+if useblowjobsoundforkissing == 1
+	PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionSoft")
 else
-	;chance of unamused if victim
-	If femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentUnamused && !femaleCloseToOrgasm() && !MainFemaleisSuccubus()
-		ChangeHentaiExpression("unamused")
-		PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0)
-	EndIf
+	Utility.wait(3)
+endif
+;PlayBreathyorforeplaysound()
 
-	if AllowMaleVoice();chance of male commenting
-		ASLPlayMaleComments()	
+endif
+endfunction
+
+Function PlayCunnilingus()
+printdebug("Play Cunnilingus")
+
+if ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
+	ASLPlayMaleClosetoOrgasmComments()
+else
+	PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionSoft")
+endif
+endfunction
+
+Function PlayMaleComments()
+	
+	if (Primarystagelabel == "LDI" || IsGettingStimulated()) && !IsgettingPenetrated() && Currentstage < 3
+	
+		PlaySound(mainMaleVoice.Aroused, mainMaleActor, requiredChemistry = 0, soundPriority = 2 ) 		
+
+		if	ASLisBroken()
+			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "AfterOrgasmExclamations")	
+		else
+			PlaySound(mainFemaleVoice.Foreplaysoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "Foreplaysoft")
+		endif	
+
+	elseif ShouldPlayMaleOrgasmHype() 
+
+		
+		PlaySound(mainMaleVoice.AboutToCum, mainMaleActor, requiredChemistry = 0,  soundPriority = 2 , waitForCompletion = False )
+		;female background moaning
+		
+		if IsUnconcious()
+			return
+		elseif ASLisBroken()
+			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "AfterOrgasmExclamations")	
+		else
+			if ASLCurrentlyintense 
+
+				PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "NearOrgasmNoises")
+				else
+				PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1 , debugtext = "PenetrativeGrunts")
+			endif	
+		endif
+		
+	elseif MaleIsVictim() || IsFemdom()
+		;miscutil.PrintConsole ("Playing Male Comments male victim On the attack")
+		;male say something
+		PlaySound(mainMaleVoice.TeaseAggressivePartner, mainMaleActor, soundPriority = 2 , waitForCompletion = False )
+		;female background moaning
+		if IsUnconcious()
+			return
+		elseif ASLisBroken()
+			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "AfterOrgasmExclamations")	
+		else
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1 , debugtext = "PenetrativeGrunts")
+			
+		endif
+		
+		
+			
+	elseif  CurrentPenetrationLvl() >= 2 && ASLCurrentlyintense 
+		;miscutil.PrintConsole ("Playing Male Comments intense penetration")
+		
+		;male say something
+		if IsUnconcious()
+			return
+		elseif femaleisvictim()
+			PlaySound(mainMaleVoice.Aggressive, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False)
+		else
+			PlaySound(mainMaleVoice.StrugglingSubtle, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False)
+		endif
+		;female background moaning
+		
+		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "NearOrgasmNoises")
+	
+	elseif	CurrentPenetrationLvl() >= 2 && !ASLCurrentlyintense 
+		;miscutil.PrintConsole ("Playing Male Comments non Intense Penetration")
+				;female background moaning
+		PlaySound(mainMaleVoice.StrugglingEarly, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False , debugtext = "StrugglingEarly")
+
+		if IsUnconcious()
+			return
+		elseif ASLisBroken()
+			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "AfterOrgasmExclamations" )	
+		else
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1 , debugtext = "PenetrativeGrunts")
+			        
+		endif
+		
+		
+	endif		
+
+endfunction
+
+
+Function PlayBlowjob()
+
+	If femaleCloseToOrgasm() && IsgettingPenetrated() ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()	
+	else	
+
+		if VoiceVariation == "A"
+			if ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
+				ASLPlayMaleClosetoOrgasmComments()
+			elseif Utility.RandomFloat(0.0, 1.0) <= ChanceToCommentonBlowjobStage && ASLcurrentlyIntense
+				PlaySound(mainFemaleVoice.AppreciatePartner, mainFemaleActor, requiredChemistry = 0 , debugtext = "AppreciatePartner")
+			elseif Utility.RandomFloat(0.0, 1.0) <= ChanceToCommentonBlowjobStage && !femaleisvictim() && !ASLIsBroken() && !ASLcurrentlyIntense
+				PlaySound(mainFemaleVoice.BlowjobRemarks, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobRemarks")
+			elseif ASLcurrentlyIntense
+				PlaySound(mainFemaleVoice.BlowjobActionIntense, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionIntense")
+			else
+				PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionSoft")
+			endif
+		else	
+			if ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
+				ASLPlayMaleClosetoOrgasmComments()
+			elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonBlowjobStage && currentstage > 1 && !femaleisvictim() && !ASLIsBroken()
+				PlaySound(mainFemaleVoice.BlowjobRemarks, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobRemarks")
+			elseif ASLcurrentlyIntense
+				PlaySound(mainFemaleVoice.BlowjobActionIntense, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionIntense")
+			else
+				PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionSoft")
+			endif
+		endif
+
+	endif	
+
+endfunction
+
+Function PlayStimulatingOthers() 
+printdebug("Play Stimulating Others")
+
+If ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm  ;if male close or orgasm
+	ASLPlayMaleClosetoOrgasmComments()
+else
+	;after close to orgasm handling
+	if	Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/3 && !FemaleIsVictim()
+		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Amused")
+	else
+		PlayBreathyorforeplaysound()
+	EndIf
+			
+endif
+EndFunction
+
+
+Function PlayStimulatedHard() 
+printdebug("Play Stimulated Hard (Huge non Penile insertion)")
+
+
+if CommentedClosetoOrgasm
+	PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , debugtext = "SensitivePleasure")
+elseif femaleCloseToOrgasm() 
+	ASLPlayFemaleOrgasmHype()
+else
+	if Utility.RandomFloat(0.0, 1.0) < 0.8
+			PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , debugtext = "SensitivePleasure")
+	
+	else	
+		PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 3 , debugtext = "Oh")
+		Utility.Wait(Utility.RandomFloat(1.0, 2.0))
+		PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext = "AfterGape")
 	endif
-	; Normal scenario
-		if CommentedClosetoOrgasm
-			ChangeHentaiExpression("grunt")
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-		elseIf femaleCloseToOrgasm() ;When female close to orgasm
-			ASLPlayFemaleOrgasmHype()
-		elseif ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
-			ASLPlayMaleClosetoOrgasmComments()
-		elseIf  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage/2 && !femaleisvictim()
-			ChangeHentaiExpression("amused")
-			PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 3)
+endif
+
+EndFunction
+
+Function PlayGettingStimulated() 
+
+printdebug("Play Getting Stimulated")
+;------------------INTENSE-------------------
+if ASLCurrentlyintense
+	
+	if CommentedClosetoOrgasm
+		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+	elseIf femaleCloseToOrgasm()  ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()
+	else ;After Handling close to Orgasm
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	EndIf
+	
+;------------------ NOt INTENSE-------------------
+else	
+	if CommentedClosetoOrgasm
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	elseIf femaleCloseToOrgasm() ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()
+	else
+		;after handling close to orgasm
+		If femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentUnamused
+			PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Unamused")
+		else
+			PlayBreathyorforeplaysound()
+		EndIf
+	endif
+endif
+
+EndFunction
+
+Function PlayFuckingOthers() 
+printdebug("Play Fucking Others")
+
+if CommentedClosetoOrgasm
+	if ASLcurrentlyintense
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	else
+		PlayBreathyorforeplaysound()
+	endif
+elseIf femaleCloseToOrgasm() ;When female close to orgasm
+	ASLPlayFemaleOrgasmHype()
+elseIf ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm  ;if male close or orgasm
+	ASLPlayMaleClosetoOrgasmComments()
+else
+	;after close to orgasm handling
+	if	Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/3
+		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Amused")
+	else
+		if ASLcurrentlyintense
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+		else
+			PlayBreathyorforeplaysound()
+		endif
+	EndIf
+			
+endif
+
+EndFunction
+
+Function PlayBroken()
+printdebug("Play Broken")
+if CommentedClosetoOrgasm
+	PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+elseIf femaleCloseToOrgasm() ;When female close to orgasm
+	ASLPlayFemaleOrgasmHype()
+elseif  Utility.RandomFloat(0.0, 1.0) < 0.15	&& !ASLcurrentlyintense
+
+	PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "AfterOrgasmExclamations")	
+elseif IsFemdom() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/2
+
+	PlaySound(mainFemaleVoice.OnTheAttack, mainFemaleActor, requiredChemistry = 0 , debugtext = "OnTheAttack") 	
+elseif  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/4
+
+	PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "Amused") 
+elseif  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/4	
+
+	PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0 , debugtext = "InAwe")	
+else
+
+	PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "AfterOrgasmArouse")
+endif
+endfunction
+
+Function PlayCowgirl() 
+
+printdebug("Play Cowgirl")
+
+if CommentedClosetoOrgasm
+	if ASLcurrentlyintense
+		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+	else
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	endif
+elseIf femaleCloseToOrgasm() ;When female close to orgasm
+	ASLPlayFemaleOrgasmHype()
+elseIf ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm  ;if male close or orgasm
+	ASLPlayMaleClosetoOrgasmComments()
+else
+	;after close to orgasm handling
+
+	;make greeting 
+	if Utility.RandomFloat(0.0, 1.0)  < ChanceToCommentonNonIntenseStage && currentstage == 1 && GreetedMalePartner == false && !ASLCurrentlyintense
+		ASLMakeGreetingToMalePartner() 
+		GreetedMalePartner = true
+	endif
+	
+	If Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage ; femdom comments
+		if Utility.RandomInt(1,2) == 1
+			PlaySound(mainFemaleVoice.OnTheAttack, mainFemaleActor, requiredChemistry = 0 , debugtext = "OnTheAttack")	
+		else 
+			PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Amused")
+		endif
+	elseif ishugepp() && Utility.RandomFloat(0.0, 1.0)  < ChanceToCommentonNonIntenseStage && !ASLcurrentlyIntense
+		PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 1 , debugtext = "InAwe")
+	elseif Utility.RandomFloat(0.0, 1.0)  < ChanceToCommentonNonIntenseStage && !ASLcurrentlyIntense
+		if Utility.randomint(1,2) == 1
+			PossiblyAskForCumInSpecificLocation()
+		else
+			PlaySound(mainFemaleVoice.PenetrativeCommentssoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeCommentssoft")	
+		endif
+	elseif Utility.RandomFloat(0.0, 1.0)  < ChanceToCommentonIntenseStage && ASLcurrentlyIntense
+		PlaySound(mainFemaleVoice.PenetrativeCommentsIntense, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeCommentsIntense")	
+	else	
+		if ASLcurrentlyintense
+			PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+		else
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+		endif
+	EndIf
+			
+endif
+
+EndFunction
+
+
+Function PlayGettingFuckedbyHugePP() ; when on huge pp scenario
+printdebug("Play Getting Fucked by Huge PP")
+
+
+if CommentedClosetoOrgasm
+	PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , debugtext = "SensitivePleasure")
+elseif femaleCloseToOrgasm() 
+	ASLPlayFemaleOrgasmHype()
+else
+	if IsGettingDoublePenetrated()
+	
+		PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , debugtext = "SensitivePleasure")
+		
+	elseif ASLCurrentlyintense	
+		if IsGettingAnallyPenetrated() && utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage
+			PlaySound(mainFemaleVoice.IntenseAnal, mainFemaleActor, requiredChemistry = 0 , debugtext = "IntenseAnal")
+		elseif Utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage
+			PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0)
+		else
+			PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , debugtext = "SensitivePleasure")
+		endif
+	else
+
+		; breath and gape breath and gape. ASL SA FA reserved for large pp creature piston cycle time > 2 seconds
+		if Utility.RandomFloat(0.0, 1.0) < 0.5
+			PlayBreathyorforeplaysound()
+		else
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+		endif
+		
+		if Utility.RandomFloat(0.0, 1.0) < 0.2
+			Utility.Wait(Utility.RandomFloat(1.0, 2.0))
+
+			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 3 , debugtext = "Oh")
+			Utility.Wait(1.0)
+
+			PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext = "AfterGape")
+		endif
+	endif
+endif
+
+EndFunction
+
+
+Function PlayMoanonly()
+printdebug("Play Moan only")
+
+StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 0)
+if ASLCurrentlyintense
+	if IsSuckingoffOther()
+		PlaySound(mainFemaleVoice.BlowjobActionIntense, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionIntense")
+	elseif IsgettingPenetrated()
+		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+	elseif IsGettingStimulated()
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	else
+		PlayBreathyorforeplaysound()
+	endif
+
+else
+	if IsSuckingoffOther()
+		PlaySound(mainFemaleVoice.BlowjobActionSoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "BlowjobActionSoft")
+	elseif IsgettingPenetrated()
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	elseif isending()
+		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0  , debugtext = "AfterOrgasmExclamations")
+	else
+		PlayBreathyorforeplaysound()
+	endif
+	
+endif
+endfunction
+
+
+Function PlayGettingFucked() 
+printdebug("Play Getting Fucked")
+
+;------------------ INTENSE-------------------
+if ASLCurrentlyintense
+	;if isHumanoidrace() && Utility.RandomFloat(0.0, 1.0) < ChanceTohaveSpanking && (currentAnimation.HasTag("Doggy") || currentAnimation.HasTag("Standing") || currentAnimation.HasTag("Doggystyle") || currentAnimation.HasTag("Doggy Style"))
+	;	PlaySpankingSequence()
+	;endif
+	
+	if CommentedClosetoOrgasm
+		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+	elseIf femaleCloseToOrgasm()  ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()
+	elseif ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm 
+		ASLPlayMaleClosetoOrgasmComments()
+	else ;After Handling close to Orgasm
+		if FemaleIsVictim() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage
+			PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0)
+		elseIf IsGettingAnallyPenetrated() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage
+			PlaySound(mainFemaleVoice.IntenseAnal, mainFemaleActor, requiredChemistry = 0 , debugtext = "IntenseAnal")
+		elseIf IsGettingVaginallyPenetrated() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage
+			PlaySound(mainFemaleVoice.PenetrativeCommentsIntense, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeCommentsIntense")	
+		else
+			PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+		endif
+	EndIf
+	
+;------------------ NOT INTENSE-------------------
+else	
+	if CommentedClosetoOrgasm
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	elseIf femaleCloseToOrgasm() ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()
+	elseif ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
+		ASLPlayMaleClosetoOrgasmComments()
+	else
+		;after handling close to orgasm
+		If femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentUnamused
+			PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Unamused")
 		elseIf  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage
-			ASLPlayPenetrationComments()
-		Else
-			ChangeHentaiExpression("grunt")
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
+			PlaySound(mainFemaleVoice.PenetrativeCommentssoft, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeCommentssoft")	
+		else
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
 		EndIf
 
+	endif
+endif
+endfunction
+
+Function PlayGettingFuckedDouble() 
+printdebug("Play Getting Double Fucked")
+
+if ASLCurrentlyintense
+
+	
+	if CommentedClosetoOrgasm
+		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+	elseIf femaleCloseToOrgasm()  ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()
+	elseif ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm 
+		ASLPlayMaleClosetoOrgasmComments()
+	else ;After Handling close to Orgasm
+		If IsGettingAnallyPenetrated() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage
+			if Utility.Randomint(1,2) == 1
+				PlaySound(mainFemaleVoice.IntenseAnal, mainFemaleActor, requiredChemistry = 0 , debugtext = "IntenseAnal")
+			else
+				PlaySound(mainFemaleVoice.PenetrativeCommentsIntense, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeCommentsIntense")
+			endif	
+		else
+			if currentAnimation.hastag("Tentacles")
+				PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+			else
+				PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , debugtext = "SensitivePleasure")
+			endif
+		endif
+	EndIf
+	
+	;Not Intense
+else	
+	if CommentedClosetoOrgasm
+		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , debugtext = "PenetrativeGrunts")
+	elseIf femaleCloseToOrgasm() ;When female close to orgasm
+		ASLPlayFemaleOrgasmHype()
+	elseif ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm ; when male close to orgasm
+		ASLPlayMaleClosetoOrgasmComments()
+	else
+		;after handling close to orgasm
+		If femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentUnamused
+			PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Unamused")
+		elseIf  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage
+			PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0 , debugtext = "TeaseAggressivePartner")
+		else
+			if currentAnimation.hastag("Tentacles")
+				PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "PenetrativeGrunts")
+			else
+				PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , debugtext = "NearOrgasmNoises")
+			endif
+		EndIf
+	endif
 endif
 
 endfunction
 
-Function ASLPlayEN() ;Play for EN 
-;end of scene comments
-
-;remove cum leak the before the next round of comments
-ASLRemoveThickCumleak()
-
-
-UpdateAhegaoExpression()
-UpdateNormalExpression()
-UpdatePauseExpressionflag()
-
-
+Function PlayEnding()
+printdebug("PLay Ending")
 ;chance to leak cum 
-if  Utility.RandomFloat(0.0, 1.0) < ChanceToLeakThickCum && CameInsideCount > 0 && ASLDoneLeakingCum == false 
+if  Utility.RandomFloat(0.0, 1.0) < ChanceToLeakThickCum && CameInsideCount > 0
 	ASLAddThickCumleak()
-	ChangeHentaiExpression("kneejerk")
 
-	PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 3)
-	ASLDoneLeakingCum = true
 endif
 
 StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 0)
 
-if ASLIsBroken()
-	ASLPlayBrokenVoice()
-else	
-	
-	if maleOrgasmCount > 0 && commentedcumlocation == false && !femaleisvictim() && !FemaleisGiving()
+	if commentedcumlocation == false && !femaleisvictim() && CameInsideCount > 0
 		commentedcumlocation = true
 		PossiblyRemarkOnCumLocation()
 	elseif MaleCommentsonEN == false && AllowMaleVoice() 
 		;miscutil.PrintConsole ("Playing Male Comments EN stage")
 		if MaleIsVictim()
-			PlaySound(mainMaleVoice.TeaseAggressivePartner, mainMaleActor, soundPriority = 2 , waitForCompletion = False)
+			PlaySound(mainMaleVoice.TeaseAggressivePartner, mainMaleActor, soundPriority = 2 , waitForCompletion = False ,debugtext = "TeaseAggressivePartner")
 		else
-			PlaySound(mainMaleVoice.PostNutRemark, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = false)
+			PlaySound(mainMaleVoice.PostNutRemark, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = false ,debugtext = "PostNutRemark")
 		endif
 		Utility.Wait(Utility.RandomFloat(1.0, 2.0))
-		ChangeHentaiExpression("panting")
-		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0)
-	elseif commentedorgasmremark == false  && Utility.RandomFloat(0.0, 1.0) < 0.3
+		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 ,debugtext = "AfterOrgasmExclamations")
+	elseif commentedorgasmremark == false  && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage
 		commentedorgasmremark = true
-			If	femaleisvictim() && Utility.RandomFloat(0, 1.0) < ChanceToCommentUnamused * 4
-				ChangeHentaiExpression("unamusedending")
-				PlaySound(mainFemaleVoice.UnamusedEnd, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-		elseif	femaleRecordedOrgasmCount > Utility.RandomInt(2, 5) && Utility.RandomFloat(0.0, 1.0) < 0.5 && !FemaleisGiving()
-				ChangeHentaiExpression("ending")
-				PlaySound(mainFemaleVoice.MadeMeCumSoMuch, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
+			If	femaleisvictim() && Utility.RandomFloat(0, 1.0) < ChanceToCommentUnamused * 3
+				PlaySound(mainFemaleVoice.UnamusedEnd, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 ,debugtext = "UnamusedEnd")
+		elseif	femaleRecordedOrgasmCount > Utility.RandomInt(2, 5) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage
+				PlaySound(mainFemaleVoice.MadeMeCumSoMuch, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "MadeMeCumSoMuch")
 		EndIf
-	elseif !IshugePP() && shouldgoontheattack(currentAnimation) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage
-		ChangeHentaiExpression("amused")
-		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0)
+	elseif currentAnimation.HasTag("femdom") && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage
+		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0 ,debugtext = "Amused")
 	else
-		ChangeHentaiExpression("panting")
-		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0)
+		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 ,debugtext = "AfterOrgasmExclamations")
 	endif
-ENDIF
-endfunction
-
-Function ASLPlayFAFV() ; play voices for FA FV
-;lactate throughout the scene if have hentai lactate mod
-if  GetMainNPCTrait() == "+The Milker" && MainMaleCanControl()
-	Lactate()
-endif 
-
-;add tongue immediately if is penetrator
-if GetMainNPCTrait() =="+The Penetrator" 
-	ASLAddTongue()
-endif
-	;miscutil.PrintConsole ("IVDT is playing ASLPlayFAFV")
-	if  Utility.RandomFloat(0.0, 1.0) < ChanceToStickoutTongueDuringIntense && !equippedtongue()
-		ASLAddTongue()
-	endif
-	
-		;miscutil.PrintConsole ("ishumanoidrace : " + isHumanoidrace())
-	;	miscutil.PrintConsole ("can spank : " + isHumanoidrace() && Utility.RandomFloat(0.0, 1.0) < ChanceTohaveSpanking && (currentAnimation.HasTag("Doggy") || currentAnimation.HasTag("Standing") || currentAnimation.HasTag("Doggystyle") || currentAnimation.HasTag("Doggy Style")))
-	if isHumanoidrace() && Utility.RandomFloat(0.0, 1.0) < ChanceTohaveSpanking && (currentAnimation.HasTag("Doggy") || currentAnimation.HasTag("Standing") || currentAnimation.HasTag("Doggystyle") || currentAnimation.HasTag("Doggy Style"))
-		PlaySpankingSequence()
-	endif
-if ishugePP()	
-	;miscutil.PrintConsole ("IVDT is playing ASLPlayHugePPPenetrationSound")
-
-	ASLPlayHugePPPenetrationSound()
-else
-
-		if AllowMaleVoice() ;  chance of male commenting
-			ASLPlayMaleComments()
-		endif
-	; Normal scenario
-	
-		if CommentedClosetoOrgasm
-			ChangeHentaiExpression("intensegrunt")
-			PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 )
-		elseIf femaleCloseToOrgasm()  ;When female close to orgasm
-			ASLPlayFemaleOrgasmHype()
-		elseif ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm && !ASLisBroken() ; when male close to orgasm
-			ASLPlayMaleClosetoOrgasmComments()
-
-		elseIf	shouldgoontheattack(currentAnimation) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononIntenseStage
-			ChangeHentaiExpression("inawe")
-			PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0)
-		elseIf CurrentPenetrationLvl() == 3 && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononIntenseStage
-			ChangeHentaiExpression("intensepenetrationcomments")
-			PlaySound(mainFemaleVoice.IntenseAnal, mainFemaleActor, requiredChemistry = 0)
-		elseIf  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononIntenseStage
-			ASLPlayPenetrationComments()
-		Elseif Utility.RandomFloat(0.0, 1.0) < 0.10 
-			ChangeHentaiExpression("overthetop")
-			PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0)
-		else
-			ChangeHentaiExpression("intensegrunt")
-			PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 )
-		EndIf
-
-endif	
 
 endfunction
 
-Function ASLPlayGoOnTheAttack() ; when on the attack scenario
-	;miscutil.PrintConsole ("IVDT is playing ASLPlayGoOnTheAttack")
-if Utility.RandomFloat(0.0, 1.0) < ChanceToStickOutTongueDuringAttacking && !equippedtongue()
-	ASLaddtongue()
-endif
 
-if AllowMaleVoice() ;  chance of male commenting
-	ASLPlayMaleComments()
-endif
-
-if CommentedClosetoOrgasm
-	ChangeHentaiExpression("grunt")
-	PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-elseIf ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm  ;if male close or orgasm
-	ASLPlayMaleClosetoOrgasmComments()
-
-elseIf femaleCloseToOrgasm() ;When female close to orgasm
-	ASLPlayFemaleOrgasmHype()
-
-else
-	;make greeting 
-	if Utility.RandomFloat(0.0, 1.0)  < ChanceToCommentonLIStage && currentstage == 1 && (stagelabel == "SA" || stagelabel == "SV" || stagelabel == "LI")
-		ASLMakeGreetingToMalePartner()
-	endif
-	
-	if femaleisgiving() ;main female penetrating others as futa or strapon
-		if ASLIsBroken()
-				ASLPlayBrokenVoice()	
-		elseIf Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage
-				ChangeHentaiExpression("attackingcomments")
-				PlaySound(mainFemaleVoice.OnTheAttack, mainFemaleActor, requiredChemistry = 0)	
-		elseIf	Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/3
-				ChangeHentaiExpression("inawe")
-				PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0)
-		elseif	Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/3
-				ChangeHentaiExpression("amused")
-				PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0)
-		else	
-			ChangeHentaiExpression("grunt")
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-		EndIf		
-	elseif CurrentPenetrationLvl() > 1
-			;Chance to mix in grunts with thrusts
-			if ASLIsBroken()
-				ASLPlayBrokenVoice()	
-			elseIf Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage
-				ChangeHentaiExpression("attackingcomments")
-				PlaySound(mainFemaleVoice.OnTheAttack, mainFemaleActor, requiredChemistry = 0)	
-			ElseIf Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/2
-				ASLPlayPenetrationComments()
-			Elseif currentstage <= 2
-				PlayBreathySound(false)
-			else	
-				ChangeHentaiExpression("grunt")
-				PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-			EndIf
-
-	endif		
-
-			
-endif
-
-			
-			
-			
-	
-EndFunction
-
-Function ASLPlayHugePPPenetrationSound() ; when on huge pp scenario
-;miscutil.PrintConsole ("IVDT is playing ASL huge pp penetration sound")
-
-if CommentedClosetoOrgasm
-	ChangeHentaiExpression("overthetop")
-	PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0)
-elseif femaleCloseToOrgasm() 
-	ASLPlayFemaleOrgasmHype()
-else
-	if ASLCurrentlyintense	
-		if CurrentPenetrationLvl() == 3 && utility.RandomFloat(0.0, 1.0) < ChanceToCommentononIntenseStage
-			ChangeHentaiExpression("intensepenetrationcomments")
-			PlaySound(mainFemaleVoice.IntenseAnal, mainFemaleActor, requiredChemistry = 0)
-		elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononIntenseStage
-			ASLPlayPenetrationComments()
-		else
-			ChangeHentaiExpression("overthetop")
-			PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0)
-		endif
-	else
-		
-
-		if ShouldGoOnTheAttack(currentAnimation) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage * 0.7
-			ChangeHentaiExpression("inawe")
-			PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 1)
-		elseif ShouldGoOnTheAttack(currentAnimation) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentonNonIntenseStage
-			ChangeHentaiExpression("amused")
-			PlaySound(mainFemaleVoice.OnTheAttack, mainFemaleActor, requiredChemistry = 0) 
-		endif
-		; breath and gape breath and gape. ASL SA FA reserved for large pp creature piston cycle time > 2 seconds
-		if Utility.RandomFloat(0.0, 1.0) < 0.7
-			PlayBreathySound(True)
-		else
-			ChangeHentaiExpression("grunt")
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-		endif
-		
-		
-		
-		if Utility.RandomFloat(0.0, 1.0) < 0.2
-			Utility.Wait(Utility.RandomFloat(1.0, 2.0))
-			ChangeHentaiExpression("kneejerk")
-
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 3 )
-			Utility.Wait(1.0)
-			ChangeHentaiExpression("hugeppgape")
-
-			PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3)
-		endif
-	endif
-endif
-
-EndFunction
-
-Function ASLPlayDP() ;double penetration stage
-
-;DP usually not too intense on first stage
-;miscutil.PrintConsole ("IVDT is playing ASLPlayDP")
-if femaleCloseToOrgasm()
-	ASLPlayFemaleOrgasmHype()
-else
-
-	if AllowMaleVoice() ;  chance of male commenting
-		ASLPlayMaleComments()	
-	endif
-	
-	if ShouldPlayMaleOrgasmHype() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenMaleCloseToOrgasm
-		ASLPlayMaleClosetoOrgasmComments()
-		
-	elseif ASLCurrentlyintense	;fast dp
-	
-	
-		if  utility.RandomFloat(0.0, 1.0) <= 0.1 
-			ChangeHentaiExpression("intensepenetrationcomments")
-			PlaySound(mainFemaleVoice.IntenseAnal, mainFemaleActor, requiredChemistry = 0)
-		elseif Utility.RandomFloat(0.0, 1.0) < 0.2
-			ASLPlayPenetrationComments()
-		else
-			ChangeHentaiExpression("overthetop")
-			PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0)
-		endif
-	else
-		; slowly dp
-		if Utility.RandomFloat(0.0, 1.0) < 0.5
-			PlayBreathySound(true)
-		else
-			ChangeHentaiExpression("grunt")
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-		endif
-		
-		if Utility.RandomFloat(0.0, 1.0) < 0.2
-			Utility.Wait(Utility.RandomFloat(1.0, 2.0))
-			ChangeHentaiExpression("kneejerk")
-
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 3 )
-			Utility.Wait(1.0)
-			ChangeHentaiExpression("hugeppgape")
-
-			PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3)
-		endif
-	endif
-endif
-
-EndFunction
 
 function PlayBreathyorforeplaysound()
-	ChangeHentaiExpression("LeadIn")
+
 	if ASLCurrentlyintense
-		if Utility.RandomFloat(0.0, 1.0) <= 0.5 || stagelabel == "LI"
-			PlaySound(mainFemaleVoice.Foreplayintense, mainFemaleActor, requiredChemistry = 0)
+		if Utility.RandomFloat(0.0, 1.0) <= 0.5
+			PlaySound(mainFemaleVoice.Foreplayintense, mainFemaleActor, requiredChemistry = 0 , debugtext ="Foreplayintense")
 		else
-			PlayBreathySound(true)
+			PlaySound(mainFemaleVoice.BreathyIntense, mainFemaleActor, requiredChemistry = 0 , debugtext ="BreathyIntense")
 		endif
 	else
-		if Utility.RandomFloat(0.0, 1.0) <= 0.5 || stagelabel == "LI"
-			PlaySound(mainFemaleVoice.Foreplaysoft, mainFemaleActor, requiredChemistry = 0)
+		if Utility.RandomFloat(0.0, 1.0) <= 0.5 
+			PlaySound(mainFemaleVoice.Foreplaysoft, mainFemaleActor, requiredChemistry = 0 , debugtext ="Foreplaysoft")
 		else
-			PlayBreathySound(false)
+			PlaySound(mainFemaleVoice.BreathySoft, mainFemaleActor, requiredChemistry = 0 , debugtext ="BreathySoft")
 		endif
 	endif
 
@@ -2914,32 +1746,32 @@ endfunction
 
 function ASLPlayMaleClosetoOrgasmComments()
 			;miscutil.PrintConsole ("Teasing Male Close to Orgasm")
-		;if Utility.RandomFloat(0.0, 1.0) < 0.3 && !femaleisvictim() && !ASLcurrentlyintense
-		;	PossiblyAskForCumInSpecificLocation() 
-		;else
+		if IsStimulatingOthers() && !IsgettingPenetrated() && !IsGettingStimulated()
+			PlaySound(mainFemaleVoice.ReadyToGetGoing, mainFemaleActor, requiredChemistry = 0 , debugtext = "ReadyToGetGoing")
+		elseif	mainFemaleEnjoyment > femaleorgasmhypeenjoyment && !femaleisvictim() && IsgettingPenetrated()
 
-		if	mainFemaleEnjoyment > 50 && !femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < 0.25
-		ChangeHentaiExpression("amused")
-		PlaySound(mainFemaleVoice.CumTogetherTease, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
+		PlaySound(mainFemaleVoice.CumTogetherTease, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "CumTogetherTease")
 		
-		elseif  !OKWithVaginalCum() && (CurrentPenetrationLvl() == 2 || stagelabel == "DP" || stagelabel == "TP")
-			ChangeHentaiExpression("pullout")
-			PlaySound(mainFemaleVoice.PullOut, mainFemaleActor, requiredChemistry = 0, soundPriority = 2)
-		elseif IsEarlyToCum()	&& !ASLCurrentlyintense && !femaleisvictim() && CurrentPenetrationLvl() >= 2
-			ChangeHentaiExpression("maleclosetoorgasm")
-			PlaySound(mainFemaleVoice.MaleCloseAlready, mainFemaleActor, requiredChemistry = 1, soundPriority = 1)
-		elseif shouldgoontheattack(currentAnimation) && !ASLCurrentlyintense	&& CurrentPenetrationLvl() >= 2
-			ChangeHentaiExpression("amused")
-			PlaySound(mainFemaleVoice.MaleCloseNotice, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-		elseif ASLCurrentlyintense && CurrentPenetrationLvl() >= 2
-			ChangeHentaiExpression("maleclosetoorgasmintense")
-			PlaySound(mainFemaleVoice.TeaseMaleCloseToOrgasmIntense, mainFemaleActor, requiredChemistry = 1 , soundPriority = 1)
-		elseif  CurrentPenetrationLvl() >= 2
-			ChangeHentaiExpression("maleclosetoorgasm")
-			PlaySound(mainFemaleVoice.TeaseMaleCloseToOrgasmSoft, mainFemaleActor, requiredChemistry = 1 , soundPriority = 1)
+		elseif  FemaleIsVictim() && IsgettingPenetrated()
+
+			PlaySound(mainFemaleVoice.PullOut, mainFemaleActor, requiredChemistry = 0, soundPriority = 2 , debugtext = "PullOut")
+		elseif IsEarlyToCum()	&& !ASLCurrentlyintense && !femaleisvictim() && IsgettingPenetrated()
+
+			PlaySound(mainFemaleVoice.MaleCloseAlready, mainFemaleActor, requiredChemistry = 1, soundPriority = 1 , debugtext = "MaleCloseAlready" )
+		elseif IsFemdom() && !ASLCurrentlyintense
+
+			PlaySound(mainFemaleVoice.MaleCloseNotice, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "MaleCloseNotice")
+			
+		elseif ASLCurrentlyintense  && IsgettingPenetrated()
+		
+			PlaySound(mainFemaleVoice.TeaseMaleCloseToOrgasmIntense, mainFemaleActor, requiredChemistry = 1 , soundPriority = 1 , debugtext = "TeaseMaleCloseToOrgasmIntense")
+		elseif  IsgettingPenetrated()
+
+			PlaySound(mainFemaleVoice.TeaseMaleCloseToOrgasmSoft, mainFemaleActor, requiredChemistry = 1 , soundPriority = 1 , debugtext = "TeaseMaleCloseToOrgasmSoft")
+		
 		endif
 				
-		if Utility.RandomFloat(0.0, 1.0) < 0.5 && !femaleisvictim()
+		if Utility.RandomFloat(0.0, 1.0) < chancetocommentwhenmaleclosetoorgasm && !femaleisvictim()
 			Utility.Wait(Utility.RandomFloat(1.0, 3.0))
 			PossiblyAskForCumInSpecificLocation() 
 		endif
@@ -2956,359 +1788,301 @@ if SexLabThreadController.TotalTime - timeOfLastRecordedFemaleOrgasm <= 8
 	return
 endif
 
-if CurrentPenetrationLvl() < 2 && !femaleisvictim()
-	ChangeHentaiExpression("greeting")
-	PlaySound(mainFemaleVoice.ReadyToGetGoing, mainFemaleActor, requiredChemistry = 0)	
-elseif IshugePP() && ASLCurrentlyintense
-	If Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
-		ChangeHentaiExpression("closetoorgasmintense")
-		PlaySound(mainFemaleVoice.NearOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)		
-	Else 
-		ChangeHentaiExpression("overthetop")
-		PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)	
-	EndIf
+;-----------------------NOT INTENSE------------------
 
-elseif ASLCurrentlyintense
-	If Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
-		ChangeHentaiExpression("closetoorgasmintense")
-		PlaySound(mainFemaleVoice.NearOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	Else 
-		ChangeHentaiExpression("intensegrunt")
-		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	EndIf
-else	
-	; if not intense and hugepp
-	ChangeHentaiExpression("closetoorgasm")
-	If VoiceVariation == "NA" && maleOrgasmCount > femaleRecordedOrgasmCount && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm && !FemaleIsVictim() && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
-		PlaySound(mainFemaleVoice.MyTurnToCum, mainFemaleActor, requiredChemistry = 3 , soundPriority = 1)
-	elseif VoiceVariation == "A" && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm  && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
-		PlaySound(mainFemaleVoice.MyTurnToCum, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	Elseif VoiceVariation == "NA" && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm  && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
-		PlaySound(mainFemaleVoice.NearOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	else
-		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	EndIf
-endif
+	if !ASLCurrentlyintense
+		if (IsStimulatingOthers() || IsGettingStimulated()) && !femaleisvictim() && !IsgettingPenetrated()
+			PlaySound(mainFemaleVoice.ReadyToGetGoing, mainFemaleActor, requiredChemistry = 0 , debugtext = "ReadyToGetGoing")	
+		elseif maleOrgasmCount > femaleRecordedOrgasmCount && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm && !FemaleIsVictim() && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
+			PlaySound(mainFemaleVoice.MyTurnToCum, mainFemaleActor, requiredChemistry = 3 , soundPriority = 1 , debugtext = "MyTurnToCum")
+		Elseif Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm  && CommentedClosetoOrgasm == false
+			PlaySound(mainFemaleVoice.NearOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "NearOrgasmExclamations")
+		else
+			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "PenetrativeGrunts")
+		endif
+;-----------------------INTENSE------------------
+	elseif ASLcurrentlyIntense 
+		If IshugePP() && IsgettingPenetrated() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm && StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet") == 1
+				PlaySound(mainFemaleVoice.SensitivePleasure, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "SensitivePleasure")	
+		EndIf
+	elseif IsgettingPenetrated() || IsGettingStimulated()
+		If Utility.RandomFloat(0.0, 1.0) < ChanceToCommentWhenCloseToOrgasm && CommentedClosetoOrgasm == false
+			PlaySound(mainFemaleVoice.NearOrgasmExclamations, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "NearOrgasmExclamations")
+		Else 
+			PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "NearOrgasmNoises")
+		EndIf
+		
+	endif
 StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 0)
+printdebug("Allow Female Orgasm")
 CommentedClosetoOrgasm = true
-;miscutil.PrintConsole ("IVDT Play FemalrOrgasmHype")
-;miscutil.PrintConsole ("ASLDoNotAllowFemaleOrgasmYet" + StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet"))
 
 EndFunction
 
 bool function Malewantsmore()
 
-	return mainMaleEnjoyment >= 30
+	return mainMaleEnjoyment >= 30 || maleOrgasmCount <= Utility.randomint(1,4)
 
 endfunction
 
 function ASLHandlemaleOrgasmreaction()
 
 	
-	if maleOrgasmCount > 1 && !femaleisvictim() && stagelabel != "SB" &&  stagelabel != "FB" &&  stagelabel != "SR" && Utility.RandomFloat(0.0, 1.0) < 0.5
-		PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
+	if maleOrgasmCount > 1 && !femaleisvictim() && !IsSuckingoffOther() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonnonintensestage
+		PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "InAwe")
 	endif
 
 	;a chance to react to male orgasm
 		
-	if stagelabel == "SB" ||  stagelabel == "FB"
+	if IsSuckingoffOther()
 					
 		if AllowMaleVoice()
-			;	miscutil.PrintConsole ("Playing Male Comments SB FB Joke After Orgasm")
-			PlaySound(mainMaleVoice.JokeAfterOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 2, waitForCompletion = false)
+			PlaySound(mainMaleVoice.JokeAfterOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 2, waitForCompletion = false , debugtext = "JokeAfterOrgasm")
 		endif	
-	ChangeHentaiExpression("intensepenetrationcomments")				
-	PlaySound(mainFemaleVoice.CameInMouth, mainFemaleActor, requiredChemistry = 0 , soundPriority = 2)
-				; chance for male comments	
 				
-	elseIf 	ASLCurrentlyintense 
+		PlaySound(mainFemaleVoice.CameInMouth, mainFemaleActor, requiredChemistry = 0 , soundPriority = 2 , debugtext = "CameInMouth")
+				
+	elseif IsCowgirl() || IsGivingAnalPenetration() || IsGivingVaginalPenetration()
+	
+		PlaySound(mainFemaleVoice.MaleOrgasmReactionSoft, mainFemaleActor, requiredChemistry = 0, soundPriority = 2 , debugtext = "MaleOrgasmReactionSoft")
+		
+	elseIf 	ASLCurrentlyintense && IsgettingPenetrated()
 				
 		;Chance for male comments	
 		if AllowMaleVoice()
-		;	miscutil.PrintConsole ("Playing Male Comments intense Joke After Orgasm")
-			PlaySound(mainMaleVoice.JokeAfterOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
+
+			PlaySound(mainMaleVoice.JokeAfterOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "JokeAfterOrgasm")
 			Utility.Wait(Utility.RandomFloat(0.5, 1.0))
 		endif
 		
-		if Utility.RandomFloat(0.0, 1.0) <= 0.4
-			ChangeHentaiExpression("intensepenetrationcomments")
-			PlaySound(mainFemaleVoice.MaleOrgasmReactionIntense, mainFemaleActor, requiredChemistry = 0, soundPriority = 2)
+		if Utility.RandomFloat(0.0, 1.0) < chancetocommentonnonintensestage
+			PlaySound(mainFemaleVoice.MaleOrgasmReactionIntense, mainFemaleActor, requiredChemistry = 0, soundPriority = 2 , debugtext = "MaleOrgasmReactionIntense")
 		endif
 
-	Elseif CurrentPenetrationLvl() > 1
-				if AllowMaleVoice()
-				;	miscutil.PrintConsole ("Playing Male Comments Non Intense Joke After Orgasm")
-					PlaySound(mainMaleVoice.JokeAfterOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-					Utility.Wait(Utility.RandomFloat(0.5, 2.0))
-				endif
+	Elseif IsgettingPenetrated()
+		if AllowMaleVoice()
+			PlaySound(mainMaleVoice.JokeAfterOrgasm, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "JokeAfterOrgasm")
+			Utility.Wait(Utility.RandomFloat(0.5, 2.0))
+		endif
+		
 		if Utility.RandomFloat(0.0, 1.0) <= 0.4	
 			if femaleisvictim()
-				ChangeHentaiExpression("unamused")
-				PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0)
+
+				PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0 , debugtext = "Unamused")
 			else
-				ChangeHentaiExpression("penetrationcomments")
+
 				PlaySound(mainFemaleVoice.MaleOrgasmReactionSoft, mainFemaleActor, requiredChemistry = 0, soundPriority = 2)
 			endif
 		endif
 	EndIf
 
 
-	Reactedtomaleorgasm = true
-	ASLRemoveThickCumleak()
-	;miscutil.PrintConsole ("IVDT Done MaleOrgasm")
-	;miscutil.PrintConsole ("ASLMaleOrgasm" + StorageUtil.GetIntValue(None, "ASLMaleOrgasm"))
-	
+	ReacttoMaleOrgasmNext = false
+
 	
 endfunction
 
 Function ASLHandleFemaleOrgasmReaction()
 
-	
-	if ((Utility.RandomFloat(0.0, 1.0) < 0.4 && ishugepp() ) || Utility.RandomFloat(0.0, 1.0) < 0.2) && femaleRecordedOrgasmCount >=  Utility.RandomInt(2, 4)
-		ASLAddTongue()
-	endif	
-
 ;chance to react after orgasm
 
 if VoiceVariation == "A"
 
-	if	ASLIsBroken()
-		PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	elseif FemaleisGiving()
-		ChangeHentaiExpression("amused")
-		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-	elseif ASLCurrentlyintense  && Utility.RandomFloat(0.0, 1.0) < 0.6
-		ChangeHentaiExpression("intenseafterorgasmcomments")
-		PlaySound(mainFemaleVoice.AskForPacingBreak, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-	elseif !ASLCurrentlyintense && Utility.RandomFloat(0.0, 1.0) < 0.6
-		ChangeHentaiExpression("afterorgasmcomments")
-		PlaySound(mainFemaleVoice.AfterOrgasmRemarks, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-	elseif !ASLCurrentlyintense && Utility.RandomFloat(0.0, 1.0) < 0.3
-		ChangeHentaiExpression("panting")
-		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
+	if	ASLIsBroken() && mainMaleActor != None
+	
+		PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext="AfterOrgasmArouse")
+		
+	elseif (IsGivingAnalPenetration() || IsGivingVaginalPenetration() ) && mainMaleActor != None
+
+		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="Amused")
+		
+	elseif ASLCurrentlyintense  && Utility.RandomFloat(0.0, 1.0) < chancetocommentonintensestage && mainMaleActor != None
+		if IsCowgirl()
+			PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext="Amused")
+		else
+			PlaySound(mainFemaleVoice.AskForPacingBreak, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="AskForPacingBreak")
+		endif
+	elseif !ASLCurrentlyintense && Utility.RandomFloat(0.0, 1.0) < chancetocommentonnonintensestage && mainMaleActor != None
+
+		PlaySound(mainFemaleVoice.AfterOrgasmRemarks, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="AfterOrgasmRemarks")
 	else
-		ASLPlayPenetrationComments()
+		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="AfterOrgasmExclamations")
 	endif
 
 else
 	if	ASLIsBroken()
-		ChangeHentaiExpression("grunt")
-		PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	elseif FemaleisGiving()
-		ChangeHentaiExpression("amused")
-		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-	elseif ASLCurrentlyintense && Utility.RandomFloat(0.0, 1.0) < 0.6
-		ASLPlayPenetrationComments()
 
-	elseif !ASLCurrentlyintense && Utility.RandomFloat(0.0, 1.0) < 0.3
-		ChangeHentaiExpression("panting")
-		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
+		PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext="AfterOrgasmArouse")
+	elseif IsFemdom() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonnonintensestage
+
+		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="Amused")
+		
+	elseif !ASLCurrentlyintense && Utility.RandomFloat(0.0, 1.0) < chancetocommentonnonintensestage
+	
+		PlaySound(mainFemaleVoice.AfterOrgasmRemarks, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="AfterOrgasmRemarks")
+		
 	else
-		ChangeHentaiExpression("afterorgasmcomments")
-		PlaySound(mainFemaleVoice.AfterOrgasmRemarks, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
+		PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="AfterOrgasmExclamations")	
 	endif
 endif
 	
 If mainMaleActor != None && Utility.RandomFloat(0.0, 1.0) < 0.5 && !FemaleIsVictim()  && !ASLCurrentlyintense
-	If !FemaleIsSatisfied() && CurrentPenetrationLvl() > 1 
+	If !FemaleIsSatisfied() && IsgettingPenetrated()
 			Utility.Wait(Utility.RandomFloat(1.0, 2.0))
-			ChangeHentaiExpression("wantmore")
-			PlaySound(mainFemaleVoice.WantMore, mainFemaleActor, requiredChemistry = 5, soundPriority = 1)
+
+			PlaySound(mainFemaleVoice.WantMore, mainFemaleActor, requiredChemistry = 5, soundPriority = 1 , debugtext = "WantMore")
 	else
-		ChangeHentaiExpression("amused")
-		PlaySound(mainFemaleVoice.Satisfied, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
+
+		PlaySound(mainFemaleVoice.Satisfied, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "Satisfied")
 	EndIf
 EndIf	
 
+ReacttoFemaleOrgasmNext = false
 
-Reactedtofemaleorgasm = true
-;miscutil.PrintConsole ("IVDT Done Orgasm")
-;miscutil.PrintConsole ("ASLDoNotAllowFemaleOrgasmYet" + StorageUtil.GetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet"))
-;miscutil.PrintConsole ("ASLOrgasm" + StorageUtil.GetIntValue(None, "ASLOrgasm"))
+
 endfunction
 
 Function ASLPlayStageTransition()
-;miscutil.PrintConsole ("DEBUG : Playing Stage Transition")
+
 if currentStage >= 3
 	ShouldInitialize = true
 endif
 
-if CurrentPenetrationLvl() > 1
+if IsgettingPenetrated()
 	timesGaped += 1
 endif	
-	RunNPCUpdates()
-	ResetExpressionvalues()	
-	if stagelabel != previousstagelabel && usehentaiexpressionng != 1
-		if !equippedtongue()
-			MfgConsoleFunc.ResetPhonemeModifier(mainFemaleActor)
-		endif
-	endif
 	
 	Utility.Wait(Utility.RandomFloat(0.5, 1.0)) ; wait up to 1 second for transition to complete before playing voice
 	
-		if equippedtongue() &&  usehentaiexpressionng == 1
-			ChangeHentaiExpression("tongueoverride")
-		elseif equippedtongue()
-			UpdateAhegaoExpression()
-		else
-			UpdateNormalExpression()
-		endif
 
-	
-		;Female knee-jerk reaction on stage transition	
 		BodySwitchtoLewdArmor()
+		;unequipmask for blowjob
 
 		
-		
-	if mainFemaleEnjoyment >= 90
-		return
-	elseif !MainMaleCanControl()  && previousstagelabel == "EN" && CurrentPenetrationLvl() >= 1
-			ChangeHentaiExpression("amused")
-			PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-	elseif	CurrentPenetrationLvl() >= 1 && previousstagelabel == "EN" && MainMaleCanControl()
-			ChangeHentaiExpression("kneejerk")
-
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , SkipWait = true)
-			Utility.Wait(Utility.RandomFloat(0.5, 1.5))
-		PlaySound(mainFemaleVoice.NoticeMaleWantsMore, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-	elseif stagelabel == "LI" && previousstagelabel == "LI" && !HasDeviousGag(mainFemaleActor)  ;if stage is still leadin
-		
-		if AllowMaleVoice()
-			PlaySound(mainMaleVoice.Aroused, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = false) 
-		endif
-		PlayBreathyorforeplaysound()
 	
-	;Transition from no penetration to penetration
-	elseif (stagelabel == "FA" || stagelabel == "FV" || stagelabel == "TP" || stagelabel == "DP" || stagelabel == "SA" ||  stagelabel == "SV" ||  stagelabel == "SR") && (currentstage == 1 || previousstagelabel == "LI" || previousstagelabel == "SB" || previousstagelabel == "FB") ;if stage move to slow penetration after leadin or BJ
-		
-			
-			PlaySound(MasterScript.Sounds.PullOutGape, mainFemaleActor, requiredChemistry = 0, soundPriority = 2, waitForCompletion = false)
-			IF !HasDeviousGag(mainFemaleActor) 
-			ChangeHentaiExpression("kneejerk")
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 )
-			Utility.Wait(Utility.RandomFloat(0.5, 1.0))
-			endif
-		if AllowMaleVoice()
-		;	miscutil.PrintConsole ("playing male transition voice no penetration to penetration")
-			PlaySound(mainMaleVoice.StrugglingEarly, mainMaleActor, requiredChemistry = 0, soundPriority = 2)
-		endif
-		IF !HasDeviousGag(mainFemaleActor) && !FemaleisGiving()
-			if ASLIsBroken()
-				ChangeHentaiExpression("hugeppgape")
+	if mainFemaleEnjoyment >= FemaleOrgasmHypeEnjoyment || moanonly == 1
+		if !PreviousStageHasPenetration() && IsgettingPenetrated()
+			PlaySound(MasterScript.Sounds.PullOutGape, mainFemaleActor, requiredChemistry = 0, soundPriority = 2, waitForCompletion = false , debugtext="PullOutGape")
+			if ishugepp()
 
-				PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3)
-			elseIf CurrentPenetrationLvl() >= 2
-				if FemaleisGiving()
-					ChangeHentaiExpression("amused")
-					PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-				elseif ASLCurrentlyintense || ishugePP() 
-					ChangeHentaiExpression("intensepenetrationcomments")
-					PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0)	
-				elseif  CurrentPenetrationLvl() == 3
-					ChangeHentaiExpression("initialinsertioncomments")
-					PlaySound(mainFemaleVoice.InsertionAnalSlow, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-				elseif femaleisvictim() && Utility.RandomFloat(0.5, 1.0) < 0.5
-					ChangeHentaiExpression("unamused")
-					PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0)
-				else
-					ChangeHentaiExpression("initialinsertioncomments")
-					PlaySound(mainFemaleVoice.InsertionGeneric, mainFemaleActor, requiredChemistry = 0 ,  soundPriority = 1)
-				endif
-			
-			endif
-		endif
-	;maintain Fast Penetration during Transition  
-	elseif ASLpreviouslyintense && ASLCurrentlyintense 
-		IF !HasDeviousGag(mainFemaleActor)
-			ChangeHentaiExpression("kneejerk")
-
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 )
-			Utility.Wait(Utility.RandomFloat(0.5, 1.5))
-		
-			if AllowMaleVoice()
-			;miscutil.PrintConsole ("playing male transition voice maintain Fast Penetration")
-			PlaySound(mainMaleVoice.Aggressive, mainMaleActor, soundPriority = 2 )
-			endif
-			
-			if CurrentPenetrationLvl() == 1
-				ChangeHentaiExpression("grunt")
-				PlaySound(mainFemaleVoice.BlowjobRemarks, mainFemaleActor, requiredChemistry = 0)
-			elseif mainFemaleEnjoyment > 60 && Utility.RandomFloat(0.0, 1.0)  < 0.4
-				ChangeHentaiExpression("intensepenetrationcomments")
-				PlaySound(mainFemaleVoice.PenetrativeCommentsIntense, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-			elseif Utility.RandomFloat(0.0, 1.0)  < 0.3
-				ChangeHentaiExpression("intensegrunt")
-				PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-			elseif FemaleIsVictim()
-				ChangeHentaiExpression("intensepenetrationcomments")
-				PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)	
+				PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext = "AfterGape")
 			else
-				ChangeHentaiExpression("inawe")
-				PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
+				PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext = "Oh")
 			endif
-		endif	
-	;Transition from Slow Penetration to Fast Penetration
-	elseif (stagelabel == "FA" ||  stagelabel == "FV" ||  stagelabel == "DP" ||  stagelabel == "TP" ||  stagelabel == "SR") && (previousstagelabel == "LI" || previousstagelabel == "SA" ||  previousstagelabel == "SV" || previousstagelabel == "") 
-	
-			
-		if ishugepp() || isDP() 
-			
-			IF !HasDeviousGag(mainFemaleActor) 
-			ChangeHentaiExpression("kneejerk")
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 )
 			Utility.Wait(Utility.RandomFloat(0.5, 1.0))
-			endif
-			
-			ChangeHentaiExpression("hugeppgape")
-			PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3)
+		endif
+		return
+	elseif HasDeviousGag(mainFemaleActor) 
+		StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet" , 0)
+		if EnableDDGagVoice == 1
+			PlayGaggedSound()
+		endif 	
+	;male moving backwards from ending to fuck somemore
+	elseif	IsgettingPenetrated() && PrevEndingLabel == "ENO" && MainMaleCanControl()
 
+			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , SkipWait = true , debugtext="Oh")
+			Utility.Wait(Utility.RandomFloat(0.5, 1.5))
+			PlaySound(mainFemaleVoice.NoticeMaleWantsMore, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="NoticeMaleWantsMore")
+				
+				if !MainFemaleisBurstingAtSeams()
+					ASLRemoveThickCumleak()
+				endif	
+				
+	;-------------Transition from no penetration to penetration----------------------
+	elseif !PreviousStageHasPenetration() && IsgettingPenetrated()
+		printdebug("Stage Transition - No Penetration to Penetration")
+		PlaySound(MasterScript.Sounds.PullOutGape, mainFemaleActor, requiredChemistry = 0, soundPriority = 2, waitForCompletion = false , debugtext="PullOutGape")
+		
+		if ishugepp()
 
-		elseif !FemaleIsVictim() && !HasDeviousGag(mainFemaleActor)
-			ChangeHentaiExpression("kneejerk")
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 )
+			PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext = "AfterGape")
+		else
+			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext = "Oh")
+		endif
+		Utility.Wait(Utility.RandomFloat(0.5, 1.0))
+
+		
+		if AllowMaleVoice()
+			PlaySound(mainMaleVoice.StrugglingEarly, mainMaleActor, requiredChemistry = 0, soundPriority = 2, debugtext="StrugglingEarly")
+		endif
+		
+		IF !IsSuckingoffOther() && Utility.RandomFloat(0.0, 1.0) < chancetocommentonnonintensestage
+			if IsCowgirl()
+
+				PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="Amused")
+			elseif ASLCurrentlyintense || ishugePP() 
+
+				PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0 , debugtext="TeaseAggressivePartner")
+				
+			elseif femaleisvictim() && Utility.RandomFloat(0.5, 1.0) < 0.5
 			
-			if AllowMaleVoice()
-				PlaySound(mainMaleVoice.StrugglingSubtle, mainMaleActor, soundPriority = 2 )
-				Utility.Wait(Utility.RandomFloat(0.5, 1.5))
-				ChangeHentaiExpression("intensepenetrationcomments")
-				PlaySound(mainFemaleVoice.MaleHalfwayIntense, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)	
+				PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0 , debugtext="Unamused")	
+			elseif IsGettingAnallyPenetrated()
+
+				PlaySound(mainFemaleVoice.InsertionAnalSlow, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext="InsertionAnalSlow")
+			
+			else
+
+				PlaySound(mainFemaleVoice.InsertionGeneric, mainFemaleActor, requiredChemistry = 0 ,  soundPriority = 1 , debugtext="InsertionGeneric")
 			endif
 				
-		else
-			IF !HasDeviousGag(mainFemaleActor)
-			ChangeHentaiExpression("kneejerk")
-			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 )
-			endif
-			if AllowMaleVoice()
-				PlaySound(mainMaleVoice.Aggressive, mainMaleActor, soundPriority = 2 )
-			endif
-			IF !HasDeviousGag(mainFemaleActor) 
-			Utility.Wait(Utility.RandomFloat(0.5, 1.5))
-			ChangeHentaiExpression("intensepenetrationcomments")
-			PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)	
-			endif
 		endif
 		
-		;stage with no prior insertion
-		;if (previousstagelabel == "LI" || previousstagelabel == "SB" || previousstagelabel == "FB") 
-		;	PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , waitForCompletion = False)
-		;	if CurrentPenetrationLvl() == 3 &&  Utility.RandomFloat(0.0, 1.0) < 0.7
-		;		PlaySound(mainFemaleVoice.InsertionAnalExcited, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-		;	elseif CurrentPenetrationLvl() == 2 && Utility.RandomFloat(0.0, 1.0) < 0.7
-		;		PlaySound(mainFemaleVoice.InsertionGeneric, mainFemaleActor, requiredChemistry = 0 ,  soundPriority = 1)
-		;	endif
-		;endif
-
-		;if non intense after intense penetrative action
-	elseif	(previousstagelabel == "FA" ||  previousstagelabel == "FV" ||  previousstagelabel == "DP" ||  previousstagelabel == "TP") && !ASLcurrentlyIntense && !HasDeviousGag(mainFemaleActor) 
+	;------------maintain Fast Penetration during Transition---------------- 
+	elseif ASLpreviouslyintense && ASLCurrentlyintense 
+		printdebug(" Stage Transition - Maintain Intensity")
+		
+			if AllowMaleVoice()
+				PlaySound(mainMaleVoice.Aggressive, mainMaleActor, soundPriority = 2, debugtext="Aggressive" )
+			endif
 			
-			;If IshugePP() || ASLCurrentlyintense
-				;PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-			;	miscutil.PrintConsole ("Playing After Orgasm Arouse in stage transition ")
-			;else
-				ChangeHentaiExpression("panting")
-				PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-		;	EndIf	
+			if  !IsSuckingoffOther() && IsgettingPenetrated() && Utility.randomfloat(0.0,1.0) < chancetocommentonintensestage
+				PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext="InAwe" )
+			endif
+	;------------------Transition from Slow Penetration to Fast Penetration-----------------
+	elseif !ASLpreviouslyintense && PreviousStageHasPenetration() && ASLcurrentlyintense && IsgettingPenetrated()
+		
+		if AllowMaleVoice() 
+				PlaySound(mainMaleVoice.StrugglingSubtle, mainMaleActor, soundPriority = 2 , waitForCompletion = false, debugtext="StrugglingSubtle" )
+				
+		endif		
+
+		
+		if ishugepp() || IsGettingDoublePenetrated()
+				
+			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext="Oh" )
+			Utility.Wait(Utility.RandomFloat(0.5, 1.0))			
+
+			PlaySound(mainFemaleVoice.AfterGape, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext="AfterGape")
+
+
+		elseif !FemaleIsVictim()
+
+			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3, debugtext="Oh"  )
+			
+			Utility.Wait(Utility.RandomFloat(0.5, 1.0))
+			
+			if Utility.randomfloat(0.0,1.0) < chancetocommentonintensestage
+				PlaySound(mainFemaleVoice.MaleHalfwayIntense, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext="MaleHalfwayIntense")	
+			endif		
+		else
+			PlaySound(mainFemaleVoice.Oh, mainFemaleActor, requiredChemistry = 0 , soundPriority = 3 , debugtext="Oh")
+			
+			if AllowMaleVoice() 
+				PlaySound(mainMaleVoice.Aggressive, mainMaleActor, soundPriority = 2 , debugtext = "Aggressive")
+			endif
+			
+			IF Utility.randomfloat(0.0,1.0) < chancetocommentonintensestage
+			Utility.Wait(Utility.RandomFloat(0.5, 1.5))
+				PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1 , debugtext = "TeaseAggressivePartner")	
+			endif
+			
+		endif
+
+;----------------------------if non intense after intense penetrative action--------------
+	elseif	ASLpreviouslyintense && !ASLcurrentlyIntense 
+			printdebug(" Stage Transition - Non Intense to Intense")
+				PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 , debugtext = "AfterOrgasmExclamations")
 	
 	endif
 
@@ -3318,146 +2092,21 @@ Function ASLMakeGreetingToMalePartner()
 
 	 Bool partnerLoaded = mainMaleEnjoyment > 50 
 	 
-	If hoursSinceLastSex < 5.0 || stealthScene ;Don't need to greet if its really just resuming what was left off by the last scene or if we're trying to be stealthy
+	If hoursSinceLastSex < 5.0
 		Return
 	EndIf
-	
-	If !MasterScript.ConfigOptions.GetModSettingBool("bAllowGreets:DialogueOptions")
-		Return
-	EndIf
-	ChangeHentaiExpression("Greeting")
+
 	if partnerLoaded 
-		PlaySound(mainFemaleVoice.GreetLoadedFamiliar, mainFemaleActor, requiredChemistry = 4)
+		PlaySound(mainFemaleVoice.GreetLoadedFamiliar, mainFemaleActor, requiredChemistry = 4 , debugtext = "GreetLoadedFamiliar")
 	elseif withMaleLover	
-		PlaySound(mainFemaleVoice.GreetLover, mainFemaleActor, requiredChemistry = 6)
+		PlaySound(mainFemaleVoice.GreetLover, mainFemaleActor, requiredChemistry = 6 , debugtext = "GreetLover")
 	else
-		PlaySound(mainFemaleVoice.GreetFamiliar, mainFemaleActor, requiredChemistry = 4)
+		PlaySound(mainFemaleVoice.GreetFamiliar, mainFemaleActor, requiredChemistry = 4 , debugtext = "GreetFamiliar")
 	endif
 
 	
 EndFunction
 
-Function ASLPlayPenetrationComments()
-
-if femaleisgiving()
-	if ShouldPlayMaleOrgasmHype()
-		ASLPlayMaleClosetoOrgasmComments()
-	elseif  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage
-		ChangeHentaiExpression("amused")
-		PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0)
-	elseif ASLcurrentlyIntense
-		ChangeHentaiExpression("intensegrunt")
-		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0)
-	else
-		ChangeHentaiExpression("grunt")
-		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-	endif
-elseif ASLcurrentlyIntense
-	ChangeHentaiExpression("intensepenetrationcomments")
-	if CommentedClosetoOrgasm
-		ChangeHentaiExpression("maleclosetoorgasmIntense")
-		PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-	elseif ASLisBroken() || EquippedTongue()
-		PlaySound(mainFemaleVoice.PenetrativeCommentsIntense, mainFemaleActor, requiredChemistry = 0)	
-	elseif  femaleisvictim() || ishugepp() 
-		PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0)
-		
-	elseif !femaleisvictim() && mainFemaleEnjoyment
-		PlaySound(mainFemaleVoice.PenetrativeCommentsIntense, mainFemaleActor, requiredChemistry = 0)	
-	
-	else
-		PlaySound(mainFemaleVoice.TeaseAggressivePartner, mainFemaleActor, requiredChemistry = 0)
-
-	endif
-else
-	if ASLisBroken()
-		ASLPlayBrokenVoice()
-	elseif femaleisvictim() && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentUnamused 
-		ChangeHentaiExpression("unamused")
-		PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0)
-	elseif mainFemaleEnjoyment > 30 && !femaleisvictim()
-		ChangeHentaiExpression("penetrationcomments")
-		PlaySound(mainFemaleVoice.PenetrativeCommentssoft, mainFemaleActor, requiredChemistry = 0)
-	else
-		ChangeHentaiExpression("grunt")
-		PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-	endif
-endif
-EndFunction
-
-Function ASLAddTongue()
-;if has MFEE
-
-if hasMFEE && MFEETongueOutOverride.length > 1 && MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,0,0) == 0
-
-	MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,8,0,100) ;tongueout
-	MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,8,2,100) ;tongue down
-
-endif
-
-
-if EnableTongue != 1 || HasDeviousGag(mainFemaleActor)  || IsUnconcious()
-
-	Return
-endif
-
-Race FemaleActorRace = mainFemaleActor.GetRace()
-String FemaleRaceName = FemaleActorRace.GetName()
-
-if	!mainFemaleActor.IsEquipped(Tongue) && Game.GetModbyName("sr_fillherup.esp") != 255  && stagelabel != "FB" && stagelabel != "SB" && stagelabel != "SR" && EnableTongue == 1
-	if usehentaiexpressionng == 1
-	
-		ChangeHentaiExpression("tongueoverride")
-		
-	elseif EnableHentaiIVDTAhegaoExpressions == 1
-
-		MfgConsoleFunc.ResetPhonemeModifier(mainFemaleActor); reset phoneme
-		if FemaleRaceName =="Elin" || FemaleRaceName =="Erin"
-
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah) ; big aah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,12,Vohq) ; ohq
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,5,Veee*30/100) ; eee
-		else ;vanilla race
-
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,1,vbigaah); big ah
-			MfgConsoleFunc.SetPhoneme(mainFemaleActor,6,Veh); eh
-		endif
-
-		UpdateAhegaoExpression(true)
-	endif
-	
-mainFemaleActor.addItem(Tongue , abSilent=true)
-mainFemaleActor.EquipItem(Tongue , abSilent=true)
-
-endif
-
-endfunction
-
-
-Function ASLRemoveTongue()
-	
-	if hasMFEE && MFEETongueOutOverride.length > 1
-
-		MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,8,0,0) ;tongueout
-		MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,8,2,0) ;tongue down
-
-	endif
-
-	if	mainFemaleActor.IsEquipped(Tongue) 
-		mainFemaleActor.unEquipItem(Tongue, abSilent=true)
-		mainFemaleActor.removeItem(Tongue , abSilent=true)
-		
-		if usehentaiexpressionng == 1
-			ChangeHentaiExpression("tongueoverride")
-		elseif EnableHentaiIVDTAhegaoExpressions == 1
-		
-		MfgConsoleFunc.ResetPhonemeModifier(mainFemaleActor); reset phoneme
-		UpdateNormalExpression(true)
-		endif
-	endif
-
-
-endfunction
 
 
 Function ASLAddOrgasmSSquirt()
@@ -3483,35 +2132,25 @@ Function ASLAddThickCumleak()
 if EnableThickCumLeak != 1 
 	Return
 endif
-if FemaleisGiving() ;main female penetrating
-	if	!mainMaleActor.IsEquipped(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor) && Game.GetModbyName("sr_fillherup.esp") != 255 
-		mainMaleActor.addItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor , abSilent=true)
-		mainMaleActor.EquipItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor)
-	endif
-else ;main female receiving
+
 	if	!mainFemaleActor.IsEquipped(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor) && Game.GetModbyName("sr_fillherup.esp") != 255 
 		mainFemaleActor.addItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor , abSilent=true)
 		mainFemaleActor.EquipItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor)
 	endif
-endif
+
 endfunction
 
 Function ASLRemoveThickCumleak()
-if FemaleisGiving() ;main female penetrating
-	if	mainMaleActor.IsEquipped(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor) 
-		mainMaleActor.unEquipItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor , abSilent=true)
-		mainMaleActor.removeItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor)
-	endif
-else
+
 	if	mainFemaleActor.IsEquipped(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor) 
 		mainFemaleActor.unEquipItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor , abSilent=true)
 		mainFemaleActor.removeItem(Game.GetFormFromFile(0xE1D1C, "sr_fillherup.esp") as Armor)
 	endif
-endif
+
 endfunction
 
 Function ASLAddCumPool()
-if EnableThickCumLeak != 1 || FemaleisGiving()
+if EnableThickCumLeak != 1 
 	Return
 endif
 
@@ -3530,86 +2169,15 @@ endif
 
 endfunction
 
-
-Function ASLAddOralLeak()
-if EnableThickCumLeak != 1 || FemaleisGiving()
-	Return
-endif
-
-if	!mainFemaleActor.IsEquipped(Game.GetFormFromFile(0x14C253, "sr_fillherup.esp") as Armor) && Game.GetModbyName("sr_fillherup.esp") != 255 
-	mainFemaleActor.addItem(Game.GetFormFromFile(0x14C253, "sr_fillherup.esp") as Armor , abSilent=true)
-	mainFemaleActor.EquipItem(Game.GetFormFromFile(0x14C253, "sr_fillherup.esp") as Armor)
-endif
-endfunction
-
-Function ASLRemoveOralLeak()
-if	mainFemaleActor.IsEquipped(Game.GetFormFromFile(0x14C253, "sr_fillherup.esp") as Armor) 
-	mainFemaleActor.unEquipItem(Game.GetFormFromFile(0x14C253, "sr_fillherup.esp") as Armor , abSilent=true)
-	mainFemaleActor.removeItem(Game.GetFormFromFile(0x14C253, "sr_fillherup.esp") as Armor)
-endif
-endfunction
-
-Bool Function EquippedTongue()
-
-		return  mainFemaleActor.IsEquipped(tongue) || MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,8,0) > 0
-	
-endfunction
-
-
-Function ASLPlayBrokenVoice()
-
-if CommentedClosetoOrgasm
-	ChangeHentaiExpression("overthetop")
-	PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0)
-elseIf femaleCloseToOrgasm() ;When female close to orgasm
-	ASLPlayFemaleOrgasmHype()
-elseif  Utility.RandomFloat(0.0, 1.0) < 0.15	&& !ASLcurrentlyintense
-	ChangeHentaiExpression("panting")
-	PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)	
-elseif shouldgoontheattack(currentAnimation) && Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/2
-	ChangeHentaiExpression("attackingcomments")
-	PlaySound(mainFemaleVoice.OnTheAttack, mainFemaleActor, requiredChemistry = 0) 	
-elseif  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/4
-	ChangeHentaiExpression("amused")
-	PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)
-elseif  Utility.RandomFloat(0.0, 1.0) < ChanceToCommentononAttackingStage/4	
-	ChangeHentaiExpression("inawe")
-	PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0)	
-else
-	ChangeHentaiExpression("grunt")
-	PlaySound(mainFemaleVoice.AfterOrgasmArouse, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-endif
-endfunction
-
-Function ASLRefreshBrokenStatus()
-if  actorWithSceneTrackerSpell == mainFemaleActor
-	if ASLIsBroken()
-		ChanceToOrgasmSquirt = ChanceToOrgasmSquirt * 2
-		
-		if !hasMFEE 
-			ASLAddTongue()
-		endif
-	elseif StorageUtil.GetIntValue(None, "ASLTotalOrgasmtoBroken") > StorageUtil.GetIntValue(None, "ASLTargetOrgasmtoBroken")
-		StorageUtil.SetIntValue(None, "ASLIsBroken" , 1)
-		ASLAddTongue()
-	else
-		StorageUtil.SetIntValue(None, "ASLIsBroken" , 0)
-		
-	endif
-	
-endif	
-;	miscutil.PrintConsole ("ASLTotalOrgasmtoBroken  : " + StorageUtil.GetIntValue(None, "ASLTotalOrgasmtoBroken"))
-;	miscutil.PrintConsole ("ASLIsBroken  : " + StorageUtil.GetIntValue(None, "ASLIsBroken"))
-if ASLIsBroken() && NotifiedBrokenstatus == false
-debug.notification("You are Mentally Broken from being Raped Continuously")
-NotifiedBrokenstatus = true
-endif
-EndFunction
-
 bool function ASLIsBroken()
 	
-	return StorageUtil.GetIntValue(None, "ASLIsBroken") >= 1 && EnableBrokenStatus == 1
+	return GetBrokenPoints() > 0 && EnableBrokenStatus == 1
 endfunction
+
+int function GetBrokenPoints()
+	return mainfemaleactor.GetFactionRank(HentairimBroken)
+endFunction
+
 
 bool function ASLCanAccumulateBrokenPoints()
 	
@@ -3623,43 +2191,42 @@ endfunction
 
 Bool Function ASLProcessStageAdvancing()
 	if EnableAutoAdvanceStage != 1
+		Printdebug("Auto Advance Stage Not Enabled")
 		return false
-	elseif cycle >= 7 && currentlyPlayingSoundCount == 0
-		return true
-	elseif cycle >= 4 && StageLabel == "EN" && currentlyPlayingSoundCount == 0
-		return true
-	elseif actorWithSceneTrackerSpell == mainMaleActor
-		return false
-	elseif MainMaleCanControl() && mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && CurrentPenetrationLvl() >= 2  
-		return false
-	elseif mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && CurrentPenetrationLvl() >= 1 && !MainMaleCanControl()
-		return false
-	elseif !MainMaleCanControl() && mainFemaleEnjoyment >= FemaleOrgasmHypeEnjoyment  && CurrentPenetrationLvl() >= 2
-		return false
-	elseif MainMaleCanControl() && maleOrgasmCount/currentAnimation.stagecount >= utility.randomint(4,7) && currentlyPlayingSoundCount == 0
-		return true
-	elseif !MainMaleCanControl() && femaleRecordedOrgasmCount/currentAnimation.stagecount >= utility.randomint(3,5) && currentlyPlayingSoundCount == 0
-		return true
 
+	elseif donotadvanceifnpcclosetoorgasm  == 1 && MainMaleCanControl() && mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && IsgettingPenetrated() ;main male busy fucking and is going to cum
+		Printdebug("Stage not advancing due to : Male Enjoyment > Orgasm Hype Enjoymen . is FUcking someone.")
+		return false
+	elseif donotadvanceifpcclosetoorgasm == 1 && mainFemaleEnjoyment >= FemaleOrgasmHypeEnjoyment && CurrentPenetrationLvl() >= 1 && !MainMaleCanControl() ;main female busy fucking and is going to cum
+		Printdebug("Stage not advancing due to : Female Enjoyment > Orgasm Hype Enjoymen . is femdom someone.")
+		return false
+	elseif donotadvanceifpartnerclosetoorgasm == 1 && mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && (IsStimulatingOthers() || IsgettingPenetrated()) && !MainMaleCanControl() ;main female wants to drain male before advancing
+		Printdebug("Stage not advancing due to : donotadvanceifpartnerclosetoorgasm = 1 . is femdom someone. Male Enjoyment > Male Enjoyment Hype. is fucking or stimulating main male")
+		return false	
+	elseif cycle >= 8 && currentlyPlayingSoundCount == 0  ;advance if cycle has gone too long
+		Printdebug("stage Advancing as it has been playing for too long.")
+		return true
+	elseif cycle >= 5 && IsEnding() && currentlyPlayingSoundCount == 0 ;advance if cycle has gone too long in ending
+		Printdebug("stage Advancing as it has been playing for too long in ending scene.")
+		return true
 	elseif sexLabThreadController.TotalTime <= 10
+		Printdebug("Stage not advancing as the stage has only just started running under 10 seconds")
 		return false
 	elseif  sexLabThreadController.TotalTime - timeOfLastRecordedFemaleOrgasm <= 7
-
+		Printdebug("Stage not advancing After Female orgasm for 7 seconds")
 		return false
 	else
-
-		Return ASLstagetimetoadvance < sexLabThreadController.TotalTime && currentlyPlayingSoundCount == 0 && currentlyPlayingSoundCountMale == 0  && ((!femaleCloseToOrgasm() && !MaleCloseToOrgasm()) || CurrentPenetrationLvl() <= 1 )
+		Printdebug("Checking Conditions to Advance")
+		Printdebug("Total Seconds in Sex" + sexLabThreadController.TotalTime)
+		Printdebug("Total Seconds in Sex to advance " + ASLstagetimetoadvance + ". This must be lower than total seconds in sex")
+		Printdebug("Female voice count " + currentlyPlayingSoundCount + ". This must be 0")
+		Printdebug("Male voice count " + currentlyPlayingSoundCountMale + ". This must be 0") 
+		Return ASLstagetimetoadvance < sexLabThreadController.TotalTime && currentlyPlayingSoundCount == 0 && currentlyPlayingSoundCountMale == 0 
 	
 	endif
 endfunction
 
-Bool Function MainFemaleisSuccubus()
 
-if has_spell(mainFemaleActor, 0x238627, "ChildrenofLilith.esp") 	
-	return true
-endif
-
-endfunction
 
 Function SetActorScale()
 Race MaleActorRace = mainMaleActor.GetRace()
@@ -3675,13 +2242,15 @@ if MaleRaceName ==  "Frostbite Spider"
 		ActorTwo.setscale(1.0)
 	endif
 endif
- 
+
 if enabletagscaling == 1 && ( currentAnimation.hasTag("Bigguy") || currentAnimation.hasTag("Big Guy") || currentAnimation.hasTag("Shota") )
 ;define scale value
 	if currentAnimation.hasTag("Bigguy") || currentAnimation.hasTag("Big Guy")
 		scalevalue = 1.15
+		printdebug("Scaling to 1.15 for Bigguy Animation")
 	elseif	currentAnimation.hasTag("Shota")
 		scalevalue = 0.8
+		printdebug("Scaling to 0.8 for Shota Animation")
 	else
 		scalevalue = 1.0
 	endif
@@ -3710,7 +2279,6 @@ ActorFive.setscale(scalevalue)
 
 endif	
 
-
 endif
 endfunction
 
@@ -3736,14 +2304,6 @@ endif
 endif
 endfunction
 
-
-
-
-Bool Function ShouldSkipP3sound()
-
-return 	StorageUtil.GetIntValue(None, "ASLOrgasm") == 1 || 	StorageUtil.GetIntValue(None, "ASLMaleOrgasm") == 1 
-
-endfunction
 
 Bool Function MainFemaleisBurstingAtSeams()
 
@@ -3820,226 +2380,8 @@ form function get_form(int id, string filename)
 	return Game.GetFormFromFile(id, filename)
 endfunction
 
-function ResetExpressionvalues()
-	NormalExpressionPath = Utility.RandomInt(1,3)
-
-	NormalExpressionLookleftorRight = Utility.RandomInt(1,3)
-
-endfunction
 
 
-function ASLPlayGagSound()
-
-	if AllowMaleVoice()
-		ASLPlayMaleComments()
-	endif
-	;intense gag noise
-	if ASLCurrentlyintense
-		PlaySound(mainFemaleVoice.AssFlattering, mainFemaleActor, requiredChemistry =0)
-	else
-	; less intense gag noises
-		PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0)
-	endif
-
-endfunction
-
-
-
-
-Function UpdatePauseExpressionflag()
-
-if stagelabel == "EN"
-	PauseExpressionUpdate = true
-else
-	PauseExpressionUpdate = false
-endif
-
-endfunction
-;mFG 
-	;akActor.SetExpressionOverride(3,100)
-;MfgConsoleFunc.ResetPhonemeModifier(akActor) reset phoneme
-;MfgConsoleFunc.SetPhoneme(akActor,1,70)
-;MfgConsoleFunc.SetModifier(akActor,3,50)
-	
-Bool Function GiveSHMilkSperm(Actor char)
-
-Race MaleActorRace = char.GetRace()
-String MaleRaceName = char.GetName()
-	;set Gender
-	Gender = SexLab.GetGender(char) ; 0 = male , 1 = female , 2 = male creature , 3 = female creature
-	
-if EnableSuccubusHeartMilkSperm == 1 && Game.GetModbyName("Succubus Heart.esp") != 255 
-
-	
-	If Gender == 2; male creature
-		if MaleRaceName == "Troll" || MaleRaceName ==  "Snow Troll" 
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x257A0A, "Succubus Heart.esp") as Ingredient, 3)
- 		elseif IshugePP()
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x257A0A, "Succubus Heart.esp") as Ingredient, 2)
-		else
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x257A0A, "Succubus Heart.esp") as Ingredient, 1)
-		endif
-		
-	elseif Gender == 3 ; Female creature
-		if MaleRaceName == "Troll" || MaleRaceName ==  "Snow Troll" 
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x257A0C, "Succubus Heart.esp") as Ingredient, 3)
-		elseif IshugePP()
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x257A0C, "Succubus Heart.esp") as Ingredient, 2)
-		else
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x257A0C, "Succubus Heart.esp") as Ingredient, 1)
-		endif
-	elseif Gender == 1 ; female
-		if MaleRaceName == "Orc"
-			if HasSchlong(char)
-				mainFemaleActor.AddItem(Game.GetFormFromFile(0x82B, "Succubus Heart.esp") as Ingredient, 2)
-			else
-				mainFemaleActor.AddItem(Game.GetFormFromFile(0x835, "Succubus Heart.esp") as Ingredient, 2)
-			endif			
-		else
-			if HasSchlong(char)
-				mainFemaleActor.AddItem(Game.GetFormFromFile(0x82B, "Succubus Heart.esp") as Ingredient, 1)
-			else
-				mainFemaleActor.AddItem(Game.GetFormFromFile(0x835, "Succubus Heart.esp") as Ingredient, 1)
-			endif
-		endif
-	else ; male
-		if MaleRaceName == "Orc"
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x82B, "Succubus Heart.esp") as Ingredient, 2)
-		else
-			mainFemaleActor.AddItem(Game.GetFormFromFile(0x82B, "Succubus Heart.esp") as Ingredient, 1)
-		endif		
-	endif	
-endif
-
-endfunction
-
-; future to do. make comments on blowjob
-Function ASLPlayMaleComments()
-	
-	if stagelabel == "LI" && Currentstage < 3
-	
-		PlaySound(mainMaleVoice.Aroused, mainMaleActor, requiredChemistry = 0, soundPriority = 2) 		
-		ChangeHentaiExpression("LeadIn")
-		if HasDeviousGag(mainFemaleActor) 
-		;intense gag noise
-			if ASLCurrentlyintense
-				PlaySound(mainFemaleVoice.AssFlattering, mainFemaleActor, requiredChemistry =0)
-			else
-		; less intense gag noises
-			PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0)
-			endif	
-		elseif	ASLisBroken()
-			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)	
-		else
-			PlaySound(mainFemaleVoice.Foreplaysoft, mainFemaleActor, requiredChemistry = 0)
-		endif	
-
-	elseif ShouldPlayMaleOrgasmHype() 
-
-		
-		PlaySound(mainMaleVoice.AboutToCum, mainMaleActor, requiredChemistry = 0,  soundPriority = 2 , waitForCompletion = False)
-		;female background moaning
-		
-		if IsUnconcious()
-			return
-		elseif HasDeviousGag(mainFemaleActor) 	
-			if ASLCurrentlyintense
-				PlaySound(mainFemaleVoice.AssFlattering, mainFemaleActor, requiredChemistry =0)
-			else
-				; less intense gag noises
-				PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0)
-			endif	
-		elseif ASLisBroken()
-			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 )	
-		else
-			if ASLCurrentlyintense 
-				ChangeHentaiExpression("maleclosetoorgasmIntense")
-				PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-				else
-				ChangeHentaiExpression("maleclosetoorgasm")
-				PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1 )
-			endif	
-		endif
-		
-	elseif MaleIsVictim() || ShouldGoOnTheAttack(currentanimation)
-		;miscutil.PrintConsole ("Playing Male Comments male victim On the attack")
-		;male say something
-		ChangeHentaiExpression("grunt")
-		PlaySound(mainMaleVoice.TeaseAggressivePartner, mainMaleActor, soundPriority = 2 , waitForCompletion = False)
-		;female background moaning
-		if IsUnconcious()
-			return
-		elseif HasDeviousGag(mainFemaleActor) 	
-				PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0)
-		elseif ASLisBroken()
-			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1)	
-		else
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1)
-			if Utility.RandomFloat(0.0, 1.0) <0.3
-			ChangeHentaiExpression("amused")
-			PlaySound(mainFemaleVoice.Amused, mainFemaleActor, requiredChemistry = 0)
-			endif
-		endif
-		
-		
-			
-	elseif  CurrentPenetrationLvl() >= 2 && ASLCurrentlyintense 
-		;miscutil.PrintConsole ("Playing Male Comments intense penetration")
-		
-		;male say something
-		if IsUnconcious()
-			return
-		elseif femaleisvictim()
-			PlaySound(mainMaleVoice.Aggressive, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False)
-		else
-			PlaySound(mainMaleVoice.StrugglingSubtle, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False)
-		endif
-		ChangeHentaiExpression("intensegrunt")
-		;female background moaning
-		if HasDeviousGag(mainFemaleActor) 	
-			if ASLCurrentlyintense
-				PlaySound(mainFemaleVoice.AssFlattering, mainFemaleActor, requiredChemistry =0 , soundPriority = 1)
-			else
-				; less intense gag noises
-				PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-			endif		
-		else
-			PlaySound(mainFemaleVoice.NearOrgasmNoises, mainFemaleActor, requiredChemistry = 0 , soundPriority = 1)
-		endif
-					
-	elseif	CurrentPenetrationLvl() >= 2 && !ASLCurrentlyintense 
-		;miscutil.PrintConsole ("Playing Male Comments non Intense Penetration")
-				;female background moaning
-		PlaySound(mainMaleVoice.StrugglingEarly, mainMaleActor, requiredChemistry = 0, soundPriority = 2 , waitForCompletion = False)
-		ChangeHentaiExpression("grunt")
-		if IsUnconcious()
-			return
-		elseif HasDeviousGag(mainFemaleActor) 	
-			; less intense gag noises
-			PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0)
-
-		elseif ASLisBroken()
-			PlaySound(mainFemaleVoice.AfterOrgasmExclamations, mainFemaleActor, requiredChemistry = 0, soundPriority = 1 )	
-		else
-			PlaySound(mainFemaleVoice.PenetrativeGrunts, mainFemaleActor, requiredChemistry = 0 ,soundPriority = 1)
-			
-			if Utility.RandomFloat(0.0, 1.0) <0.3
-				if femaleisvictim() 
-					ChangeHentaiExpression("unamused")
-					PlaySound(mainFemaleVoice.Unamused, mainFemaleActor, requiredChemistry = 0)
-				else
-					ChangeHentaiExpression("inawe")
-					PlaySound(mainFemaleVoice.InAwe, mainFemaleActor, requiredChemistry = 0)	
-				endif
-			endif                       
-		endif
-		
-		
-	endif		
-
-
-	
-endfunction
 
 Bool Function AllowMaleVoice()
 
@@ -4047,9 +2389,6 @@ Bool Function AllowMaleVoice()
 	
 endfunction
 
-Bool Function FemaleisGiving()
-	return mainFemaleActor != ActorsInPlay[0] && CurrentPenetrationLvl() >= 1
-endfunction
 
 Function BodySwitchtoLewdArmor()
 ; this is meant for slot 32 body armor switching only at the beginning of the stage.
@@ -4065,25 +2404,24 @@ Armor LewdArmor
 	;miscutil.PrintConsole ("wearing lewd armor...")
 	while slotindex < slotlength
 		BaseArmor = mainFemaleActor.GetWornForm(Armor.GetMaskForSlot(ArmorSlotsToSwitch[slotindex] as int)) as armor
-		if BaseArmor
-			LewdArmor = jsonutil.GetFormValue(ArmorSwappingFile, BaseArmor.getname(), none)	as armor
-			if LewdArmor != none
-				;miscutil.PrintConsole (slotindex + " Trying to add  : "+ LewdArmor.getname())
-				mainFemaleActor.addItem(LewdArmor , abSilent=true)
-				
-				;miscutil.PrintConsole (slotindex + " Trying to unequip  : "+ BaseArmor.getname())
-				mainFemaleActor.unEquipItem(BaseArmor , abSilent=true)
-				
-				;miscutil.PrintConsole (slotindex + " Trying to equip  : "+ LewdArmor.getname())
-				mainFemaleActor.EquipItem(LewdArmor , abSilent=true)
-				
-				
+		LewdArmor = jsonutil.GetFormValue(ArmorSwappingFile, BaseArmor.getname(), none)	as armor
+	if BaseArmor
+	if LewdArmor != none
+		;miscutil.PrintConsole (slotindex + " Trying to add  : "+ LewdArmor.getname())
+		mainFemaleActor.addItem(LewdArmor , abSilent=true)
 		
-				BaseArmorArr = papyrusutil.pushform(BaseArmorArr , BaseArmor)
-				LewdArmorArr = papyrusutil.pushform(LewdArmorArr , LewdArmor)
-			endif
-		endif
+		;miscutil.PrintConsole (slotindex + " Trying to unequip  : "+ BaseArmor.getname())
+		mainFemaleActor.unEquipItem(BaseArmor , abSilent=true)
 		
+		;miscutil.PrintConsole (slotindex + " Trying to equip  : "+ LewdArmor.getname())
+		mainFemaleActor.EquipItem(LewdArmor , abSilent=true)
+		
+		
+
+		BaseArmorArr = papyrusutil.pushform(BaseArmorArr , BaseArmor)
+		LewdArmorArr = papyrusutil.pushform(LewdArmorArr , LewdArmor)
+	endif
+	endif
 	
 	
 	
@@ -4122,43 +2460,30 @@ EndFunction
 
 
 Int Function CurrentPenetrationLvl()
-	Bool hasVaginalTag = CurrentAnimation.HasTag("Vaginal")
-	Bool hasLeadInTag = CurrentAnimation.HasTag("LeadIn")
-	Bool hasAnalTag = CurrentAnimation.HasTag("Anal")
 
-	if stagelabel != "None"
-			
-			if stagelabel == "SR"
-				if CurrentAnimation.HasTag("Vaginal")
-					return 2
-				else 
-					return 3
-				endif
-		
-		elseif stagelabel == "LI"
+		if Primarystagelabel == "LDI" || IsStimulatingOthers()
 			return 0
-		elseif stagelabel == "FA" || stagelabel == "SA" || stagelabel == "DP" || stagelabel == "TP"
+		elseif IsGettingAnallyPenetrated()  ||  IsGivingAnalPenetration()
 			return 3
-		elseif stagelabel == "FV" || stagelabel == "SV" 
+		elseif IsGettingVaginallyPenetrated() || IsGivingVaginalPenetration()
 			return 2
-		elseif stagelabel == "FB" || stagelabel == "SB" 
+		elseif IsSuckingoffOther() || IsGettingSuckedoff()
 			return 1
-		elseif stagelabel == "EN" && (previousstagelabel == "FB" || previousstagelabel == "SB")
+		elseif IsEnding() && PreviouslyIsSuckingoffOther()
 			return 1
-		elseif stagelabel == "EN" && (previousstagelabel == "FA" || previousstagelabel == "SA" || previousstagelabel == "DP" || previousstagelabel == "TP")
+		elseif IsEnding() && PreviouslyIsGettingAnallyPenetrated()
 			return 3
-		elseif stagelabel == "EN" && (previousstagelabel == "FV" || previousstagelabel == "SV" )
+		elseif IsEnding() && PreviouslyIsGettingVaginallyPenetrated()
 			return 2
 		else 
 			return 0
 		endif
 		
-	endif
-	return 0
+	
 EndFunction
 
 Bool Function IsUnconcious()
-	if (currentanimation.HasTag("faint") || currentanimation.HasTag("sleep") || currentanimation.HasTag("necro")) && !femaleisgiving()
+	if (currentanimation.HasTag("faint") || currentanimation.HasTag("sleep") || currentanimation.HasTag("necro"))
 		StorageUtil.SetIntValue(None, "ASLDoNotAllowFemaleOrgasmYet",0)
 		Return true
 	else
@@ -4167,362 +2492,46 @@ Bool Function IsUnconcious()
 endfunction
 
 Bool Function ShouldMovebackAStage()
-
-	if	!MainMaleCanControl() && stagelabel == "EN" && mainFemaleEnjoyment >= FemaleOrgasmHypeEnjoyment  && CurrentPenetrationLvl() >= 2 && femaleRecordedOrgasmCount <= 3
+	;female is not satisfied
+	if	!MainMaleCanControl() && IsEnding() && (PreviouslyIsCowgirl() || PreviouslyIsGivingVaginalPenetration() || PreviouslyIsGivingAnalPenetration()) && mainFemaleEnjoyment >= FemaleOrgasmHypeEnjoyment  && isfemdom() && !FemaleIsSatisfied()
+		printdebug("Moving back a stage as it is Ending. is femdom. female Enjoyment > Orgasm HYpe Enjoyment. female didnt orgasm Enough (random between 2-4)")
 		return true
-	elseif stagelabel == "EN" && CurrentPenetrationLvl() >= 2 && FemaleIsVictim() &&  AggressiveChancetoMoveBackAStage >=  Utility.Randomint(0, 100) 
+	;rapist is not satisfied a
+	elseif IsEnding() && PreviouslyIsgettingPenetrated() && FemaleIsVictim() &&  Utility.Randomint(0, 100) <= AggressiveChancetoMoveBackAStage
+		printdebug("Moving back a stage as it is Ending. PC is victim, and rolled for AggressiveChancetoMoveBackAStage")
 		return true
-	elseif stagelabel == "EN" && CurrentPenetrationLvl() >= 2 && mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && MainMaleCanControl() &&  maleOrgasmCount <= 3
+	;Male is not satisfied 
+	elseif IsEnding() && PreviouslyIsgettingPenetrated() && mainMaleEnjoyment >= MaleOrgasmHypeEnjoyment && MainMaleCanControl() && !MaleIsSatisfied()
+		printdebug("Moving back a stage as it is Ending. is femdom. Male Enjoyment > Orgasm HYpe Enjoyment. main Male Didnt Cum Enough (random between 2-4)")
 		return true
 	else
 		return false
 	endif
 endfunction
 
-Function ResetHentaiExpressionGroup()
-	Type = Utility.Randomint(1,3)
-	
-	if type == 1
-		ExpressionGroup = "A"
-	elseif type == 2
-		ExpressionGroup = "B"
-	elseif type == 3
-		ExpressionGroup = "C"
-	endif
-
-endfunction
-
-Function ChangeHentaiExpression(String Scenario)
-if UseHentaiExpressionNG != 1 
-	return
-endif
-;Utility.Wait(0.5) ;add delay to sync with hentai expressions NG
-StorageUtil.SetStringValue(None, "Scenario" ,Scenario)
-;miscutil.printconsole("Scenario changed to : " + Scenario)
-EndFunction
-
 Function NotificationifFileisBad()
 
 if !jsonutil.isgood(ConfigFile)
-	miscutil.printconsole("IVDT Hentai : Config json file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
-endif
-
-if !jsonutil.isgood(ExpressionsNGFile)
-	miscutil.printconsole("IVDT Hentai : IVDT Hentai Expressions NG file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
+	printdebug("Config json file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
 endif
 
 if !jsonutil.isgood(ArmorSwappingFile)
-	miscutil.printconsole("IVDT Hentai : Armor Swapping json file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
+	printdebug("Armor Swapping json file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
 endif
 
-if !jsonutil.isgood(RaceBaseExpressionFile)
-	miscutil.printconsole("IVDT Hentai : Race Base Expression File json file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
+if !jsonutil.isgood(TimerConfigFile)
+	printdebug("Timer Config json file format is bad , please check the format of the json file which you have edited. you can search and use any json validator online")
 endif
+
 
 endfunction
 
-Function PhaseFemaleexpressions()
-
-if UseHentaiExpressionNG != 1  
-
-	return
-endif
-
-int phase = 1
-String[] PhaseExpressionsArr
-String[] MFEEArr
-string PhaseLookup 
-int variance 
-float speed = 0.50
-string Scenario = "grunt"
-String ASLFemaleSpeech 
-
-string Role = "C"
-int lookdirection = 9
-	if femaleisvictim()
-		Role = "V"
-	endif
-
-
-
-if IsUnconcious();if unconcious stage
-	MfgConsoleFunc.SetModifier(mainFemaleActor, 0, 100) ;left blink
-	MfgConsoleFunc.SetModifier(mainFemaleActor, 1, 100) ;right blink
-	MfgConsoleFunc.SetPhoneme(mainFemaleActor,0,Utility.Randomint(0, Vaah*50/100)) ; aah
-endif
-
-;miscutil.printconsole("Female making sound : " + StorageUtil.GetIntValue(None, "FemaleMakingSound",0))
-while StorageUtil.GetIntValue(None, "FemaleMakingSound",0) == 1
-	ASLUpdate()
-
-	int ExpressionIndex = 0
-	lookdirection = utility.Randomint(8,10)
-	Scenario = StorageUtil.GetStringValue(None, "Scenario", "leadin")
-	
-	ASLFemaleSpeech = role + Scenario + ExpressionGroup
-	;miscutil.printconsole("Scenario = " + Scenario)
-	;miscutil.printconsole("ASLFemaleSpeech = " + ASLFemaleSpeech)
-	;Scenario = Stringutil.substring(ASLFemaleSpeech , 1 , Stringutil.getlength(ASLFemaleSpeech) - 2)
-	;miscutil.printconsole("Phase Scenario : " + Scenario)
-	
-	Speed = ExpressionSpeed(Scenario)
-
-	PhaseLookup = ASLFemaleSpeech + Phase
-	PhaseExpressionsArr = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsNGFile,Phaselookup,"") ,",")
-	
-	if hasMFEE
-		MFEEArr = papyrusutil.stringsplit(JsonUtil.GetStringValue(MFEEFile,Phaselookup,"") ,",")
-
-	endif
-	;-----------------------------START CYCLE RUNNING EXPRESSION PHASES------------------------------	
-
-		PhaseExpressionsArr = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsNGFile,Phaselookup,"") ,",")
-		variance = PhaseExpressionsArr[32] as int
-	;miscutil.printconsole("PhaseLookup :" + PhaseLookup)
-	if PhaseExpressionsArr.length < 32 && Scenario != "blowjoboverride" && Scenario != "tongueoverride"  && Scenario != "brokenoverride"
-		miscutil.printconsole("IVDT Hentai Expressions :" + phaselookup +" only has " +phaseExpressionsArr.length+ "items . it is either incorrectly formatted or missing in HentaiExpressionsNG.json file")
-		return
-	endif
-
-	;-----------------------------------------Set EXPRESSION-----------------------------------------
-	if ASLIsBroken() || Scenario == "brokenoverride" || ((CurrentPenetrationLvl() >=2 && GetMainNPCTrait() =="+The Penetrator" ))
-		;have MFEE Expressions for Elin
-		if hasMFEE && MFEEBrokenOverride.length > 1 && CurrentPenetrationLvl() != 1 && MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,0,MFEEBrokenOverride[30] as int) != MFEEBrokenOverride[31] as int
-			MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,0,MFEEBrokenOverride[30] as int, MFEEBrokenOverride[31] as int)
-			RunningMFEEAhegao = true
-			;miscutil.printconsole("Applying MFEE category 0 , mood :" + MFEEBrokenOverride[30] + "Value : " + MFEEBrokenOverride[31])
-		endif		
-		
-		;run with normal expressions
-		if MfgConsoleFunc.GetExpressionValue(mainFemaleActor) != BrokenOverride[31] as int
-			MfgConsoleFuncExt.SetExpression(mainFemaleActor,BrokenOverride[30] as int,BrokenOverride[31] as int) 
-		endif
-	else
-		;mfee
-		if hasMFEE && MFEEArr.length > 1 && !MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,0,MFEEArr[30] as int) != MFEEArr[31] as int
-			MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,0,MFEEArr[30] as int, MFEEArr[31] as int)
-		;	miscutil.printconsole("Applying MFEE category 0 , mood :" + MFEEArr[30] + "Value : " + MFEEArr[31])
-		endif
-		
-			if MfgConsoleFunc.GetExpressionValue(mainFemaleActor) != PhaseExpressionsArr[31] as int
-				MfgConsoleFuncExt.SetExpression(mainFemaleActor,PhaseExpressionsArr[30] as int,PhaseExpressionsArr[31] as int) ; 
-			endif
-	endif	
-	;-----------------------------------------Set MFEE-----------------------------------------
-	;DISABLE For now until MFEE gets MFG FIX NG update
-
-;	if HasMFEE && !IsUnconcious() && MFEEArr.length > 1
-;		;Ears
-;		while ExpressionIndex <= 3  
-;			if !MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,2,ExpressionIndex) != MFEEArr[ExpressionIndex] as int
-;				miscutil.printconsole("Applying MFEE category 2 Ears, morph :" + ExpressionIndex + "Value : " + MFEEArr[ExpressionIndex])
-;				MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,2,ExpressionIndex, MFEEArr[ExpressionIndex] as int)
-;			endif
-;			ExpressionIndex = ExpressionIndex + 1
-;		endwhile
-;		ExpressionIndex = 0
-;		;tail
-;		while ExpressionIndex <= 1
-;;		if !MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,3,ExpressionIndex) != MFEEArr[ExpressionIndex + 4] as int
-	;		miscutil.printconsole("Applying MFEE category 3 Tail, morph :" + ExpressionIndex + "Value : " + MFEEArr[ExpressionIndex + 4])
-	;		MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,3,ExpressionIndex , MFEEArr[ExpressionIndex + 4] as int )
-	;	endif
-	;		ExpressionIndex = ExpressionIndex + 1
-	;	endwhile
-	;	;face
-	;	while ExpressionIndex <= 0
-;		if !MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,4,ExpressionIndex) != MFEEArr[ExpressionIndex + 6] as int
-;			miscutil.printconsole("Applying MFEE category 4 Face, morph :" + ExpressionIndex + "Value : " + MFEEArr[ExpressionIndex + 6])
-;			MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,4,ExpressionIndex, MFEEArr[ExpressionIndex + 6] as int )
-;		endif
-;			ExpressionIndex = ExpressionIndex + 1
-;		endwhile
-;		ExpressionIndex = 0	
-;		
-		;eyes
-;		while ExpressionIndex <= 3
-;		if !MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,5,ExpressionIndex) != MFEEArr[ExpressionIndex + 7] as int
-;			miscutil.printconsole("Applying MFEE category 5 eyes, morph :" + ExpressionIndex + "Value : " + MFEEArr[ExpressionIndex + 7])
-;			MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,5,ExpressionIndex, MFEEArr[ExpressionIndex + 7] as int )
-;		endif
-;			ExpressionIndex = ExpressionIndex + 1
-;		endwhile
-;		ExpressionIndex = 0	
-;		
-;		;Mouth
-;		while ExpressionIndex <= 10
-;		if !MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,7,ExpressionIndex) != MFEEArr[ExpressionIndex + 10] as int
-;;			miscutil.printconsole("Applying MFEE category 7 Mouth, morph :" + ExpressionIndex + "Value : " + MFEEArr[ExpressionIndex + 10])
-	;		MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,7,ExpressionIndex, MFEEArr[ExpressionIndex + 10] as int )
-	;	endif
-;			ExpressionIndex = ExpressionIndex + 1
-;		endwhile
-;		ExpressionIndex = 0	
-;		
-;		;Tongue
-;		while ExpressionIndex <= 6
-;		if MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,8,ExpressionIndex) != MFEEArr[ExpressionIndex + 20] as int
-;			miscutil.printconsole("Applying MFEE category 8 Tongue, morph :" + ExpressionIndex + "Value : " + MFEEArr[ExpressionIndex + 20])
-;			MuFacialExpressionExtended.SetExpressionByNumber(mainFemaleActor,8,ExpressionIndex, MFEEArr[ExpressionIndex + 20] as int )
-;		endif
-;			ExpressionIndex = ExpressionIndex + 1
-;		endwhile
-;		ExpressionIndex = 0	
-;	endif
-	;------------------------------------------------Set PHONEME-------------------------------------------------
-	;miscutil.printconsole("ExpressionIndex : "+ ExpressionIndex + "/ IsUnconcious() : " + IsUnconcious() + "/ CurrentPenetrationLvl() : " + CurrentPenetrationLvl())
-	while ExpressionIndex <= 15 && (!IsUnconcious() ||  EquippedTongue() || Scenario == "tongueoverride" ) && RunningMFEEAhegao == false
-
-	;	miscutil.printconsole("Applying Phoneme :" + ExpressionIndex)
-		int upperlimit = PhaseExpressionsArr[ExpressionIndex] as int*(100+variance)/100
-		int lowerlimit = PhaseExpressionsArr[ExpressionIndex] as int*(100-variance)/100
-		;avoid out of bounds
-		if upperlimit > 100
-			upperlimit = 100
-		endif
-		if lowerlimit < 0
-			lowerlimit = 0
-		endif
-		
-			if ((((Stagelabelminusone == "FB" || Stagelabelminusone == "SB") && stagelabel == "EN")||stagelabel == "FB" || stagelabel == "SB" || stagelabel == "SR" || stagelabel == "TP") || HasDeviousGag(mainFemaleActor) || Scenario == "blowjoboverride") && ActorsInPlay[0] == mainFemaleActor
-				;special handling for MFEE ahegao if during blowjob
-
-					if hasMFEE && (MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,0,0) > 0 || MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,1,0) > 0 || MuFacialExpressionExtended.GetExpressionValueByNumber(mainFemaleActor,1,0) > 0)
-						if RunningMFEEAhegao 
-							MfgConsoleFuncExt.SetPhoneme(mainFemaleActor, 1 , 30 , 0.1) ; ;big aah 30
-						else
-							MfgConsoleFuncExt.SetPhoneme(mainFemaleActor, 1 , 100 , 0.1) ; ;big aah 100
-						endif
-					elseif MfgConsoleFunc.GetPhoneme(mainFemaleActor, ExpressionIndex) != Blowjoboverride[ExpressionIndex] as int
-						MfgConsoleFuncExt.SetPhoneme(mainFemaleActor,ExpressionIndex,Blowjoboverride[ExpressionIndex] as int , 0.1) ; 
-					endif
-				
-			elseif (EquippedTongue() || Scenario == "tongueoverride") && !RunningMFEEAhegao
-				if MfgConsoleFunc.GetPhoneme(mainFemaleActor, ExpressionIndex) != TongueoutOverride[ExpressionIndex] as int
-	
-					MfgConsoleFuncExt.SetPhoneme(mainFemaleActor,ExpressionIndex,TongueoutOverride[ExpressionIndex] as int , 0.05) ; 
-				endif
-			elseif !IsUnconcious()
-				if MfgConsoleFunc.GetPhoneme(mainFemaleActor, ExpressionIndex) != PhaseExpressionsArr[ExpressionIndex] as int ;ignore if phoneme and existing phoneme is the same
-					MfgConsoleFuncExt.SetPhoneme(mainFemaleActor,ExpressionIndex, Utility.Randomint( lowerlimit,upperlimit ) ,speed) ; 
-				endif
-			endif	
-
-		ExpressionIndex = ExpressionIndex + 1
-	endwhile
-
-	ExpressionIndex = 0
-	
-	;----------------------------------------------Set MODIFIERS-----------------------------------------
-	while ExpressionIndex <= 13 && !IsUnconcious()
-			;avoid out of bounds
-	;miscutil.printconsole("Applying modifier :" + ExpressionIndex)	
-		int modifier = PhaseExpressionsArr[ExpressionIndex + 16] as int 
-		;int upperlimit = modifier*(100+variance)/100
-		;int lowerlimit = modifier*(100-variance)/100
-		
-		;if upperlimit > 100
-		;	upperlimit = 100
-		;endif
-		;if lowerlimit < 0
-		;	lowerlimit = 0
-		;endif
-		float modifierspeed 
-		if expressionindex == 8  && expressionindex == 11
-			modifierspeed = 0
-		else
-			modifierspeed = Speed
-		endif
-
-		;make sure left and right has the same value applied
-		;miscutil.printconsole("Applying modifier :" + ExpressionIndex + " value : " + modifier)
-		;ignore if modifier is the same
-		
-			;run modifiers
-			if (ASLIsBroken() || Scenario == "brokenoverride" )|| ishugepp() || (CurrentPenetrationLvl() >= 2 && GetMainNPCTrait() =="+The Penetrator" )
-					if MfgConsoleFunc.GetModifier(mainFemaleActor, ExpressionIndex) != BrokenOverride[ExpressionIndex + 16] as int
-						MfgConsoleFuncExt.SetModifier(mainFemaleActor,ExpressionIndex,BrokenOverride[ExpressionIndex+16] as int , modifierspeed) ; 
-						
-					endif
-				ExpressionIndex = ExpressionIndex + 1
-			elseif currentAnimation.hastag("Cowgirl") && CurrentPenetrationLvl() > 1 && expressionindex == 8 ;look downwards if riding override
-			;		miscutil.printconsole("cowgirl modifier")
-				;	miscutil.printconsole("Applying modifier :" + ExpressionIndex + " value : " + modifier)
-					MfgConsoleFuncExt.SetModifier(mainFemaleActor,8,100, modifierspeed) ;
-					ExpressionIndex = 12	
-					
-			elseif (currentAnimation.HasTag("Doggy") || currentAnimation.HasTag("Doggystyle") || currentAnimation.HasTag("Doggy Style")) && CurrentPenetrationLvl() > 1 && expressionindex == 8
-			;		miscutil.printconsole("doggy modifier")
-			;		miscutil.printconsole("Applying modifier :" + ExpressionIndex + " value : " + modifier)
-					MfgConsoleFuncExt.SetModifier(mainFemaleActor,lookdirection,100, modifierspeed) ; look left or right or down
-					ExpressionIndex = 12
-				
-			else
-					if MfgConsoleFunc.GetModifier(mainFemaleActor, ExpressionIndex) != PhaseExpressionsArr[ExpressionIndex + 16] as int
-			;			miscutil.printconsole("normal modifier")
-			;			miscutil.printconsole("Applying modifier :" + ExpressionIndex + " value : " + modifier)
-						MfgConsoleFuncExt.SetModifier(mainFemaleActor,ExpressionIndex, modifier , modifierspeed)
-					endif
-					ExpressionIndex = ExpressionIndex + 1
-			endif
-				
-				
-				
-		
-	endwhile
-
-
-	
-
-	if (Scenario == "kneejerk" || Scenario == "hugeppgape") && Phase >= 5
-		StorageUtil.SetIntValue(None, "FemaleMakingSound" ,0) ;stop phasing after kneejerk actions
-	elseif phase >= 5
-		phase = 1
-	else 
-		phase = phase + 1
-	endif
-		;-----------end CYCLE RUNNING EXPRESSION PHASES--------------	
-	
-	utility.wait(0.3)
-
-endwhile
-
-
-
-	if ASLCurrentlyintense
-		ChangeHentaiExpression("intensegrunt")
-	elseif stagelabel == "LI"
-		ChangeHentaiExpression("leadin")
-	else
-		ChangeHentaiExpression("grunt")
-	endif
-
-endfunction
-
-float function ExpressionSpeed(String Scenario)
-	if Scenario == "kneejerk" || Scenario == "hugeppgape"
-	
-		return hentaiexpressionngkneejerkspeed as float /100;0.1
-	elseif Scenario != "grunt" && Scenario != "intensegrunt" && Scenario != "leadin" && Scenario != "panting" && Scenario != "overthetop"
-
-		return hentaiexpressionngspeechspeed as float/100;0.2
-	elseif ASLcurrentlyIntense == true
-		
-		return hentaiexpressionngintensespeed as float/100;0.3
-	elseif stagelabel == "EN" || stagelabel == "LI"
-
-		return hentaiexpressionngnonpenetrationspeed as float/100;0.5
-	else
-	
-		return hentaiexpressionngnonintensespeed as float/100;0.4
-	endif
-endfunction
 
 Function Lactate()
 
 if (AlwaysLactate == 1 || PCHasLactatingSpell() ) && EnableLactate == 1 || StorageUtil.GetIntValue(None, "HentaiLactate") == 1 
-
-	if  Game.GetModbyName("IVDTHentaiLactate.esp") != 255 && !mainFemaleActor.IsEquipped(MilkL) && !mainFemaleActor.IsEquipped(MilkR) && MilkL != None && MilkR != None && CurrentPenetrationLvl() > 1
+	printdebug("PC Lactating")
+	if  Game.GetModbyName("IVDTHentaiLactate.esp") != 255 && !mainFemaleActor.IsEquipped(MilkL) && !mainFemaleActor.IsEquipped(MilkR) && MilkL != None && MilkR != None
 		mainFemaleActor.AddItem(MilkR , abSilent=true)
 		mainFemaleActor.AddItem(MilkL , abSilent=true)
 		mainFemaleActor.EquipItem(MilkR , abSilent=true)
@@ -4594,89 +2603,15 @@ String Function GetMainNPCTrait()
 	return StorageUtil.GetStringValue(None, "MainNPCTrait", "")
 endfunction
 
-Function SkiptoAggressiveStage()
-;skip only once
-if SkiptoAggressiveStage == true
-	return
-endif
-
-string TargetStage = ""
-int counter = 1
-
-	;search for FV
-	while counter <= currentAnimation.stagecount && TargetStage == ""
-		if currentAnimation.hasTag(counter as string +"FV")
-			TargetStage = counter as string +"FV"
-		endif
-		counter += 1
-		
-	endwhile
-	;search for FA
-	while counter <= currentAnimation.stagecount && TargetStage == ""
-		if currentAnimation.hasTag(counter as string +"FA")
-			TargetStage = counter as string +"FA"
-		endif
-		counter += 1
-		
-	endwhile
-	;search for SR
-	while counter <= currentAnimation.stagecount && TargetStage == ""
-		if currentAnimation.hasTag(counter as string +"SR")
-			TargetStage = counter as string +"SR"
-		endif
-		counter += 1
-		
-	endwhile
-	;search for DP
-	while counter <= currentAnimation.stagecount && TargetStage == ""
-		if currentAnimation.hasTag(counter as string +"DP")
-			TargetStage = counter as string +"DP"
-		endif
-		counter += 1
-		
-	endwhile
-	;search for TP
-	while counter <= currentAnimation.stagecount && TargetStage == ""
-		if currentAnimation.hasTag(counter as string +"TP")
-			TargetStage = counter as string +"TP"
-		endif
-		counter += 1
-		
-	endwhile
-	if TargetStage != ""
-		sexLabThreadController.GoToStage(Counter)
-		miscutil.printconsole("Skipping to Aggressive Stage :" + TargetStage)	
-	endif
-		SkiptoAggressiveStage = true
-endfunction
-
 Bool Function MainMaleCanControl()
 	;cowgirl femdom and non forced blowjob -> false
-	if (currentAnimation.hasTag("Cowgirl") || currentAnimation.hasTag("femdom") || currentAnimation.hasTag("Amazon") || (CurrentPenetrationLvl() == 1 && !currentAnimation.hasTag("Forced")))  && ActorsInPlay[0] == mainFemaleActor
+	if (currentAnimation.hasTag("Cowgirl") || currentAnimation.hasTag("femdom") || currentAnimation.hasTag("Amazon") || (IsSuckingoffOther() && !currentAnimation.hasTag("Forced")))  && ActorsInPlay[0] == mainFemaleActor
 
-		return false
-	;PC in penetrating as futa 
-	elseif CurrentPenetrationLvl() >= 2 && ActorsInPlay[0] != mainFemaleActor
 		return false
 	else
 		return true
 	endif
 endfunction
-
-
-Bool Function IsPenetration()
-
-	return CurrentPenetrationLvl() >= 2
-	
-endfunction
-
-Bool Function IsBlowJob()
-
-	return CurrentPenetrationLvl() == 1
-	
-endfunction
-
-
 
 Bool Function PCHasLactatingSpell()
 
@@ -4686,3 +2621,498 @@ return mainFemaleActor.hasspell(Lactating)
 
 endfunction
 
+Bool Function Isintense()
+		return stringutil.find(Labelsconcat ,"1F") > -1 || IsGettingInsertedBig()
+endfunction
+
+Bool Function IsEnding()
+	return EndingLabel == "ENI" || EndingLabel == "ENO"
+endfunction
+
+Bool Function IsGivingAnalPenetration()
+	return PenisActionLabel == "FDA" || PenisActionLabel == "SDA"
+endfunction
+
+Bool Function IsGivingVaginalPenetration()
+	return PenisActionLabel =="FDV" || PenisActionLabel == "SDV"
+endfunction
+
+Bool Function PreviouslyIsGivingVaginalPenetration()
+	return PrevPenisActionLabel =="FDV" || PrevPenisActionLabel == "SDV"
+endfunction
+
+Bool Function PreviouslyIsGivingAnalPenetration()
+	return PrevPenisActionLabel =="FDA" || PrevPenisActionLabel == "FDV" 
+endfunction
+
+Bool Function IsgettingPenetrated()
+	return IsGettingAnallyPenetrated() || IsGettingVaginallyPenetrated()
+endfunction
+
+Bool Function PreviouslyIsgettingPenetrated()
+	return PreviouslyIsGettingAnallyPenetrated() || PreviouslyIsGettingVaginallyPenetrated()
+endfunction
+
+Bool Function IsGettingDoublePenetrated()
+return PenetrationLabel == "SDP" || PenetrationLabel == "FDP"
+endfunction 
+
+Bool Function IsGettingVaginallyPenetrated()
+	return PenetrationLabel == "SVP" || PenetrationLabel == "FVP" || PenetrationLabel == "SCG" || PenetrationLabel == "FCG" || PenetrationLabel == "SDP" || PenetrationLabel == "FDP"
+endfunction
+
+Bool Function PreviouslyIsGettingVaginallyPenetrated()
+	return PrevPenetrationLabel == "SVP" || PrevPenetrationLabel == "FVP" || PrevPenetrationLabel == "SCG" || PrevPenetrationLabel == "FCG" || PrevPenetrationLabel == "SDP" || PrevPenetrationLabel == "FDP"
+endfunction
+
+Bool Function PreviouslyIsFemdom()
+	return PrevPenetrationLabel == "SCG" || PrevPenetrationLabel == "FCG" 
+endfunction
+
+Bool Function IsGettingAnallyPenetrated()
+	return PenetrationLabel == "SAP" || PenetrationLabel == "FAP"  || PenetrationLabel == "SAC" || PenetrationLabel == "FAC" || PenetrationLabel == "SDP" || PenetrationLabel == "FDP"
+endfunction
+
+Bool Function PreviouslyIsGettingAnallyPenetrated()
+	return PrevPenetrationLabel == "SAP" || PrevPenetrationLabel == "FAP"  || PrevPenetrationLabel == "SAC" || PrevPenetrationLabel == "FAC" || PrevPenetrationLabel == "SDP" || PrevPenetrationLabel == "FDP"
+endfunction
+
+Bool Function IsGettingInsertedBig()
+	return Stimulationlabel == "BST"
+endfunction
+
+Bool Function IsGettingSuckedoff()
+	return PenisActionLabel == "SMF" ||  PenisActionLabel == "FMF"	
+endfunction
+
+Bool Function IsGettingStimulated()
+	return Stimulationlabel == "SST" ||  Stimulationlabel == "FST"
+endfunction
+
+Bool Function IsSuckingoffOther()
+	return OralLabel == "SBJ" ||  OralLabel == "FBJ"	
+endfunction
+
+Bool Function PreviouslyIsSuckingoffOther()
+	return PrevOralLabel == "SBJ" ||  PrevOralLabel == "FBJ"	
+endfunction
+
+Bool Function IsCowgirl()
+	return (PenetrationLabel == "SCG" ||  PenetrationLabel == "FCG" ||  PenetrationLabel == "SAC" ||  PenetrationLabel == "FAC") && !femaleisvictim()	
+endfunction
+
+Bool Function PreviouslyIsCowgirl()
+	return (PrevPenetrationLabel == "SCG" ||  PrevPenetrationLabel == "FCG" ||  PrevPenetrationLabel == "SAC" ||  PrevPenetrationLabel == "FAC")&& !femaleisvictim()			
+endfunction
+
+Bool Function IsKissing()
+	return OralLabel == "KIS"
+endfunction
+
+;for Femdom or penetrating others
+Bool Function IsFemdom()
+
+	if	femaleisvictim() 
+		return false
+	else
+		return IsCowgirl() || IsGivingAnalPenetration() || IsStimulatingOthers() || IsGivingOthersIntenseStimulation || IsGivingVaginalPenetration()
+	endif
+EndFunction
+
+
+Bool Function IsCunnilingus()
+	return OralLabel == "CUN"
+endfunction
+
+Bool Function PreviousStageHasPenetration()
+	return PreviouslyIsGettingAnallyPenetrated() || PreviouslyIsGettingVaginallyPenetrated()
+endfunction
+
+Bool Function IsStimulatingOthers()
+
+ return isTitfuckOthers || isHandjobOthers || IsFootjobOthers || IsCunnilingus()
+
+endfunction
+
+Function PrintDebug(string Contents = "")
+if EnablePrintDebug == 1
+;bool function WriteToFile(string fileName, string text, bool append = true, bool timestamp = false) global native
+	miscutil.printconsole("HentaiRim IVDT : " + Contents)
+endif
+endfunction 
+
+String Stimulationlabel
+String PenisActionLabel
+string OralLabel
+string EndingLabel
+string PenetrationLabel
+String PrevStimulationlabel
+String PrevPenisActionLabel
+string PrevOralLabel
+string PrevEndingLabel
+string PrevPenetrationLabel
+string Labelsconcat
+Bool isTitfuckOthers = false
+Bool isHandjobOthers = false
+Bool IsFootjobOthers = false
+Bool IsGivingOthersIntenseStimulation = false
+
+Function UpdateLabels(sslBaseAnimation anim , int stage , int actorpos = 0 )
+
+ PrevStimulationlabel = Stimulationlabel
+ PrevPenisActionLabel = PenisActionLabel
+ PrevOralLabel = OralLabel
+ PrevEndingLabel = EndingLabel
+ PrevPenetrationLabel = PenetrationLabel
+ 
+ Stimulationlabel = HentairimTags.StimulationLabel(anim , stage , actorpos)
+ PenisActionLabel  = HentairimTags.PenisActionLabel(anim , stage , actorpos)
+ OralLabel  = HentairimTags.OralLabel(anim , stage , actorpos)
+ EndingLabel  = HentairimTags.EndingLabel(anim , stage , actorpos)
+ PenetrationLabel = HentairimTags.PenetrationLabel(anim , stage , actorpos)
+ 
+ Labelsconcat = "1" +Stimulationlabel + "1" + PenisActionLabel + "1" + OralLabel + "1" + PenetrationLabel + "1" + EndingLabel
+ PrintDebug("Stimulationlabel :" + Stimulationlabel + ", PenisActionLabel :" +  PenisActionLabel  + ", OralLabel :" +  OralLabel  + ", PenetrationLabel :" +  PenetrationLabel  + ", EndingLabel :" +  EndingLabel)
+ PrintDebug("PrevStimulationlabel :" + PrevStimulationlabel + ", PrevPenisActionLabel :" +  PrevPenisActionLabel  + ", PrevOralLabel :" +  PrevOralLabel  + ", PrevPenetrationLabel :" +  PrevPenetrationLabel  + ", PrevEndingLabel :" +  PrevEndingLabel)
+
+;find NPC getting tit fucked
+int counter = 0
+string Result
+ isTitfuckOthers = false
+ isHandjobOthers = false
+ IsFootjobOthers = false
+ IsGivingOthersIntenseStimulation = false
+
+while counter < ActorsInPlay.length && PCPosition == 0
+	if counter != Actorpos ;ignore PC position
+		Result = HentairimTags.PenisActionLabel(anim , stage , counter)
+		
+		if Result == "STF"
+			isTitfuckOthers = true
+			printdebug("isTitfuckOthers TRUE")
+		elseif Result == "FTF"
+			isTitfuckOthers = true
+			IsGivingOthersIntenseStimulation = true
+			printdebug("isTitfuckOthers TRUE")
+			printdebug("IsGivingOthersIntenseStimulation TRUE")
+		elseif Result == "SHJ"
+			isHandjobOthers = true
+			printdebug("isHandjobOthers TRUE")
+			printdebug("IsGivingOthersIntenseStimulation TRUE")
+		elseif Result == "FHJ"
+			isHandjobOthers = true
+			IsGivingOthersIntenseStimulation = true
+			
+			printdebug("isHandjobOthers TRUE")
+			printdebug("IsGivingOthersIntenseStimulation TRUE")
+		elseif Result == "SFJ"
+			IsFootjobOthers = true
+			printdebug("IsFootjobOthers TRUE")
+		elseif Result == "FFJ"
+			IsFootjobOthers = true
+			IsGivingOthersIntenseStimulation = true
+			printdebug("IsFootjobOthers TRUE")
+			printdebug("IsGivingOthersIntenseStimulation TRUE")
+		endif
+	endif
+	counter += 1
+endwhile
+
+endfunction
+
+int ldi
+int sst
+int fst
+int bst
+int kis
+int cun
+int sbj
+int fbj
+int sap
+int svp
+int fap
+int fvp
+int sdp
+int fdp
+int scg
+int sac
+int fcg
+int fac
+int sdv
+int sda
+int fdv
+int fda
+int shj
+int fhj
+int stf
+int ftf
+int smf
+int fmf
+int sfj
+int ffj
+int eno
+int eni
+
+Function InitializeTimerConfig()
+ldi = JsonUtil.GetIntValue(TimerConfigFile,"ldi",9999)
+sst = JsonUtil.GetIntValue(TimerConfigFile,"sst",9999)
+fst = JsonUtil.GetIntValue(TimerConfigFile,"fst",9999)
+bst = JsonUtil.GetIntValue(TimerConfigFile,"bst",9999)
+kis = JsonUtil.GetIntValue(TimerConfigFile,"kis",9999)
+cun = JsonUtil.GetIntValue(TimerConfigFile,"cun",9999)
+sbj = JsonUtil.GetIntValue(TimerConfigFile,"sbj",9999)
+fbj = JsonUtil.GetIntValue(TimerConfigFile,"fbj",9999)
+sap = JsonUtil.GetIntValue(TimerConfigFile,"sap",9999)
+svp = JsonUtil.GetIntValue(TimerConfigFile,"svp",9999)
+fap = JsonUtil.GetIntValue(TimerConfigFile,"fap",9999)
+fvp = JsonUtil.GetIntValue(TimerConfigFile,"fvp",9999)
+sdp = JsonUtil.GetIntValue(TimerConfigFile,"sdp",9999)
+fdp = JsonUtil.GetIntValue(TimerConfigFile,"fdp",9999)
+scg = JsonUtil.GetIntValue(TimerConfigFile,"scg",9999)
+sac = JsonUtil.GetIntValue(TimerConfigFile,"sac",9999)
+fcg = JsonUtil.GetIntValue(TimerConfigFile,"fcg",9999)
+fac = JsonUtil.GetIntValue(TimerConfigFile,"fac",9999)
+sdv = JsonUtil.GetIntValue(TimerConfigFile,"sdv",9999)
+sda = JsonUtil.GetIntValue(TimerConfigFile,"sda",9999)
+fdv = JsonUtil.GetIntValue(TimerConfigFile,"fdv",9999)
+fda = JsonUtil.GetIntValue(TimerConfigFile,"fda",9999)
+shj = JsonUtil.GetIntValue(TimerConfigFile,"shj",9999)
+fhj = JsonUtil.GetIntValue(TimerConfigFile,"fhj",9999)
+stf = JsonUtil.GetIntValue(TimerConfigFile,"stf",9999)
+ftf = JsonUtil.GetIntValue(TimerConfigFile,"ftf",9999)
+smf = JsonUtil.GetIntValue(TimerConfigFile,"smf",9999)
+fmf = JsonUtil.GetIntValue(TimerConfigFile,"fmf",9999)
+sfj = JsonUtil.GetIntValue(TimerConfigFile,"sfj",9999)
+ffj = JsonUtil.GetIntValue(TimerConfigFile,"ffj",9999)
+eno = JsonUtil.GetIntValue(TimerConfigFile,"eno",9999)
+eni = JsonUtil.GetIntValue(TimerConfigFile,"eni",9999)
+
+endfunction
+
+String Function GetPrimaryLabel()
+	if EndingLabel != "LDI"
+		return EndingLabel
+	elseIF OralLabel != "LDI"
+		return OralLabel
+	elseif Stimulationlabel == "BST"
+		return Stimulationlabel
+	elseif PenetrationLabel != "LDI"
+		return PenetrationLabel
+	elseif PenisActionLabel != "LDI"
+		return PenisActionLabel
+	else
+		return Stimulationlabel
+	endif
+endfunction
+
+int Function GetTimer()
+  
+ IF GetPrimaryLabel() == "ldi"
+return ldi
+elseIF GetPrimaryLabel() == "sst"
+return sst
+elseIF GetPrimaryLabel() == "fst"
+return fst
+elseIF GetPrimaryLabel() == "bst"
+return bst
+elseIF GetPrimaryLabel() == "kis"
+return kis
+elseIF GetPrimaryLabel() == "cun"
+return cun
+elseIF GetPrimaryLabel() == "sbj"
+return sbj
+elseIF GetPrimaryLabel() == "fbj"
+return fbj
+elseIF GetPrimaryLabel() == "sap"
+return sap
+elseIF GetPrimaryLabel() == "svp"
+return svp
+elseIF GetPrimaryLabel() == "fap"
+return fap
+elseIF GetPrimaryLabel() == "fvp"
+return fvp
+elseIF GetPrimaryLabel() == "sdp"
+return sdp
+elseIF GetPrimaryLabel() == "fdp"
+return fdp
+elseIF GetPrimaryLabel() == "scg"
+return scg
+elseIF GetPrimaryLabel() == "sac"
+return sac
+elseIF GetPrimaryLabel() == "fcg"
+return fcg
+elseIF GetPrimaryLabel() == "fac"
+return fac
+elseIF GetPrimaryLabel() == "sdv"
+return sdv
+elseIF GetPrimaryLabel() == "sda"
+return sda
+elseIF GetPrimaryLabel() == "fdv"
+return fdv
+elseIF GetPrimaryLabel() == "fda"
+return fda
+elseIF GetPrimaryLabel() == "shj"
+return shj
+elseIF GetPrimaryLabel() == "fhj"
+return fhj
+elseIF GetPrimaryLabel() == "stf"
+return stf
+elseIF GetPrimaryLabel() == "ftf"
+return ftf
+elseIF GetPrimaryLabel() == "smf"
+return smf
+elseIF GetPrimaryLabel() == "fmf"
+return fmf
+elseIF GetPrimaryLabel() == "sfj"
+return sfj
+elseIF GetPrimaryLabel() == "ffj"
+return ffj
+elseIF GetPrimaryLabel() == "eno"
+return eno
+elseIF GetPrimaryLabel() == "eni"
+return eni
+elseIF GetPrimaryLabel() == "fmf"
+return fmf
+elseIF GetPrimaryLabel() == "sfj"
+return sfj
+elseIF GetPrimaryLabel() == "ffj"
+return ffj
+elseIF GetPrimaryLabel() == "eno"
+return eno
+elseIF GetPrimaryLabel() == "eni"
+return eni
+else
+printdebug("Label for TImer is not found. Defaulting to 15")
+return 15
+
+endif
+
+endfunction
+
+float function NextUpdateInterval()
+
+if ASLcurrentlyIntense
+	return Utility.RandomFloat(0.1, 1.0)
+else
+	return Utility.RandomFloat(1.0, 2.0)
+endif
+
+endfunction
+
+Function PlayGaggedSound()
+
+;intense gag noise
+if ASLCurrentlyintense
+	PlaySound(mainFemaleVoice.AssFlattering, mainFemaleActor, requiredChemistry =0 , debugtext = "AssFlattering")
+else; less intense gag noises
+	PlaySound(mainFemaleVoice.AssToMouth, mainFemaleActor, requiredChemistry = 0, debugtext = "AssToMouth")
+endif
+
+endfunction
+
+Function ChangeHentaiExpression(String Scenario)
+
+;ChangeHentaiExpression("hugeppgape")
+;ChangeHentaiExpression("wantmore")
+;ChangeHentaiExpression("kneejerk")
+;ChangeHentaiExpression("orgasm")
+;ChangeHentaiExpression("Amused")
+;ChangeHentaiExpression("Ending")
+;ChangeHentaiExpression("intensepenetrationcomments")
+;ChangeHentaiExpression("grunt")
+;ChangeHentaiExpression("Greeting")
+;ChangeHentaiExpression("Panting")
+;ChangeHentaiExpression("penetrationcomments")
+;ChangeHentaiExpression("intensegrunt")
+;ChangeHentaiExpression("unamused")
+;ChangeHentaiExpression("unamusedending")
+;ChangeHentaiExpression("inawe")
+;ChangeHentaiExpression("overthetop")
+;ChangeHentaiExpression("attackingcomments")
+;ChangeHentaiExpression("LeadIn")
+;ChangeHentaiExpression("pullout")
+;ChangeHentaiExpression("maleclosetoorgasm")
+;ChangeHentaiExpression("maleclosetoorgasmintense")
+;ChangeHentaiExpression("closetoorgasmintense")
+;ChangeHentaiExpression("closetoorgasm")
+;ChangeHentaiExpression("intenseafterorgasmcomments")
+;ChangeHentaiExpression("afterorgasmcomments")
+;ChangeHentaiExpression("initialinsertioncomments")
+
+StorageUtil.SetStringValue(None, "HentaiScenario" ,Scenario)
+
+EndFunction
+
+Function ChangePCExpressions(String debugtext = "")
+if debugtext =="Oh"
+	ChangeHentaiExpression("kneejerk")
+elseif debugtext =="SurprisedByMaleOrgasm" || debugtext =="AfterGape"
+	ChangeHentaiExpression("hugeppgape")
+elseif debugtext == "InsertionAnalSlow" || debugtext == "InsertionGeneric"
+	ChangeHentaiExpression("initialinsertioncomments")
+elseif debugtext == "WantMore" || debugtext == "AskForAnalCum" || debugtext == "AskForVaginalCum" || debugtext == "AskForOralCum"
+	ChangeHentaiExpression("wantmore")
+elseif debugtext =="FemaleOrgasm" 
+	ChangeHentaiExpression("orgasm")
+elseif debugtext == "Amused"
+	ChangeHentaiExpression("Amused")				
+elseif debugtext == "intensepenetrationcomments"
+	ChangeHentaiExpression("Ending")
+elseif debugtext == "PenetrativeCommentsIntense" || debugtext == "AskForPacingBreak" || debugtext == "TeaseAggressivePartner" || debugtext == "IntenseAnal"
+	ChangeHentaiExpression("intensepenetrationcomments")
+elseif debugtext == "GreetLoadedFamiliar" || debugtext == "GreetFamiliar" || debugtext == "GreetLover"
+	ChangeHentaiExpression("Greeting")
+elseif (debugtext == "CameInAss" || debugtext == "CameInPussy" || debugtext == "CameInMouth") && IsFemdom()
+	ChangeHentaiExpression("Amused")
+elseif debugtext == "CameInAss" || debugtext == "CameInPussy" || debugtext == "CameInMouth"
+	ChangeHentaiExpression("penetrationcomments")
+elseif debugtext == "PenetrativeCommentssoft"
+	ChangeHentaiExpression("penetrationcomments")
+elseif  debugtext == "Unamused"
+	ChangeHentaiExpression("unamused") || (debugtext == "NoticeMaleWantsMore" && femaleisvictim())
+elseif debugtext == "UnamusedEnd"
+	ChangeHentaiExpression("unamusedending")
+elseif debugtext == "ReadyToGetGoing" || debugtext == "InAwe" || (debugtext == "NoticeMaleWantsMore" && !femaleisvictim())
+	ChangeHentaiExpression("inawe")
+elseif debugtext == "SensitivePleasure" || debugtext == "AfterOrgasmArouse" 
+	ChangeHentaiExpression("overthetop")
+elseif debugtext == "OnTheAttack"
+	ChangeHentaiExpression("attackingcomments")
+elseif debugtext == "PullOut"
+	ChangeHentaiExpression("pullout")
+elseif debugtext == "TeaseMaleCloseToOrgasmSoft" || debugtext == "MaleCloseNotice" || debugtext == "MaleCloseAlready" || debugtext == "CumTogetherTease"
+	ChangeHentaiExpression("maleclosetoorgasm")
+elseif debugtext == "TeaseMaleCloseToOrgasmIntense"
+	ChangeHentaiExpression("maleclosetoorgasmintense")
+elseIf debugtext == "MyTurnToCum"
+	ChangeHentaiExpression("closetoorgasm")
+elseif debugtext == "NearOrgasmExclamations"
+	ChangeHentaiExpression("closetoorgasmintense")
+elseif debugtext == "AfterOrgasmRemarks" && ASLcurrentlyintense
+	ChangeHentaiExpression("intenseafterorgasmcomments")
+elseif debugtext == "AfterOrgasmRemarks" || debugtext == "Satisfied"
+	ChangeHentaiExpression("afterorgasmcomments")
+elseif debugtext == "PenetrativeGrunts"
+	ChangeHentaiExpression("grunt")
+elseif debugtext == "NearOrgasmNoises"
+	ChangeHentaiExpression("intensegrunt")
+elseif debugtext == "AfterOrgasmExclamations"
+	ChangeHentaiExpression("Panting")	
+elseif IsFemdom()
+	ChangeHentaiExpression("attacking")
+elseif IsGettingStimulated() && ASLCurrentlyintense	
+	ChangeHentaiExpression("grunt")
+elseif IsGettingStimulated() || debugtext == "BreathySoft" || debugtext == "Foreplaysoft"
+    ChangeHentaiExpression("LeadIn")
+else 
+	if !IsSuckingoffOther() && debugtext != "PullOutGape"
+		miscutil.PrintConsole(" IVDT " + debugtext + " Has No Expressions conditions ")
+	endif
+	ChangeHentaiExpression("")
+endif
+
+Endfunction
+
+Bool Function IsfinalStage()
+	return currentstage == CurrentAnimation.StageCount
+endfunction
