@@ -66,11 +66,10 @@
     <!-- The following section is for .zip archive. You can enable it by setting Zip="true" in the PapyrusProject -->
     <ZipFiles Output="Build">
         <ZipFile Name="@ModName" RootDir="." Compression="deflate">
-            <Match In="Source\Scripts">IVDTSceneTrackerScript.psc</Match>
+            <Match In="Source\Scripts">*.psc</Match>
             <Match In="Source\Scripts">HentaiRimTags.psc</Match>
             
-            <Match In="Scripts">IVDTSceneTrackerScript.pex</Match>
-             <Match In="Scripts">HentaiRimTags.pex</Match>
+            <Match In="Scripts">*.pex</Match>
             <!--<Match In="SKSE\Plugins">*.dll</Match>-->
             <!--<Match In="SKSE\Plugins\StorageUtilData\IVDTHentai">Config.json</Match>-->
         </ZipFile>

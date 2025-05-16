@@ -374,11 +374,17 @@ Function PerformInitialization()
 	ASLUPDATE()
 
 	;Set Schlong Faction
-	schlongfaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
+	if isDependencyReady("Schlongs of Skyrim.esp") && !schlongFaction
+		schlongfaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
+	endif
+	
 	;TNG
-	TNG_XL = Game.GetFormFromFile(0xFE5, "TheNewGentleman.esp") as Keyword
-	TNG_L = Game.GetFormFromFile(0xFE4, "TheNewGentleman.esp") as Keyword
-	TNG_Gentlewoman = Game.GetFormFromFile(0xFF8, "TheNewGentleman.esp") as Keyword
+	if isDependencyReady("TheNewGentleman.esp") && !TNG_Gentlewoman
+		TNG_XL = Game.GetFormFromFile(0xFE5, "TheNewGentleman.esp") as Keyword
+		TNG_L = Game.GetFormFromFile(0xFE4, "TheNewGentleman.esp") as Keyword
+		TNG_Gentlewoman = Game.GetFormFromFile(0xFF8, "TheNewGentleman.esp") as Keyword
+	endif
+	
 	;Hentairim Enjoyment 
 	HentairimResistance = Game.GetFormFromFile(0x854, "Hentairim Enjoyment Expressions Traits.esp") as Faction	
 	HentairimBroken = Game.GetFormFromFile(0x853, "Hentairim Enjoyment Expressions Traits.esp") as Faction
@@ -392,6 +398,15 @@ Function PerformInitialization()
 	Initialized = true
 	printdebug("initialized complete")
 
+EndFunction
+
+Bool Function isDependencyReady(String modname) Global
+	int index = Game.GetModByName(modname)
+	if index == 255 || index == -1
+		return false
+	else
+		return true
+	endif
 EndFunction
 
 ;This only pulls the settings that are polled commonly throughout the sex. Settings used only once or restricted to rare cases are not cached here but instead fetched real-time
