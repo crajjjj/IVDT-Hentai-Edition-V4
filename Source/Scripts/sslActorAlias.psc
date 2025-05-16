@@ -205,6 +205,9 @@ String PenetrationLabel
 string Labelsconcat
 ;-------------------FACTIONS-----------------
 Faction SchlongFaction
+Keyword TNG_XL
+Keyword TNG_L
+Keyword TNG_Gentlewoman
 Faction Aggressive 
 Faction Cowgirl 
 Faction Cumbuckets 
@@ -794,6 +797,14 @@ endState
 
 bool Prepared ; TODO: Find better Solution
 bool StartedUp ; TODO: Find better Solution
+Bool Function isDependencyReady(String modname) Global
+	int index = Game.GetModByName(modname)
+	if index == 255 || index == -1
+		return false
+	else
+		return true
+	endif
+EndFunction
 state Prepare
 	event OnUpdate()
 		; Check if still among the living and able.
@@ -847,8 +858,18 @@ SLGP_Time2 = Utility.GetCurrentRealTime()
 	InitializeHentaiEnjoymentConfigValues()
 	InitializeHentaiExpressionconfig()
 	CalculateStartupResistance()
-	SchlongFaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
-
+	;SchlongFaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
+	;Set Schlong Faction
+	if !schlongFaction && isDependencyReady("Schlongs of Skyrim.esp") 
+		schlongfaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
+	endif
+	
+	;TNG
+	if !TNG_Gentlewoman && isDependencyReady("TheNewGentleman.esp")
+		TNG_XL = Game.GetFormFromFile(0xFE5, "TheNewGentleman.esp") as Keyword
+		TNG_L = Game.GetFormFromFile(0xFE4, "TheNewGentleman.esp") as Keyword
+		TNG_Gentlewoman = Game.GetFormFromFile(0xFF8, "TheNewGentleman.esp") as Keyword
+	endif
 	
 	AssignNPCHentaiTrait()
 	ActorsInPlay = Thread.Positions
@@ -2664,9 +2685,8 @@ int function CalculateFullEnjoyment()
 			HentaiEnjoyment = HentaiEnjoyment + StorageUtil.GetFloatValue(none,"HentaiPCEnjoymentOverride",0)
 		else
 			if IsLeadin() && HentaiEnjoyment > pcleadinenjoymentcap
-
 				HentaiEnjoyment = HentaiEnjoyment - 1
-			else	
+			else
 				HentaiEnjoyment = HentaiEnjoyment + PCEnjoymentChanges
 			endif
 		endif
@@ -2729,7 +2749,7 @@ int function SLSO_GetEnjoyment()
 	;return SLSO_Enjoyment - BaseEnjoyment
 endFunction
 
-function BonusEnjoyment(actor Ref = none, int fixedvalue = 0 , bool VerifiedCall = false)
+function BonusEnjoyment(actor Ref = none, int fixedvalue = 0)
 ;	if self.GetState() == "Animating"
 		;if Ref == none || Ref == ActorRef
 		;	if Ref == none 
@@ -3088,20 +3108,17 @@ if LastUpdatedAnimation != Animation || LastUpdatedStage != Stage || LastUpdated
 		UpdateLabels(animation , stage , position)
 				
 		if IsPlayer
-			
 			if IsLeadIN()
 				PCEnjoymentChanges = pcldi
 			else
 				PCEnjoymentChanges = GetEndingEnjoyment() + GetOralEnjoyment() + GetPenetrationEnjoyment() + GetPenisActionEnjoyment() + GetStimulationEnjoyment()
 			endif
-
 		else
 			NPCEnjoymentChanges = GetEndingEnjoyment() + GetOralEnjoyment() + GetPenetrationEnjoyment() + GetPenisActionEnjoyment() + GetStimulationEnjoyment()
 			
 			if NPCEnjoymentChanges == 0
 				NPCEnjoymentChanges = npcldi
 			endif
-
 		endif
 
 	;Apply Broken Multipliers
@@ -3222,15 +3239,27 @@ Bool Function IshugePP()
 
 if stringutil.find(Racename ,"Brute") > -1 || stringutil.find(Racename ,"Spider") > -1 || stringutil.find(Racename ,"Lurker") > -1 || stringutil.find(Racename ,"Daedroth") > -1  ||  stringutil.find(Racename ,"Horse") > -1 || stringutil.find(Racename ,"Bear") > -1 || stringutil.find(Racename ,"Chaurus") > -1 || stringutil.find(Racename ,"Dragon") > -1 || Racename ==  "Frost Atronach" || stringutil.find(Racename ,"Giant") > -1 || Racename ==  "Mammoth" || Racename ==  "Sabre Cat" || stringutil.find(Racename ,"Troll") > -1 || Racename ==  "Werewolf" || stringutil.find(Racename ,"Gargoyle") > -1 || Racename ==  "Dwarven Centurion" || stringutil.find(Racename ,"Ogre") > -1 ||  Racename ==  "Ogrim" || Racename ==  "Nest Ant Flier" || stringutil.find(Racename ,"OGrim") > -1
 
-Return True 
-
+	Return True 
 endif
+return false
 EndFunction
 
 Bool Function HasSchlong(Actor char)
-	return char.isinfaction(schlongfaction) 
+	if !char
+		return false
+	endif
+	if (schlongfaction)
+		return char.isinfaction(schlongfaction)
+	elseif (TNG_Gentlewoman)
+		if char.GetActorBase().GetSex() == 1 && !char.HasKeyword(TNG_Gentlewoman)
+			return false ; Female
+		  else
+			return true ; Male or Futa
+		  endif
+	else
+		  return char.GetActorBase().GetSex() == 0
+	EndIf 
 endfunction
-
 bool function has_spell(actor a, int id, string filename)
 	spell sp = get_form(id, filename) as spell
 	if !sp
@@ -3248,7 +3277,9 @@ endfunction
 
 
 Function AssignNPCHentaiTrait()
-
+if !actorref || !PlayerRef
+	return
+endif
 if Actorref == playerref || NpcTraitRandomAssignment != 1
 	return
 endif
@@ -3394,7 +3425,7 @@ elseif Gender == 0 ;male
 		ActorRef.AddToFaction(HentaiEpicTraitList[rand])
 		NPCTrait = HentaiEpicTraitList[rand]
 	else
-		Faction[] HentaiNormalTraitList = new faction[18]
+		Faction[] HentaiNormalTraitList = new faction[19]
 		;Trait List for Male
 		HentaiNormalTraitList[0] = Aggressive
 		HentaiNormalTraitList[1] = Masochist 
@@ -3424,7 +3455,7 @@ elseif Gender == 0 ;male
 elseif Gender == 1 ;female
 
 	if utility.randomint(1,100) <= ChanceToAssignEpicHentaiTrait ;roll for a chance for hentai epic trait
-		Faction[] HentaiEpicTraitList = new faction[8]
+		Faction[] HentaiEpicTraitList = new faction[9]
 		;Epic Trait list
 		HentaiEpicTraitList[0] = Uncummanable
 		HentaiEpicTraitList[1] = TheGifter
@@ -3441,7 +3472,7 @@ elseif Gender == 1 ;female
 		ActorRef.AddToFaction(HentaiEpicTraitList[rand])
 		NPCTrait = HentaiEpicTraitList[rand]
 	else
-		Faction[] HentaiNormalTraitList = new faction[20]
+		Faction[] HentaiNormalTraitList = new faction[21]
 		;Trait List for Male
 		HentaiNormalTraitList[0] = Aggressive
 		HentaiNormalTraitList[1] = Masochist 
@@ -3473,7 +3504,7 @@ elseif Gender == 1 ;female
 elseif Gender >= 2 ;Creature
 
 if utility.randomint(1,100) <= ChanceToAssignEpicHentaiTrait ;roll for a chance for hentai epic trait
-		Faction[] HentaiEpicTraitList = new faction[4]
+		Faction[] HentaiEpicTraitList = new faction[5]
 		;Epic Trait list
 		HentaiEpicTraitList[0] = Uncummanable
 		HentaiEpicTraitList[1] = TheMilker
@@ -3489,7 +3520,7 @@ if utility.randomint(1,100) <= ChanceToAssignEpicHentaiTrait ;roll for a chance 
 		ActorRef.AddToFaction(HentaiEpicTraitList[rand])
 		NPCTrait = HentaiEpicTraitList[rand]
 	else
-		Faction[] HentaiNormalTraitList = new faction[11]
+		Faction[] HentaiNormalTraitList = new faction[12]
 		;Trait List for Creature
 		HentaiNormalTraitList[0] = Aggressive
 		HentaiNormalTraitList[1] = OralLoving

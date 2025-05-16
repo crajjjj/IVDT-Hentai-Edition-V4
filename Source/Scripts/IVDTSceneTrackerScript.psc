@@ -2419,8 +2419,8 @@ Armor LewdArmor
 	;miscutil.PrintConsole ("wearing lewd armor...")
 	while slotindex < slotlength
 		BaseArmor = mainFemaleActor.GetWornForm(Armor.GetMaskForSlot(ArmorSlotsToSwitch[slotindex] as int)) as armor
-		LewdArmor = jsonutil.GetFormValue(ArmorSwappingFile, BaseArmor.getname(), none)	as armor
 	if BaseArmor
+		LewdArmor = jsonutil.GetFormValue(ArmorSwappingFile, BaseArmor.getname(), none)	as armor
 	if LewdArmor != none
 		;miscutil.PrintConsole (slotindex + " Trying to add  : "+ LewdArmor.getname())
 		mainFemaleActor.addItem(LewdArmor , abSilent=true)
