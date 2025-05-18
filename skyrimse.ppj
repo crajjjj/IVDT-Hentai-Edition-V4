@@ -46,7 +46,7 @@
         <Import>C:\Playground\Skyrim\mods\build\MCM SDK-53000-1-3-0-1629918647\Source\Scripts</Import>
         <Import>C:\Playground\Skyrim\mods\build\Mu Facial Expression Extended - MFEE\scripts\source</Import>
         <Import>C:\Playground\Skyrim\mods\build\SLAnimStageLabels\Source\Scripts</Import>
-        <Import>C:\Playground\Skyrim\mods\build\Hentairim tags\Source\Scripts</Import>
+        <!--<Import>C:\Playground\Skyrim\mods\build\Hentairim tags\Source\Scripts</Import>-->
     </Imports>
     <Folders>
         <!-- Relative path to folder containing .psc Papyrus source code files for this project -->
@@ -67,7 +67,7 @@
     <ZipFiles Output="Build">
         <ZipFile Name="@ModName" RootDir="." Compression="deflate">
             <Match In="Source\Scripts">*.psc</Match>
-            <Match In="Source\Scripts">HentaiRimTags.psc</Match>
+            <!--<Match In="Source\Scripts">HentaiRimTags.psc</Match>-->
             
             <Match In="Scripts">*.pex</Match>
             <!--<Match In="SKSE\Plugins">*.dll</Match>-->
