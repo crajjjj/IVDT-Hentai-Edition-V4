@@ -918,7 +918,7 @@ ModEvent.Send(ModEvent.Create("SLGP_SLSO_Start_"+self));SLSO_StartAnimating()
 			SendAnimation()
 		endIf
 	
-		RegisterForSingleUpdate(Utility.RandomFloat(0.1, 0.3))
+		RegisterForSingleUpdate(Utility.RandomFloat(1, 2))
 SLGP_Time3 = Utility.GetCurrentRealTime() - Start_time
 Log("SLGP Prepare:" + SLGP_Time1 + " Prepare_sync:"+ SLGP_Time2 +" StartAnimating:"+SLGP_Time3+" FINAL TIME:"+(SLGP_Time1 +SLGP_Time2 +SLGP_Time3) +" on TH:"+thread.TID+ " Actors:"+thread.ActorCount)
 	
@@ -1225,7 +1225,7 @@ SLGP_Angle_reposition = FALSE;SLGP Reset everytime the animation change
 			phase += 1
 		endif
 		
-			RegisterForSingleUpdate(utility.randomfloat(0.8, 1))
+			RegisterForSingleUpdate(utility.randomfloat(1, 2))
 	endIf
 endEvent
 
@@ -4836,6 +4836,7 @@ elseif IsGettingSuckedoff() && !animation.HasTag("aggressive")
 else 
 	return false
 endif
+return false
 endfunction
 
 
@@ -4850,7 +4851,7 @@ endif
 endFunction
 
 float function GetPercentageofMaxResistance(float value)
-
+;/  /;
 return value /  GetMaxResistanceAbsolute()
 endfunction
 

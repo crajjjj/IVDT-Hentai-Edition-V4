@@ -234,12 +234,27 @@ Function InitializeConfigValues()
 
 ;Store Actor Base Scaling for reset later after animation ends,
 ActorsInPlay = sexLabThreadController.Positions
+int count = ActorsInPlay.Length
+if count > 0
+	ActorOne = ActorsInPlay[0]
+endif
 
-ActorOne = ActorsInPlay[1]
-ActorTwo = ActorsInPlay[2]
-ActorThree = ActorsInPlay[3]
-ActorFour = ActorsInPlay[4]
-ActorFive = ActorsInPlay[5]
+if count > 1
+	ActorTwo = ActorsInPlay[1]
+endif
+
+if count > 2
+	ActorThree = ActorsInPlay[2]
+endif
+
+if count > 3
+	ActorFour = ActorsInPlay[3]
+endif
+
+if count > 4
+	ActorFive = ActorsInPlay[4]
+endif
+
 
 if ActorOne != none
 Actor1BaseScale = ActorOne.getscale()
