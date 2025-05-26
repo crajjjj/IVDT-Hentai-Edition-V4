@@ -21,9 +21,6 @@ Actor[] actorList
 string ASLSFX
 
 Event OnEffectStart( Actor akTarget, Actor akCaster )
-	
-	
-	
 	IsPlayer = akTarget == Game.GetPlayer()
 	File = "/SLSO/Config.json"
 	if IsPlayer ;((JsonUtil.GetIntValue(File, "sl_voice_player") != 0 && IsPlayer) || (JsonUtil.GetIntValue(File, "sl_voice_npc") != 0 && !IsPlayer))

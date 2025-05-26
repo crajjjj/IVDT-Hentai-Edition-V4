@@ -955,7 +955,9 @@ endfunction
 
 int function CalculateFullEnjoyment()
   String File = "/SLSO/Config.json"
-  slaActorArousal = ActorRef.GetFactionRank(slaArousal)
+  if slaArousal
+     slaActorArousal = ActorRef.GetFactionRank(slaArousal)
+  endif
   if slaActorArousal < 0
     slaActorArousal = 0
   endif
@@ -1658,9 +1660,13 @@ sslBaseVoice function GetVoice()
 endfunction
 
 Bool function HasDeviousGag(Actor char)
+  if !char
+    return false
+  endif
   if has_MagicEffect(char, 0x2b077, "Devious Devices - Integration.esm")
     return true
   endif
+  return false
 endfunction
 
 Bool function HasSchlong(Actor char)
@@ -2316,7 +2322,12 @@ endfunction
 Bool function PCIsLactating()
   Armor MilkR = Game.GetFormFromFile(0x812, "IVDTHentaiLactate.esp") as Armor
   Armor MilkL = Game.GetFormFromFile(0x813, "IVDTHentaiLactate.esp") as Armor
-  return playerref.IsEquipped(MilkL) || playerref.IsEquipped(MilkR)
+ 
+  If MilkL && MilkR
+     return playerref.IsEquipped(MilkL) || playerref.IsEquipped(MilkR)
+  endif
+
+  return false
 endfunction
 
 Bool function PCIsVictim()
@@ -3295,12 +3306,26 @@ function StopAnimating(bool Quick=false, string ResetAnim="IdleForceDefaultState
   PlayingSA = "SexLabSequenceExit1"
   PlayingAE = "SexLabSequenceExit1"
 endfunction
-
+String Function StringArrayToString(String[] values) Global
+    String result = ""
+    Int i = 0
+    While i < values.Length
+        If values[i]
+            result = result + values[i]
+            If i < values.Length - 1
+                result = result + ","
+            EndIf
+        EndIf
+        i=i+1
+    EndWhile
+    Return result
+EndFunction
 Float[] function StringArrayToMFGNGArray(String[] values)
   float[] result = new float[32]
   if values.length < 32
     log("Expressions array only has " + values.length + "items. it is either incorrectly formatted or missing in the json file")
   endif
+  log("Expressionm values:" + StringArrayToString(values))
   Int i = 0
   while i < 32
     if i == 30 && values[i]
@@ -3918,8 +3943,15 @@ state Animating
               ExpressionIndex = ExpressionIndex + 1
             endif
           endwhile
-          MfgConsoleFuncExt.ApplyExpressionPresetSmooth(actorref, StringArrayToMFGNGArray(PhaseExpressionsArr), false)
           UpdateEnjoymentandOrgasms()
+          Utility.Wait(Utility.RandomFloat(0.2, 0.5))
+           log("apply expressions")
+          bool res = MfgConsoleFuncExt.ApplyExpressionPresetSmooth(actorref, StringArrayToMFGNGArray(PhaseExpressionsArr), false)
+          if !res
+            log("failed to apply expressions")
+          else
+            log("expressions applied")
+          endif
         endif
       endif
       if phase >= 5
@@ -3927,7 +3959,7 @@ state Animating
       else
         phase += 1
       endif
-      RegisterForSingleUpdate(utility.randomfloat(1, 2))
+      RegisterForSingleUpdate(utility.randomfloat(1.0, 4.0) + (actorref.GetFormID() % 10) * 0.05)
     endif
   endevent
 
@@ -4063,7 +4095,7 @@ state Animating
     ;printdebug(ActorRef.GetLeveledActorBase().getname() + "After Orgasm Enjoyment : " + HentaiEnjoyment)
     ;QuitEnjoyment = FullEnjoyment
     ; VoiceDelay = 0.8
-    RegisterForSingleUpdate(1)
+    ;RegisterForSingleUpdate(1)
   endfunction
 
   ;/ event OnTranslationFailed()
