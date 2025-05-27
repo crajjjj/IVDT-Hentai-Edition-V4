@@ -196,6 +196,7 @@ int donotadvanceifnpcclosetoorgasm
 Armor MilkR
 Armor MilkL
 EffectShader NippleLeakCBBE
+Spell Lactating
 int EnableLactate
 int AlwaysLactate
 int ChancetoLactateDuringOrgasm
@@ -401,13 +402,21 @@ Function PerformInitialization()
 	endif
 	
 	;Hentairim Enjoyment 
-	HentairimResistance = Game.GetFormFromFile(0x854, "Hentairim Enjoyment Expressions Traits.esp") as Faction	
-	HentairimBroken = Game.GetFormFromFile(0x853, "Hentairim Enjoyment Expressions Traits.esp") as Faction
-
+	if isDependencyReady("Hentairim Enjoyment Expressions Traits.esp")
+		HentairimResistance = Game.GetFormFromFile(0x854, "Hentairim Enjoyment Expressions Traits.esp") as Faction	
+		HentairimBroken = Game.GetFormFromFile(0x853, "Hentairim Enjoyment Expressions Traits.esp") as Faction
+	endif
 	;Lactate
-	MilkR = Game.GetFormFromFile(0x812, "IVDTHentaiLactate.esp") as Armor
-	MilkL = Game.GetFormFromFile(0x813, "IVDTHentaiLactate.esp") as Armor
-	NippleLeakCBBE  = game.GetFormFromFile(0x814, "IVDTHentaiLactate.esp") as EffectShader
+	if isDependencyReady("IVDTHentaiLactate.esp")
+		MilkR = Game.GetFormFromFile(0x812, "IVDTHentaiLactate.esp") as Armor
+		MilkL = Game.GetFormFromFile(0x813, "IVDTHentaiLactate.esp") as Armor
+		NippleLeakCBBE  = game.GetFormFromFile(0x814, "IVDTHentaiLactate.esp") as EffectShader
+	endif
+
+	if isDependencyReady("IVDTHentaiNPCTraitsAndEnjoyment.esp") && !Lactating
+		 Lactating = Game.GetFormFromFile(0x851, "IVDTHentaiNPCTraitsAndEnjoyment.esp") as Spell
+	endif
+	
 	SetGhostActor()
 
 	Initialized = true
@@ -708,18 +717,18 @@ if actorWithSceneTrackerSpell == mainFemaleActor
 
 ;=========================run Dirty Talk & sex Effects=======================	
 	;run lactating
-
-	if (mainFemaleActor.IsEquipped(MilkL) || mainFemaleActor.IsEquipped(MilkR)) && !ASLcurrentlyIntense
-		if Utility.RandomInt(1, 100) <= ChancetoStopLactate && GetMainNPCTrait() != "+The Milker" ;cant start lactating until scene ends with the milker
-			printdebug(" Stop Lactating")
-			StopLactate()
+	if MilkL && MilkR
+		if (mainFemaleActor.IsEquipped(MilkL) || mainFemaleActor.IsEquipped(MilkR)) && !ASLcurrentlyIntense
+			if Utility.RandomInt(1, 100) <= ChancetoStopLactate && GetMainNPCTrait() != "+The Milker" ;cant start lactating until scene ends with the milker
+				printdebug(" Stop Lactating")
+				StopLactate()
+			endif
+		else
+			if ChancetoLactateDuringIntense <= Utility.RandomInt(1, 100) && ASLcurrentlyIntense
+				Lactate()
+			endif	
 		endif
-	else
-		if ChancetoLactateDuringIntense <= Utility.RandomInt(1, 100) && ASLcurrentlyIntense
-			Lactate()
-		endif	
 	endif
-	
 	;chance for male voice
 	if AllowMaleVoice()
 		PlayMaleComments()
@@ -2644,11 +2653,10 @@ Bool Function MainMaleCanControl()
 endfunction
 
 Bool Function PCHasLactatingSpell()
-
-Spell Lactating = Game.GetFormFromFile(0x851, "IVDTHentaiNPCTraitsAndEnjoyment.esp") as Spell
-
-return mainFemaleActor.hasspell(Lactating)
-
+if Lactating 
+	return mainFemaleActor.hasspell(Lactating)
+endif
+	return false
 endfunction
 
 Bool Function Isintense()
