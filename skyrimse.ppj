@@ -10,7 +10,7 @@
     Final="false">
     <Variables>
         <!-- Set the name of your mod: -->
-        <Variable Name="ModName" Value="Hentairim IVDT 103 TNG patch" />
+        <Variable Name="ModName" Value="Hentairim Expressions 103 TNG patch" />
         <!-- The folder where you store all of your mods -->
         <Variable Name="ModsFolder" Value="C:\Playground\Skyrim\mods" />
         <!-- Optional folder with additional source code for imports -->
@@ -66,17 +66,26 @@
     <!-- The following section is for .zip archive. You can enable it by setting Zip="true" in the PapyrusProject -->
     <ZipFiles Output="Build">
         <ZipFile Name="@ModName" RootDir="." Compression="deflate">
-            <!--<Match In="Source\Scripts">*.psc</Match>-->
+             <!--<Match In="Source\Scripts">*.psc</Match>-->
+            
+            <Match In="Source\Scripts">sslActorAlias.psc</Match>
             <Match In="Source\Scripts">HentaiRimTags.psc</Match>
-            <Match In="Source\Scripts">SLSO_SpellVoiceScript.psc</Match>
-            <Match In="Source\Scripts">IVDTControllerScript.psc</Match>
-            <Match In="Source\Scripts">IVDTSceneTrackerScript.psc</Match>
+            <Match In="Source\Scripts">SLSO_Widget1Update.psc</Match>
+            <Match In="Source\Scripts">SLSO_Widget2Update.psc</Match>
+        <Match In="Source\Scripts">SLSO_Widget3Update.psc</Match>
+        <Match In="Source\Scripts">SLSO_Widget4Update.psc</Match>
+        <Match In="Source\Scripts">SLSO_Widget5Update.psc</Match>
 
             <Match In="Scripts">HentaiRimTags.pex</Match>
-            <Match In="Scripts">SLSO_SpellVoiceScript.pex</Match>
-            <Match In="Scripts">IVDTControllerScript.pex</Match>
-            <Match In="Scripts">IVDTSceneTrackerScript.pex</Match>
-            <!--<Match In="Scripts">*.pex</Match>-->
+            <Match In="Scripts">sslActorAlias.pex</Match>
+            <Match In="Scripts">SLSO_Widget1Update.pex</Match>
+            <Match In="Scripts">SLSO_Widget2Update.pex</Match>
+            <Match In="Scripts">SLSO_Widget3Update.pex</Match>
+            <Match In="Scripts">SLSO_Widget4Update.pex</Match>
+            <Match In="Scripts">SLSO_Widget5Update.pex</Match>
+            <!--<Match In="Source\Scripts">HentaiRimTags.psc</Match>-->
+            
+              <!--<Match In="Scripts">*.pex</Match>-->
             <!--<Match In="SKSE\Plugins">*.dll</Match>-->
             <!--<Match In="SKSE\Plugins\StorageUtilData\IVDTHentai">Config.json</Match>-->
         </ZipFile>
