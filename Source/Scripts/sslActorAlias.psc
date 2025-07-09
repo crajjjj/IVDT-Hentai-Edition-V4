@@ -57,8 +57,11 @@ bool DebugMode
 bool DisableChanceforAutotongue = false
 Faction DualShot
 int EnableAhegao
+String EnableErinMFEE = "HentairimEnjoyment/ErinMFEEConfig.json"
 int EnablePrintDebug
 int EnableTongue
+int EnabledMFEEAhegao = 0
+int EnabledMFEETongue = 0
 string EndAnimEvent
 String EndingLabel
 Faction Epic
@@ -76,6 +79,7 @@ int ExpressionPhase
 sslBaseExpression[] Expressions
 String ExpressionsFile = ""
 int FHUTongueType
+armor FHUTongueTypeArmor
 
 ; Storage
 int[] Flags
@@ -86,6 +90,8 @@ float GenderMod
 Spell HDTHeelSpell
 Form HadBoots
 Form HadStrapon
+Bool HasMFEE = false
+Bool HasMFEEVanillaRace = false
 Faction HeavyArmorFetishist
 float HentaiEnjoyment
 String HentaiEnjoymentConfigFile = "HentairimEnjoyment/Config.json"
@@ -101,6 +107,7 @@ bool IsAggressor
 bool IsCreature
 bool IsFemale
 bool IsForcedSilent
+bool IsFuta
 bool IsMale
 Bool IsOrgasming = false
 bool IsPlayer
@@ -121,6 +128,8 @@ Faction LightArmorFetishist
 float[] Loc
 float LoopDelay
 float LoopExpressionDelay
+bool MFEEAddAhegao = false
+bool MFEEAddTongue = false
 Faction MainNPCTrait = none
 
 ; Positioning
@@ -137,6 +146,7 @@ float MasturbationMod
 int MaxResistance
 Faction MissCumalot
 float NPCEnjoymentChanges
+string NPCTongueFile = "HentairimEnjoyment/NPCTongue.json"
 Faction NPCTrait = none
 float NioScale
 bool NoOrgasm
@@ -216,6 +226,8 @@ String Stimulationlabel
 Form Strapon
 bool[] StripOverride
 Faction Strong
+
+;TNG
 Keyword TNG_Gentlewoman
 Keyword TNG_L
 Keyword TNG_XL
@@ -230,7 +242,6 @@ Faction ThiccLoving
 sslThreadController Thread
 float TimertoUpdate = 0.0
 Faction Timid
-Armor Tongue
 String[] TongueOutOverride
 Faction Uncummanable
 bool UseLipSync
@@ -240,6 +251,8 @@ bool UseScale
 sslBaseVoice Voice
 float VoiceDelay
 Faction Weak
+int ahegaolookupmodifier
+int ahegaophonemebigaah
 string[] blocknpcorgasmtags
 string[] blockpcorgasmtags
 Bool bslaExhibitionist
@@ -251,6 +264,7 @@ int enableaggressionresistance
 int enablecreaturenpcresistancedamage
 int enablefemalenpcresistancedamage
 int enablemalenpcresistancedamage
+int enablenpctongue = 0
 int enablepcresistancedamage
 int hugeppresistancedamagemultiplier
 bool isRealFemale
@@ -277,6 +291,7 @@ float npcfmf
 float npcfst
 float npcftf
 float npcfvp
+float npcintenseexpressionupdateinseconds
 float npcintensesecondspertick
 float npcisbrokenmultiplier
 float npcisvictimmultiplier
@@ -286,6 +301,7 @@ float npckis
 float npcldi
 float npcldisecondspertick
 int npcmaintainresistancepercentagewhencontrolling
+float npcnonintenseexpressionupdateinseconds
 float npcnonintensesecondspertick
 int npcnonvictimresistancedamagemultiplier
 int npcorgasmresistancedamage
@@ -326,6 +342,7 @@ float pcfmf
 float pcfst
 float pcftf
 float pcfvp
+float pcintenseexpressionupdateinseconds
 float pcintensesecondspertick
 float pcisbrokenmultiplier
 float pcisvictimmultiplier
@@ -338,6 +355,7 @@ float pcldisecondspertick
 int pcleadinenjoymentcap
 int pcmaintainresistancepercentagewhencontrolling
 int pcmaxresistance
+float pcnonintenseexpressionupdateinseconds
 float pcnonintensesecondspertick
 int pcnonvictimresistancedamagemultiplier
 int pcorgasmresistancedamage
@@ -391,9 +409,166 @@ Faction slaExhibitionist
 Int slaExhibitionistNPCCount
 float speed = 0.50
 string stagelabel
+int tonguephonemebigaah
+int tonguephonemeoh
 int variance
 int victimresistancedamagemultiplier
 Keyword zadDeviousBelt
+
+;SLU+ block
+Int ActorFullEnjoyment
+string ActorKey
+sslActorLibrary ActorLib
+string ActorName
+String ActorRaceKey
+float ActorScale
+VoiceType ActorVoice
+string AdjustKey
+bool AmmoChecked
+string[] AnimEvents
+float AnimScale
+Faction AnimatingFaction
+sslBaseAnimation Animation
+float BaseDelay
+int BaseEnjoyment
+ActorBase BaseRef
+int BaseSex
+int BestRelation
+int BonusEnjoyment
+float[] Center
+sslSystemConfig Config
+string CurrentAE
+string CurrentSA
+bool DebugMode
+string EndAnimEvent
+Form[] Equipment
+Bool EstrusForcedEnjoymentMods
+float ExhibitionistMod
+sslBaseExpression Expression
+float ExpressionDelay
+int ExpressionType
+sslBaseExpression[] Expressions
+int[] Flags
+string[] ForbiddenTags
+int FullEnjoyment
+ObjectReference FurnitureRef
+int[] FurnitureStatus
+int Gender
+float GenderMod
+Spell HDTHeelSpell
+Form HadBoots
+Form HadStrapon
+bool IsAggressor
+bool IsCreature
+bool IsFemale
+bool IsForcedSilent
+bool IsFuta
+bool IsLipFixed
+bool IsMale
+bool IsPlayer
+bool IsSkilled
+bool IsStripping
+bool IsTracked
+bool[] IsType
+bool IsVictim
+float LastOrgasm
+bool LeadIn
+float[] Loc
+float LoopDelay
+float LoopExpressionDelay
+ObjectReference MarkerRef
+float MasturbationMod
+bool NiOHeelLock
+float NioScale
+bool NoOrgasm
+bool NoRagdoll
+bool NoRedress
+bool NoUndress
+int NthTranslation
+float[] Offsets
+int OldStrength
+float OpenMouthScale
+Sound OrgasmFX
+int Orgasms
+float[] OwnSkills
+int PathingFlag
+Actor PlayerRef
+string PlayingAE
+string PlayingSA
+int Position
+bool Prepared
+int QuitEnjoyment
+string RaceEditorID
+float[] RealTime
+float RefreshExpressionDelay
+string[] RequiredTags
+bool Restricted
+Bool SLSOGetEnjoymentCheck1
+Bool SLSOGetEnjoymentCheck2
+bool SeparateOrgasms
+float[] SkillBonus
+float[] Skills
+int Stage
+int StageCount
+string StartAnimEvent
+float StartWait
+float StartedAt
+bool StartedUp
+sslActorStats Stats
+Form Strapon
+bool[] StripOverride
+sslThreadController Thread
+bool UseFaceItems
+bool UseLipSync
+bool UseScale
+sslBaseVoice Voice
+float VoiceDelay
+Bool bslaExhibitionist
+bool isRealFemale
+float sl_enjoymentrate
+float slaActorArousalMod
+
+; SLSO Factions and Settings
+Faction slaArousal
+Faction slaExhibitionist
+Int slaExhibitionistNPCCount
+
+; Devious Devices & ZBF Keywords
+Keyword zad_DeviousArmbinder
+Keyword zad_DeviousArmbinderElbow
+Keyword zad_DeviousBelt
+Keyword zad_DeviousBra
+Keyword zad_DeviousGag
+Keyword zad_DeviousGagPanel
+Keyword zad_DeviousHeavyBondage
+Keyword zad_DeviousPetSuit
+Keyword zad_DeviousPlugAnal
+Keyword zad_DeviousPlugVaginal
+Keyword zad_DeviousStraitJacket
+Keyword zad_DeviousSuit
+Keyword zad_DeviousYoke
+Keyword zad_DeviousYokeBB
+
+; SLU+ Keywords
+Keyword zad_Lockable
+Keyword zad_PermitAnal
+Keyword zad_PermitOral
+Keyword zad_PermitVaginal
+Keyword zbfAnimHandsArmbinder
+Keyword zbfAnimHandsElbows
+Keyword zbfAnimHandsWrists
+Keyword zbfAnimHandsYoke
+Keyword zbfWornBelt
+Keyword zbfWornBra
+Keyword zbfWornDevice
+Keyword zbfWornGag
+Keyword zbfWornHood
+Keyword zbfWornPermitOral
+Keyword zbfWornPreventAnal
+Keyword zbfWornPreventBreast
+Keyword zbfWornPreventOral
+Keyword zbfWornPreventVaginal
+
 
 bool property DoPathToCenter
   bool function get()
@@ -590,14 +765,18 @@ function AddResistanceDamage(float value)
 endfunction
 
 function AddTongue()
-  if !Tongue || WearingMask() != none || IsSuckingoffOther() || EnableTongue != 1 || HasDeviousGag(actorref) || IsUnconcious() || EquippedTongue()
+  if MFEEAddAhegao || WearingMask(actorref) != none || IsSuckingoffOther() || EnableTongue != 1 || HasDeviousGag(actorref) || IsUnconcious() || EquippedTongue()
     return
   endif
-  ;if Game.GetModbyName("sr_fillherup.esp") != 255
-    ;armor temptongue
-    actorref.addItem(tongue, abSilent=true)
-    actorref.EquipItem(tongue, abSilent=true)
- ; endif
+  if HasMFEE && EnabledMFEETongue == 1 ;erin tongue expression
+    MFEEAddTongue = true
+  else
+    if Game.GetModbyName("sr_fillherup.esp") != 255
+      armor temptongue
+      actorref.addItem(FHUTongueTypeArmor, abSilent=true)
+      actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
+    endif
+  endif
 endfunction
 
 function AdjustEnjoyment(int AdjustBy)
@@ -615,9 +794,6 @@ function ApplyCum()
 endfunction
 
 function AssignNPCHentaiTrait()
-  if !actorref || !PlayerRef
-    return
-  endif
   if Actorref == playerref || NpcTraitRandomAssignment != 1
     return
   endif
@@ -893,56 +1069,13 @@ function AttachMarker()
   endif
 endfunction
 
-function BonusEnjoyment(actor Ref=none, int fixedvalue=0)
-  ;	if self.GetState() == "Animating"
-  ;if Ref == none || Ref == ActorRef
-  ;	if Ref == none
-  ;Log("Ref is none, setting to self")
-  ;		Ref = ActorRef
-  ;	endif
-  if ref == none
+function BonusEnjoyment(actor Ref=none, int fixedvalue=0, bool VerifiedCall=false)
+  if ref == none && self.GetState() != "Animating"
     return
   endif
   HentaiEnjoyment += fixedvalue
-
-  ;			if fixedvalue != 0
-  ;				;reduce enjoyment by fixed value
-  ;				if fixedvalue < 0
-  ;increase enjoyment by fixed value
-  ;				else
-  ;					BonusEnjoyment += fixedvalue
-  ;				endif
-  ;Log("change [" +Ref.GetDisplayName()+ "] BonusEnjoyment[" +BonusEnjoyment+ "] by fixed value[" +fixedvalue+ "]")
-  ;increase enjoyment based on arousal
-  ;			else
-  ;				;Log("change [" +Ref.GetDisplayName()+ "]")
-  ;				int slaActorArousal = 0
-  ;				String File = "/SLSO/Config.json"
-  ;				if JsonUtil.GetIntValue(File, "sl_sla_arousal") == 1
-  ;					if slaArousal != none
-  ;						slaActorArousal = ActorRef.GetFactionRank(slaArousal)
-  ;					endIf
-  ;					if slaActorArousal < 0
-  ;						slaActorArousal = 0
-  ;					endIf
-  ;				endIf
-  ;
-  ;slaActorArousal = PapyrusUtil.ClampInt(slaActorArousal/20, 1, 5)
-  ;				;Log("change [" +Ref.GetDisplayName()+ "] enjoyment by [" +slaActorArousal+ "] arousal mod")
-  ;				if BaseSex == 0
-  ;					BonusEnjoyment +=slaActorArousal
-  ;				elseif JsonUtil.GetIntValue(File, "condition_female_orgasm_bonus") != 1
-  ;					BonusEnjoyment +=slaActorArousal
-  ;				else
-  ;				Log("female [" +Ref.GetDisplayName()+ "] bonus enjoyment [" +GetOrgasmCount()+ "]")
-  ;					BonusEnjoyment +=slaActorArousal + GetOrgasmCount()
-  ;				endif
-  ;			endIf
-  ;
-  ;increase target enjoyment
-  ;		elseif Thread.ActorAlias(Ref) != none
-  ;			;Log("change target [" +Ref.GetDisplayName()+ "] enjoyment by [" +fixedvalue+ "]")
-  ;		Thread.ActorAlias(Ref).BonusEnjoyment(Ref, fixedvalue);		endIf
+  AddResistanceDamage(fixedvalue)
+  printdebug(actorname + "enjoyment is being affected by game! mod value : " + fixedvalue)
 endfunction
 
 int function CalcReaction()
@@ -955,15 +1088,15 @@ endfunction
 
 int function CalculateFullEnjoyment()
   String File = "/SLSO/Config.json"
-  if slaArousal
-     slaActorArousal = ActorRef.GetFactionRank(slaArousal)
-  endif
+  slaActorArousal = ActorRef.GetFactionRank(slaArousal)
   if slaActorArousal < 0
     slaActorArousal = 0
   endif
   if AppliedStarterEnjoyment == false
     if ActorRef == PlayerRef
+      printdebug("PCStartingEnjoyment : " + PCStartingEnjoyment * 100)
       StarterEnjoyment = math.ceiling(AddArousalModifier(utility.Randomfloat(1, PCStartingEnjoyment * 100)))
+      printdebug("Starting Enjoyment After Arousal Mod: " + StarterEnjoyment)
       if StarterEnjoyment >= pcleadinenjoymentcap
         StarterEnjoyment = pcleadinenjoymentcap
       endif
@@ -972,6 +1105,7 @@ int function CalculateFullEnjoyment()
     endif
     HentaiEnjoyment = HentaiEnjoyment + StarterEnjoyment
     HentaiEnjoyment = NPCTraitStartingEnjoyementOverride(HentaiEnjoyment)
+    printdebug("Starting Enjoyment After NPC Trait Mod: " + HentaiEnjoyment)
     AppliedStarterEnjoyment = true
   endif
 
@@ -983,7 +1117,10 @@ int function CalculateFullEnjoyment()
       if IsLeadin() && HentaiEnjoyment > pcleadinenjoymentcap
         HentaiEnjoyment = HentaiEnjoyment - 1
       else
+        Printdebug("Enjoyment Before : " + HentaiEnjoyment)
         HentaiEnjoyment = HentaiEnjoyment + PCEnjoymentChanges
+        printdebug("Enjoyment Changes: " + PCEnjoymentChanges)
+        Printdebug("Enjoyment After : " + HentaiEnjoyment)
       endif
     endif
     AddResistanceDamage(PCEnjoymentChanges)
@@ -1020,6 +1157,21 @@ function CalculateStartupResistance()
   else
     ;start npc recover resistance
     SetResistance(GetResistance() + math.floor(Stats.HoursSinceLastSex(actorref) * npcrecoverresistancepercentageperhour))
+  endif
+endfunction
+
+function CheckHasMFEE()
+  ;check if has MFEE
+  if MuFacialExpressionExtended.GetVersion() > 0 && (actorref.GetRace().getname() == "Erin" || actorref.GetRace().getname() == "Elin")
+    HasMFEE = true
+    EnabledMFEETongue = JsonUtil.GetIntValue(EnableErinMFEE, "enablemfeetongue", 0)
+    EnabledMFEEAhegao = JsonUtil.GetIntValue(EnableErinMFEE, "enablemfeeahegao", 0)
+    ahegaophonemebigaah = JsonUtil.GetIntValue(EnableErinMFEE, "ahegaophonemebigaah", 0)
+    tonguephonemebigaah = JsonUtil.GetIntValue(EnableErinMFEE, "tonguephonemebigaah", 0)
+    tonguephonemeoh = JsonUtil.GetIntValue(EnableErinMFEE, "tonguephonemeoh", 0)
+    ahegaolookupmodifier = JsonUtil.GetIntValue(EnableErinMFEE, "ahegaolookupmodifier", 0)
+  elseif MuFacialExpressionExtended.GetVersion() > 0
+    HasMFEEVanillaRace = true
   endif
 endfunction
 
@@ -1148,10 +1300,7 @@ function EquipStrapon()
 endfunction
 
 Bool function EquippedTongue()
-	if tongue
-		return actorref.IsEquipped(tongue)
-	endif
-	return false
+  return actorref.IsEquipped(FHUTongueTypeArmor)
 endfunction
 
 float function ExpressionSpeed()
@@ -1174,12 +1323,25 @@ string function GetActorName()
   return ActorName
 endfunction
 
+float function GetBodyScale()
+  float output = 1.0
+  if ActorRef
+    output = ActorRef.GetScale()
+  endif
+  if NioScale > 0.0 ;&& NioScale != 1.0
+    output = output * NioScale
+  endif
+
+  ;	Log(self, "GetScale()")
+  return output
+endfunction
+
 int function GetBrokenPoints()
   return actorref.GetFactionRank(HentairimBroken)
 endfunction
 
 Float function GetEndingEnjoyment()
-  float labelenjoyment = 0
+  float labelenjoyment
   if EndingLabel == "ENO"
     if IsPlayer
       labelenjoyment = pceno
@@ -1224,6 +1386,14 @@ int function GetEnjoyment()
   return 0
 endfunction
 
+float function GetEnjoymentChanges()
+  if IsPlayer
+    return PCEnjoymentChanges
+  else
+    return NPCEnjoymentChanges
+  endif
+endfunction
+
 sslBaseExpression function GetExpression()
   return Expression
 endfunction
@@ -1239,6 +1409,22 @@ string function GetExpressionLabel()
     return EndingLabel
   else
     return "LDI"
+  endif
+endfunction
+
+float function GetExpressionUpdateSeconds()
+  if IsPlayer
+    if Isintense()
+      return pcintenseexpressionupdateinseconds
+    else
+      return pcnonintenseexpressionupdateinseconds
+    endif
+  else
+    if Isintense()
+      return npcintenseexpressionupdateinseconds
+    else
+      return npcnonintenseexpressionupdateinseconds
+    endif
   endif
 endfunction
 
@@ -1320,6 +1506,10 @@ String function GetHentaiExpression()
     endif
   endif
   return HentaiScenario
+endfunction
+
+bool function GetIsFuta()
+  return IsFuta
 endfunction
 
 int function GetMaxResistanceAbsolute()
@@ -1546,6 +1736,10 @@ Float function GetPenisActionEnjoyment()
   return labelenjoyment
 endfunction
 
+String function GetPenisActionLabel()
+  return PenisActionLabel
+endfunction
+
 float function GetPercentageofMaxResistance(float value)
   return value / GetMaxResistanceAbsolute()
 endfunction
@@ -1625,6 +1819,10 @@ int function GetResistancePercentage()
   endif
 endfunction
 
+Float function GetSecondsSinceLastOrgasm()
+  return Thread.totaltime - LastOrgasmtime
+endfunction
+
 Float function GetStimulationEnjoyment()
   float labelenjoyment
   if Stimulationlabel == "SST"
@@ -1655,14 +1853,48 @@ Form function GetStrapon()
   return Strapon
 endfunction
 
+Armor function GetTongueType()
+  if FHUTongueType == 0
+    FHUTongueType = Utility.RandomInt(1, 10)
+  endif
+  string name = actorref.getdisplayname()
+  int TongueType
+  armor Tongue
+  if isplayer
+    TongueType = FHUTongueType
+  elseif enablenpctongue == 1
+    TongueType = JsonUtil.GetIntValue(NPCTongueFile, name, 99)
+  endif
+  if TongueType == 1
+    Tongue = Game.GetFormFromFile(0x263B2, "sr_fillherup.esp") as Armor
+  elseif TongueType == 2
+    Tongue = Game.GetFormFromFile(0x263B3, "sr_fillherup.esp") as Armor
+  elseif TongueType == 3
+    Tongue = Game.GetFormFromFile(0x263B4, "sr_fillherup.esp") as Armor
+  elseif TongueType == 4
+    Tongue = Game.GetFormFromFile(0x263B5, "sr_fillherup.esp") as Armor
+  elseif TongueType == 5
+    Tongue = Game.GetFormFromFile(0x263B6, "sr_fillherup.esp") as Armor
+  elseif TongueType == 6
+    Tongue = Game.GetFormFromFile(0x263B7, "sr_fillherup.esp") as Armor
+  elseif TongueType == 7
+    Tongue = Game.GetFormFromFile(0x263B8, "sr_fillherup.esp") as Armor
+  elseif TongueType == 8
+    Tongue = Game.GetFormFromFile(0x263B9, "sr_fillherup.esp") as Armor
+  elseif TongueType == 9
+    Tongue = Game.GetFormFromFile(0x263BA, "sr_fillherup.esp") as Armor
+  elseif TongueType == 10
+    Tongue = Game.GetFormFromFile(0x263BB, "sr_fillherup.esp") as Armor
+  endif
+  FHUTongueTypeArmor = Tongue
+  return Tongue
+endfunction
+
 sslBaseVoice function GetVoice()
   return Voice
 endfunction
 
 Bool function HasDeviousGag(Actor char)
-  if !char
-    return false
-  endif
   if has_MagicEffect(char, 0x2b077, "Devious Devices - Integration.esm")
     return true
   endif
@@ -1765,7 +1997,7 @@ function Initialize()
   ActorScale = 1.0
   AnimScale = 1.0
   NioScale = 1.0
-  StartWait = 1
+  StartWait = 0.1
 
   ; Strings
   EndAnimEvent = "IdleForceDefaultState"
@@ -1783,6 +2015,12 @@ function Initialize()
   ; Make sure alias is emptied
   SLSO_Initialize()
   TryToClear()
+endfunction
+
+function InitializeAddNPCTongue()
+  printdebug("enablenpctongue : " + enablenpctongue)
+  enablenpctongue = JsonUtil.GetIntValue(NPCTongueFile, "enablenpctongue", 0)
+  FHUTongueTypeArmor = GetTongueType()
 endfunction
 
 function InitializeAggressorResistanceConfigValues()
@@ -1873,6 +2111,8 @@ function InitializeHentaiEnjoymentConfigValues()
   pcisbrokenmultiplier = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "pcisbrokenmultiplier", 0.0)
   pcafterorgasmmultiplier = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "pcafterorgasmmultiplier", 0.0)
   pcreceivehugeppmultiplier = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "pcreceivehugeppmultiplier", 0.0)
+  pcnonintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "pcnonintenseexpressionupdateinseconds", 1.0)
+  pcintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "pcintenseexpressionupdateinseconds", 0.5)
   npcstartingenjoyment = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcstartingenjoyment", 0.0)
   blockpcorgasmtags = papyrusutil.stringsplit(JsonUtil.GetStringValue(HentaiEnjoymentConfigFile, "blockpcorgasmtags", ""), ",")
   npcldi = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcldi", 0.0)
@@ -1915,6 +2155,8 @@ function InitializeHentaiEnjoymentConfigValues()
   npcisbrokenmultiplier = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcisbrokenmultiplier", 1.0)
   npcisvictimmultiplier = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcisvictimmultiplier", 1.0)
   npcafterorgasmmultiplier = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcafterorgasmmultiplier", 1.0)
+  npcnonintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcnonintenseexpressionupdateinseconds", 1.0)
+  npcintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcintenseexpressionupdateinseconds", 0.5)
   blocknpcorgasmtags = papyrusutil.stringsplit(JsonUtil.GetStringValue(HentaiEnjoymentConfigFile, "blocknpcorgasmtags", ""), ",")
 endfunction
 
@@ -1933,7 +2175,6 @@ function InitializeHentaiExpressionconfig()
   cunoverride = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsFile, "cunphonemeoverride", ""), ",")
   Masks = papyrusutil.stringsplit(JsonUtil.GetStringValue(MasksFile, "masks", ""), ",")
   Maskslots = papyrusutil.stringsplit(JsonUtil.GetStringValue(MasksFile, "maskslots", ""), ",")
-  initializeFHUTongueType()
 endfunction
 
 int function IntIfElse(bool check, int isTrue, int isFalse)
@@ -1952,7 +2193,7 @@ Bool function IsBroken()
 endfunction
 
 Bool function IsCowgirl()
-  return PenetrationLabel == "SCG" || PenisActionLabel == "FCG" || PenisActionLabel == "SAC" || PenisActionLabel == "FAC"
+  return PenetrationLabel == "SCG" || PenetrationLabel == "FCG" || PenetrationLabel == "SAC" || PenetrationLabel == "FAC"
 endfunction
 
 bool function IsCreature()
@@ -1989,7 +2230,6 @@ bool function IsGettingFucked()
   else
     return false
   endif
-  return false
 endfunction
 
 Bool function IsGettingStimulated()
@@ -2056,7 +2296,6 @@ Bool function IshugePP()
   if stringutil.find(Racename, "Brute") > -1 || stringutil.find(Racename, "Spider") > -1 || stringutil.find(Racename, "Lurker") > -1 || stringutil.find(Racename, "Daedroth") > -1 || stringutil.find(Racename, "Horse") > -1 || stringutil.find(Racename, "Bear") > -1 || stringutil.find(Racename, "Chaurus") > -1 || stringutil.find(Racename, "Dragon") > -1 || Racename == "Frost Atronach" || stringutil.find(Racename, "Giant") > -1 || Racename == "Mammoth" || Racename == "Sabre Cat" || stringutil.find(Racename, "Troll") > -1 || Racename == "Werewolf" || stringutil.find(Racename, "Gargoyle") > -1 || Racename == "Dwarven Centurion" || stringutil.find(Racename, "Ogre") > -1 || Racename == "Ogrim" || Racename == "Nest Ant Flier" || stringutil.find(Racename, "OGrim") > -1
     return True
   endif
-  return false
 endfunction
 
 Bool function Isintense()
@@ -2293,6 +2532,10 @@ bool function NeedsOrgasm()
   return GetFullEnjoyment() >= 100
 endfunction
 
+String function OralLabel()
+  return OralLabel
+endfunction
+
 ;orgasm stuff
 function Orgasm(float experience=0.0)
   if experience == -2
@@ -2320,13 +2563,11 @@ function OverrideStrip(bool[] SetStrip)
 endfunction
 
 Bool function PCIsLactating()
-  Armor MilkR = Game.GetFormFromFile(0x812, "IVDTHentaiLactate.esp") as Armor
-  Armor MilkL = Game.GetFormFromFile(0x813, "IVDTHentaiLactate.esp") as Armor
- 
-  If MilkL && MilkR
-     return playerref.IsEquipped(MilkL) || playerref.IsEquipped(MilkR)
+  if isDependencyReady("IVDTHentaiLactate.esp")
+    Armor MilkR = Game.GetFormFromFile(0x812, "IVDTHentaiLactate.esp") as Armor
+    Armor MilkL = Game.GetFormFromFile(0x813, "IVDTHentaiLactate.esp") as Armor
+    return playerref.IsEquipped(MilkL) || playerref.IsEquipped(MilkR)
   endif
-
   return false
 endfunction
 
@@ -2365,6 +2606,10 @@ Int function PCTraitEnjoymentChangesOverride(float value)
 endfunction
 
 function PathToCenter()
+endfunction
+
+String function PenetrationLabel()
+  return PenetrationLabel
 endfunction
 
 function PlayLouder(Sound SFX, ObjectReference FromRef, float Volume)
@@ -2452,12 +2697,16 @@ function RegisterEvents()
 endfunction
 
 function RemoveTongue()
-  if !Tongue || !isplayer
+  if !isplayer
     return
   endif
-  if EquippedTongue()
-    actorref.unEquipItem(Tongue, abSilent=true)
-    actorref.removeItem(Tongue, abSilent=true)
+  if HasMFEE && MFEEAddTongue
+    MFEEAddTongue = false
+  else
+    if EquippedTongue()
+      actorref.unEquipItem(FHUTongueTypeArmor, abSilent=true)
+      actorref.removeItem(FHUTongueTypeArmor, abSilent=true)
+    endif
   endif
 endfunction
 
@@ -2931,6 +3180,7 @@ bool function SetActor(Actor ProspectRef)
   Gender = ActorLib.GetGender(ActorRef)
   IsMale = Gender == 0
   IsFemale = Gender == 1
+  IsFuta = ActorLib.GetTrans(ActorRef) != -1
   IsCreature = Gender >= 2
   IsTracked = Config.ThreadLib.IsActorTracked(ActorRef)
   IsPlayer = ActorRef == PlayerRef
@@ -3306,26 +3556,12 @@ function StopAnimating(bool Quick=false, string ResetAnim="IdleForceDefaultState
   PlayingSA = "SexLabSequenceExit1"
   PlayingAE = "SexLabSequenceExit1"
 endfunction
-String Function StringArrayToString(String[] values) Global
-    String result = ""
-    Int i = 0
-    While i < values.Length
-        If values[i]
-            result = result + values[i]
-            If i < values.Length - 1
-                result = result + ","
-            EndIf
-        EndIf
-        i=i+1
-    EndWhile
-    Return result
-EndFunction
+
 Float[] function StringArrayToMFGNGArray(String[] values)
   float[] result = new float[32]
   if values.length < 32
-    log("Expressions array only has " + values.length + "items. it is either incorrectly formatted or missing in the json file")
+    printdebug("Expressions array only has " + values.length + "items. it is either incorrectly formatted or missing in the json file")
   endif
-  log("Expressionm values:" + StringArrayToString(values))
   Int i = 0
   while i < 32
     if i == 30 && values[i]
@@ -3593,6 +3829,12 @@ function UpdateHentaiEnjoyment()
         PCEnjoymentChanges = pcldi
       else
         PCEnjoymentChanges = GetEndingEnjoyment() + GetOralEnjoyment() + GetPenetrationEnjoyment() + GetPenisActionEnjoyment() + GetStimulationEnjoyment()
+        printdebug("Ending Enjoyment Changes: " + GetEndingEnjoyment())
+        printdebug("Oral Enjoyment Changes: " + GetOralEnjoyment())
+        printdebug("Penetration Enjoyment Changes: " + GetPenetrationEnjoyment())
+        printdebug("Penis Action Enjoyment Changes: " + GetPenisActionEnjoyment())
+        printdebug("Stimulation Enjoyment Changes: " + GetStimulationEnjoyment())
+        printdebug("Total Enjoyment changes : " + PCEnjoymentChanges)
       endif
     else
       NPCEnjoymentChanges = GetEndingEnjoyment() + GetOralEnjoyment() + GetPenetrationEnjoyment() + GetPenisActionEnjoyment() + GetStimulationEnjoyment()
@@ -3602,8 +3844,9 @@ function UpdateHentaiEnjoyment()
     endif
 
     ;Apply Broken Multipliers
-    if StorageUtil.GetIntValue(None, "ASLIsBroken") > 0 && IsPlayer
+    if IsBroken() && IsPlayer
       PCEnjoymentChanges = PCEnjoymentChanges * PCisBrokenMultiplier
+      printdebug("Broken Multiplier: " + PCEnjoymentChanges)
     endif
     if !IsPlayer && IsBroken()
       NPCEnjoymentChanges = NPCEnjoymentChanges * npcisbrokenmultiplier
@@ -3613,6 +3856,7 @@ function UpdateHentaiEnjoyment()
     if IsVictim
       if isplayer
         PCEnjoymentChanges = PCEnjoymentChanges * PCisVictimMultiplier
+        printdebug("Victim Multiplier: " + PCEnjoymentChanges)
       else
         NPCEnjoymentChanges = NPCEnjoymentChanges * NPCisVictimMultiplier
       endif
@@ -3622,6 +3866,7 @@ function UpdateHentaiEnjoyment()
     if ishugePP() && IsgettingPenetrated()
       if isplayer
         PCEnjoymentChanges = PCEnjoymentChanges * PCReceiveHugePPMultiplier
+        printdebug("huge pp Multiplier: " + PCEnjoymentChanges)
       else
         NPCEnjoymentChanges = NPCEnjoymentChanges * NPCWithHugePPMultiplier
       endif
@@ -3632,6 +3877,7 @@ function UpdateHentaiEnjoyment()
     while counter < Orgasms && NPCTrait != Strong && NPCTrait != CumBuckets ;Cumbuckets and Strong dont lose After Orgasm Enjoyment changes
       if isplayer
         PCEnjoymentChanges = PCEnjoymentChanges * PCafterOrgasmMultiplier
+        printdebug("After Orgasm Multiplier: " + PCEnjoymentChanges)
       else
         NPCEnjoymentChanges = NPCEnjoymentChanges * NPCafterOrgasmMultiplier
       endif
@@ -3642,23 +3888,30 @@ function UpdateHentaiEnjoyment()
     ;Apply Arousal Modifier
     if isplayer
       PCEnjoymentChanges = AddArousalModifier(PCEnjoymentChanges)
+      printdebug("Arousal Orgasm Multiplier: " + PCEnjoymentChanges)
     else
       NPCEnjoymentChanges = AddArousalModifier(NPCEnjoymentChanges)
     endif
 
     ;Apply Race modifier
-    if isplayer
-      PCEnjoymentChanges = AddRaceFuckingPCEnjoymentModifier(PCEnjoymentChanges)
-    else
-      NPCEnjoymentChanges = AddRaceEnjoymentModifier(NPCEnjoymentChanges)
+    if Thread.Positions.Length > 1
+      if isplayer
+        PCEnjoymentChanges = AddRaceFuckingPCEnjoymentModifier(PCEnjoymentChanges)
+        printdebug("Race Multiplier: " + PCEnjoymentChanges)
+      else
+        NPCEnjoymentChanges = AddRaceEnjoymentModifier(NPCEnjoymentChanges)
+      endif
     endif
 
     ;Apply NPC Trait Modifiers
-    if NpcTraitRandomAssignment == 1
-      if isplayer
-        PCEnjoymentChanges = PCTraitEnjoymentChangesOverride(PCEnjoymentChanges)
-      else
-        NPCEnjoymentChanges = NPCTraitEnjoymentChangesOverride(NPCEnjoymentChanges)
+    if Thread.Positions.Length > 1
+      if NpcTraitRandomAssignment == 1
+        if isplayer
+          PCEnjoymentChanges = PCTraitEnjoymentChangesOverride(PCEnjoymentChanges)
+          printdebug("NPC Trait Multiplier: " + PCEnjoymentChanges)
+        else
+          NPCEnjoymentChanges = NPCTraitEnjoymentChangesOverride(NPCEnjoymentChanges)
+        endif
       endif
     endif
   else
@@ -3674,7 +3927,7 @@ function UpdateLabels(sslBaseAnimation anim, int stageno, int actorpos)
   Labelsconcat = "1" + Stimulationlabel + "1" + PenisActionLabel + "1" + OralLabel + "1" + PenetrationLabel + "1" + EndingLabel
 endfunction
 
-Armor function WearingMask()
+Armor function WearingMask(actor char)
   if Maskslots.length == 0
     return none
   endif
@@ -3686,7 +3939,7 @@ Armor function WearingMask()
   Armor WearingMask = none
   string Maskname
   while slotindex < slotlength
-    Mask = actorref.GetWornForm(Armor.GetMaskForSlot(Maskslots[slotindex] as int)) as armor
+    Mask = char.GetWornForm(Armor.GetMaskForSlot(Maskslots[slotindex] as int)) as armor
     Maskname = Mask.getname()
     while maskindex < masklength
       if stringutil.find(Maskname, Masks[slotindex]) > -1
@@ -3732,34 +3985,16 @@ bool function has_spell(actor a, int id, string filename)
   return a.HasSpell(sp)
 endfunction
 
-function initializeFHUTongueType()
-  if FHUTongueType == 0
-    FHUTongueType = Utility.RandomInt(1, 10)
-  endif
-  if FHUTongueType == 1
-    Tongue = Game.GetFormFromFile(0x263B2, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 2
-    Tongue = Game.GetFormFromFile(0x263B3, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 3
-    Tongue = Game.GetFormFromFile(0x263B4, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 4
-    Tongue = Game.GetFormFromFile(0x263B5, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 5
-    Tongue = Game.GetFormFromFile(0x263B6, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 6
-    Tongue = Game.GetFormFromFile(0x263B7, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 7
-    Tongue = Game.GetFormFromFile(0x263B8, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 8
-    Tongue = Game.GetFormFromFile(0x263B9, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 9
-    Tongue = Game.GetFormFromFile(0x263BA, "sr_fillherup.esp") as Armor
-  elseif FHUTongueType == 10
-    Tongue = Game.GetFormFromFile(0x263BB, "sr_fillherup.esp") as Armor
+Bool function isDependencyReady(String modname)
+  int index = Game.GetModByName(modname)
+  if index == 255 || index == -1
+    return false
+  else
+    return true
   endif
 endfunction
 
-Bool function isDependencyReady(String modname) Global
+Bool function isDependencyReady(String modname)
   int index = Game.GetModByName(modname)
   if index == 255 || index == -1
     return false
@@ -3771,6 +4006,9 @@ endfunction
 function resetexpressions()
   printdebug("Reset Expressions")
   MfgConsoleFuncExt.resetmfg(actorref)
+  if hasmfee || HasMFEEVanillaRace
+    MuFacialExpressionExtended.RevertExpression(actorref)
+  endif
 endfunction
 
 state Animating
@@ -3795,32 +4033,40 @@ state Animating
   endevent
 
   event OnUpdate()
+    if IsVictim
+      Role = "v"
+    else
+      Role = "c"
+    endif
     while Utility.IsInMenuMode()
       Utility.WaitMenuMode(1.5)
       StartedAt += 1.2
     endwhile
+    if !IsBroken() && HasMFEE && EnabledMFEEAhegao == 1
+      MFEEAddAhegao = false
+    endif
+    if IsSuckingoffOther() && removetongueonblowjob == 1
+      RemoveTongue()
+    elseif IsBroken() && HasMFEE && EnabledMFEEAhegao == 1
+      RemoveTongue()
+      MFEEAddAhegao = true
+    elseif !EquippedTongue()
+      int rand = utility.randomint(1, 100)
+
+      ;isplayer
+      if (IsBroken() && enableahegao == 1) || (IsCunnilingus() && cunusetongue == 1) || (Isintense() && IsgettingPenetrated() && rand <= chancetostickouttongueduringintense && DisableChanceforAutotongue == false) || ((IsCowgirl() || IsGivingAnalPenetration() || IsGivingVaginalPenetration()) && !IsVictim && rand <= chancetostickouttongueduringattacking && DisableChanceforAutotongue == false)
+        AddTongue()
+      endif
+    endif
 
     ; Check if still among the living and able.
     if !ActorRef || ActorRef == none || !ActorRef.Is3DLoaded() || ActorRef.IsDisabled() || ActorRef.IsDead() ;SLGP - && ActorRef.GetActorValue("Health") < 1.0)
       Thread.EndAnimation(true)
     else
-      if IsVictim
-        Role = "v"
-      else
-        Role = "c"
-      endif
-      if isplayer
-        if IsSuckingoffOther() && removetongueonblowjob == 1
-          RemoveTongue()
-        elseif !EquippedTongue()
-          int rand = utility.randomint(1, 100)
-          if IsPlayer && (IsBroken() && enableahegao == 1) || (IsCunnilingus() && cunusetongue == 1) || (Isintense() && IsgettingPenetrated() && rand <= chancetostickouttongueduringintense && DisableChanceforAutotongue == false) || ((IsCowgirl() || IsGivingAnalPenetration() || IsGivingVaginalPenetration()) && !IsVictim && rand <= chancetostickouttongueduringattacking && DisableChanceforAutotongue == false)
-            AddTongue()
-          endif
-        endif
-      endif
       if GetState() == "Animating"
         UpdateEnjoymentandOrgasms()
+
+        ;-----------------------------START Looking Up Expression Array------------------------------
         if IsUnconcious() && ((HentaiExpressions == 1 && IsPlayer) || (!IsPlayer && HentaiNPCExpressions == 1))
           MfgConsoleFunc.SetModifier(actorref, 0, 100) ;left blink
           MfgConsoleFunc.SetModifier(actorref, 1, 100) ;right blink
@@ -3830,30 +4076,46 @@ state Animating
           int ExpressionIndex = 0
 
           ;printdebug(ActorName + " : " + OralTagGroup + " - " + PenetrationTagGroup + " - " + PenisActionTagGroup + " - " + StimulationTagGroup + " - " + EndingTagGroup
-          ;Speed = ExpressionSpeed()
+          Speed = ExpressionSpeed()
           PhaseLookup = LabelGroup + Phase
-          log("Expression Looking up : " + PhaseLookup)
+          printdebug("Expression Looking up : " + PhaseLookup)
           PhaseExpressionsArr = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsFile, Phaselookup, ""), ",")
 
           ;-----------------------------START CYCLE RUNNING EXPRESSION PHASES------------------------------
           PhaseExpressionsArr = papyrusutil.stringsplit(JsonUtil.GetStringValue(ExpressionsFile, Phaselookup, ""), ",")
           variance = PhaseExpressionsArr[32] as int
           if PhaseExpressionsArr.length < 32
-            log(" Expressions :" + phaselookup + " only has " + phaseExpressionsArr.length + "items . it is either incorrectly formatted or missing in the json file")
+            miscutil.printconsole(" Expressions :" + phaselookup + " only has " + phaseExpressionsArr.length + "items . it is either incorrectly formatted or missing in the json file.")
           endif
 
           ;begin updating expressions
           ;-----------------------------------------Set EXPRESSION-----------------------------------------
-          if IsBroken() || (IsgettingPenetrated() && MainNPCTrait() == "+The Penetrator")
+          ;MFEE is applied differently from the array for MFG values, and overrides the MFG array if have Ahegao and tongue out phoneme for Erin
+          if MFEEAddAhegao ;MFEE ahegao also includes broken condition. uses array's expression for variety of face movements
+            ;if MfgConsoleFunc.GetExpressionValue(actorref) != 0
+            ;	MfgConsoleFuncExt.SetExpression(actorref,0,0)
+            ;endif
+            if MuFacialExpressionExtended.GetExpressionValueByNumber(actorref, 0, 1) != 100
+              MuFacialExpressionExtended.SetExpressionByNumber(actorref, 0, 0, 100) ;ahegao 1
+            endif
+
+            ;make sure tongue out and tongue down is not applied to as ahegao already has tongue out and down
+            if MuFacialExpressionExtended.GetExpressionValueByNumber(actorref, 8, 0) != 0 || MuFacialExpressionExtended.GetExpressionValueByNumber(actorref, 2, 0) != 0
+              MuFacialExpressionExtended.SetExpressionByNumber(actorref, 8, 0, 0) ;tongueout
+              MuFacialExpressionExtended.SetExpressionByNumber(actorref, 8, 2, 0) ;tongue down
+            endif
+          elseif IsBroken() || (IsgettingPenetrated() && MainNPCTrait() == "+The Penetrator")
             PhaseExpressionsArr[31] = BrokenOverride[31]
 
+            ;Apply Craigg's changes
+            ;PhaseExpressionsArr[31] = BrokenOverride[31]
             ;if MfgConsoleFunc.GetExpressionValue(actorref) != BrokenOverride[31] as int
-            ;MfgConsoleFuncExt.SetExpression(actorref, BrokenOverride[30] as int, BrokenOverride[31] as int)
-            ; endif
-            ; else ;run with other expression
-            ;if MfgConsoleFunc.GetExpressionValue(actorref) != PhaseExpressionsArr[31] as int
-            ;MfgConsoleFuncExt.SetExpression(actorref, PhaseExpressionsArr[30] as int, PhaseExpressionsArr[31] as int) ;
-            ; endif
+            ;	MfgConsoleFuncExt.SetExpression(actorref,BrokenOverride[30] as int,BrokenOverride[31] as int)
+            ;	endif
+            ;	else ;run with other expression
+            ;	if MfgConsoleFunc.GetExpressionValue(actorref) != PhaseExpressionsArr[31] as int
+            ;	MfgConsoleFuncExt.SetExpression(actorref,PhaseExpressionsArr[30] as int,PhaseExpressionsArr[31] as int) ;
+            ;	endif
           endif
 
           ;UpdateEnjoymentandOrgasms()
@@ -3870,45 +4132,83 @@ state Animating
             if lowerlimit < 0
               lowerlimit = 0
             endif
-            if IsSuckingoffOther() || HasDeviousGag(actorref)
+            if MFEEAddAhegao
+              if ExpressionIndex != 1 ;&& MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != 0
+                ;	MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex,0 , 0)
+                PhaseExpressionsArr[ExpressionIndex] = 0 ;non big aah default to 0
+              else
+                PhaseExpressionsArr[ExpressionIndex] = ahegaophonemebigaah ; phoneme 1 big aah
+              endif
+
+              ;if MfgConsoleFunc.GetPhoneme(actorref, 1) != ahegaophonemebigaah
+              ;	MfgConsoleFuncExt.SetPhoneme(actorref, 1 , ahegaophonemebigaah , 0.1) ; ;big aah 30
+              ;endif
+            elseif IsSuckingoffOther() || HasDeviousGag(actorref)
               PhaseExpressionsArr[ExpressionIndex] = Blowjoboverride[ExpressionIndex]
 
               ;if MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != Blowjoboverride[ExpressionIndex] as int
-              ;MfgConsoleFuncExt.SetPhoneme(actorref, ExpressionIndex, Blowjoboverride[ExpressionIndex] as int, 0.1) ;
+              ;	MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex,Blowjoboverride[ExpressionIndex] as int , 0.1) ;
               ;endif
+            elseif MFEEAddTongue
+              ;if MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != 0 &&
+              if ExpressionIndex != 1 && ExpressionIndex != 11
+                PhaseExpressionsArr[ExpressionIndex] = 0
+
+                ;MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex,0 , 0) ;
+              elseif ExpressionIndex == 1
+                PhaseExpressionsArr[ExpressionIndex] = tonguephonemebigaah
+              elseif ExpressionIndex == 11
+                PhaseExpressionsArr[ExpressionIndex] = tonguephonemeoh
+              endif
+
+              ; apply MFEE tongue out and down
+              if MuFacialExpressionExtended.GetExpressionValueByNumber(actorref, 8, 0) != 100 || MuFacialExpressionExtended.GetExpressionValueByNumber(actorref, 2, 0) != 100
+                MuFacialExpressionExtended.SetExpressionByNumber(actorref, 8, 0, 100) ;tongueout
+                MuFacialExpressionExtended.SetExpressionByNumber(actorref, 8, 2, 100) ;tongue down
+              endif
+
+              ;if MfgConsoleFunc.GetPhoneme(actorref, 1) != tonguephonemebigaah || MfgConsoleFunc.GetPhoneme(actorref, 11) != tonguephonemeoh
+              ;		MfgConsoleFuncExt.SetPhoneme(actorref, 1 , tonguephonemebigaah , 0.1) ; ;big aah
+              ;		MfgConsoleFuncExt.SetPhoneme(actorref, 11 , tonguephonemeoh , 0.1) ; ;oh
+              ;	endif
+              ;MFEE tongue out
+              ;if MuFacialExpressionExtended.GetExpressionValueByNumber(actorref,8,0) != 100 || MuFacialExpressionExtended.GetExpressionValueByNumber(actorref,2,0) != 100
+              ;	MuFacialExpressionExtended.SetExpressionByNumber(actorref,8,0,100) ;tongueout
+              ;	MuFacialExpressionExtended.SetExpressionByNumber(actorref,8,2,100) ;tongue down
+              ;	endif
             elseif EquippedTongue()
               PhaseExpressionsArr[ExpressionIndex] = TongueoutOverride[ExpressionIndex]
 
               ;if MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != TongueoutOverride[ExpressionIndex] as int
-              ;MfgConsoleFuncExt.SetPhoneme(actorref, ExpressionIndex, TongueoutOverride[ExpressionIndex] as int, 0.05) ;
+              ;	MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex,TongueoutOverride[ExpressionIndex] as int , 0.05) ;
               ;endif
             elseif IsKissing()
-              PhaseExpressionsArr[ExpressionIndex] = TongueoutOverride[ExpressionIndex]
+              PhaseExpressionsArr[ExpressionIndex] = kisOverride[ExpressionIndex]
 
               ;if MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != kisOverride[ExpressionIndex] as int
-              ; MfgConsoleFuncExt.SetPhoneme(actorref, ExpressionIndex, kisOverride[ExpressionIndex] as int, 0.05) ;
-              ; endif
+              ;	MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex,kisOverride[ExpressionIndex] as int , 0.05) ;
+              ;endif
             elseif IsCunnilingus()
               PhaseExpressionsArr[ExpressionIndex] = cunOverride[ExpressionIndex]
 
               ;if MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != cunOverride[ExpressionIndex] as int
-              ;MfgConsoleFuncExt.SetPhoneme(actorref, ExpressionIndex, cunOverride[ExpressionIndex] as int, 0.05) ;
+              ;	MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex,cunOverride[ExpressionIndex] as int , 0.05) ;
               ;endif
             elseif !IsUnconcious()
               PhaseExpressionsArr[ExpressionIndex] = Utility.Randomint(lowerlimit, upperlimit)
 
               ;if MfgConsoleFunc.GetPhoneme(actorref, ExpressionIndex) != PhaseExpressionsArr[ExpressionIndex] as int ;ignore if phoneme and existing phoneme is the same
-              ;MfgConsoleFuncExt.SetPhoneme(actorref, ExpressionIndex, Utility.Randomint(lowerlimit, upperlimit), speed) ;
-              ;endif
+              ;	MfgConsoleFuncExt.SetPhoneme(actorref,ExpressionIndex, Utility.Randomint( lowerlimit,upperlimit ) ,speed) ;
+              ;	endif
             endif
             ExpressionIndex = ExpressionIndex + 1
           endwhile
 
-          ;UpdateEnjoymentandOrgasms()
+          ;	UpdateEnjoymentandOrgasms()
           ExpressionIndex = 0
 
           ;----------------------------------------------Set MODIFIERS-----------------------------------------
-          while ExpressionIndex <= 13 && !IsUnconcious()
+          while ExpressionIndex <= 13 && !IsUnconcious() ;&& !MFEEAddAhegao
             ;avoid out of bounds
             int modifier = PhaseExpressionsArr[ExpressionIndex + 16] as int
             float modifierspeed
@@ -3919,39 +4219,44 @@ state Animating
             endif
 
             ;run modifiers
-            if IsBroken() || ishugepp() || ((IsGettingAnallyPenetrated() || IsGettingVaginallyPenetrated()) && MainNPCTrait() == "+The Penetrator")
+            if MFEEAddAhegao
+              if ExpressionIndex != 11 ;&& MfgConsoleFunc.GetModifier(actorref, ExpressionIndex) != 0
+                PhaseExpressionsArr[ExpressionIndex + 16] = 0
+
+                ;MfgConsoleFuncExt.SetModifier(actorref,ExpressionIndex,0 , 0)
+              endif
+              if MfgConsoleFunc.GetModifier(actorref, 11) != 50
+                MfgConsoleFunc.SetModifier(actorref, 11, ahegaolookupmodifier) ;look up 50
+              endif
+            elseif enableahegao == 1 && (IsBroken() || ishugepp() || ((IsGettingAnallyPenetrated() || IsGettingVaginallyPenetrated()) && MainNPCTrait() == "+The Penetrator"))
               PhaseExpressionsArr[ExpressionIndex + 16] = BrokenOverride[ExpressionIndex + 16] as int
+              if MuFacialExpressionExtended.GetExpressionValueByNumber(actorref, 0, 0) != 100 && HasMFEEVanillaRace
+                MuFacialExpressionExtended.SetExpressionByNumber(actorref, 0, 0, 100) ;ahegao 1
+              endif
 
               ;if MfgConsoleFunc.GetModifier(actorref, ExpressionIndex) != BrokenOverride[ExpressionIndex + 16] as int
-              ;MfgConsoleFuncExt.SetModifier(actorref, ExpressionIndex, BrokenOverride[ExpressionIndex + 16] as int, modifierspeed) ;
+              ;	MfgConsoleFuncExt.SetModifier(actorref,ExpressionIndex,BrokenOverride[ExpressionIndex+16] as int , modifierspeed) ;
               ;endif
               ExpressionIndex = ExpressionIndex + 1
-            elseif IsCowgirl() && expressionindex == 8 ;look downwards if riding override (8+16=24)
+            elseif IsCowgirl() && expressionindex == 8 ;look downwards if riding override
               PhaseExpressionsArr[24] = "100"
 
-              ;MfgConsoleFuncExt.SetModifier(actorref, 8, 100, modifierspeed) ;
+              ;MfgConsoleFuncExt.SetModifier(actorref,8,100, modifierspeed) ;
               ExpressionIndex = 12
             elseif (Animation.HasTag("Doggy") || Animation.HasTag("Doggystyle") || Animation.HasTag("Doggy Style")) && (IsGettingAnallyPenetrated() || IsGettingVaginallyPenetrated()) && expressionindex == 8
               PhaseExpressionsArr[lookdirection + 16] = "100"
 
-              ;MfgConsoleFuncExt.SetModifier(actorref, lookdirection, 100, modifierspeed) ; look left or right or down
+              ;MfgConsoleFuncExt.SetModifier(actorref,lookdirection,100, modifierspeed) ; look left or right or down
               ExpressionIndex = 12
             else
               ;if MfgConsoleFunc.GetModifier(actorref, ExpressionIndex) != PhaseExpressionsArr[ExpressionIndex + 16] as int
-              ;MfgConsoleFuncExt.SetModifier(actorref, ExpressionIndex, modifier, modifierspeed)
+              ;	MfgConsoleFuncExt.SetModifier(actorref,ExpressionIndex, modifier , modifierspeed)
               ;endif
               ExpressionIndex = ExpressionIndex + 1
             endif
           endwhile
           UpdateEnjoymentandOrgasms()
-          Utility.Wait(Utility.RandomFloat(0.2, 0.5))
-           log("apply expressions")
-          bool res = MfgConsoleFuncExt.ApplyExpressionPresetSmooth(actorref, StringArrayToMFGNGArray(PhaseExpressionsArr), false)
-          if !res
-            log("failed to apply expressions")
-          else
-            log("expressions applied")
-          endif
+          MfgConsoleFuncExt.ApplyExpressionPresetSmooth(actorref, StringArrayToMFGNGArray(PhaseExpressionsArr), false)
         endif
       endif
       if phase >= 5
@@ -3959,7 +4264,7 @@ state Animating
       else
         phase += 1
       endif
-      RegisterForSingleUpdate(utility.randomfloat(1.0, 4.0) + (actorref.GetFormID() % 10) * 0.05)
+      RegisterForSingleUpdate(utility.randomfloat(GetExpressionUpdateSeconds() * 0.7, GetExpressionUpdateSeconds() * 1.3))
     endif
   endevent
 
@@ -4095,14 +4400,14 @@ state Animating
     ;printdebug(ActorRef.GetLeveledActorBase().getname() + "After Orgasm Enjoyment : " + HentaiEnjoyment)
     ;QuitEnjoyment = FullEnjoyment
     ; VoiceDelay = 0.8
-    ;RegisterForSingleUpdate(1)
+    RegisterForSingleUpdate(0.8)
   endfunction
 
   ;/ event OnTranslationFailed()
 		Log("OnTranslationFailed")
 		; SyncLocation(false)
 	endEvent /;
-  function OrgasmEffect()
+    function OrgasmEffect()
     ;give gifts NPC trait
     if !isplayer && NpcTraitRandomAssignment == 1
       if NPCtrait == TheNouveauRiche
@@ -4326,6 +4631,7 @@ state Prepare
         Thread.SyncEventDone(kPrepareActor)
       endif
     endif
+
     ;SLGP - Not need
     ;			StartAnimating()
     ;		endIf
@@ -4379,17 +4685,16 @@ state Prepare
 
   function StartAnimating()
     TimertoUpdate = 0
-	;log("StartAnimating called")
+
     ;sceneID = SexLab.FindActorController(game.getplayer())
     InitializeAggressorResistanceConfigValues()
+    CheckHasMFEE()
     InitializeHentaiEnjoymentConfigValues()
     InitializeHentaiExpressionconfig()
     CalculateStartupResistance()
-
-    ;SchlongFaction = Game.GetFormFromFile(0xAFF8 , "Schlongs of Skyrim.esp") as Faction
-    ;Set Schlong Faction
-    if !schlongFaction && isDependencyReady("Schlongs of Skyrim.esp")
-      schlongfaction = Game.GetFormFromFile(0xAFF8, "Schlongs of Skyrim.esp") as Faction
+    InitializeAddNPCTongue()
+    if !SchlongFaction && isDependencyReady("Schlongs of Skyrim.esp")
+      SchlongFaction = Game.GetFormFromFile(0xAFF8, "Schlongs of Skyrim.esp") as Faction
     endif
 
     ;TNG
@@ -4447,7 +4752,7 @@ state Prepare
     else
       SendAnimation()
     endif
-    RegisterForSingleUpdate(Utility.RandomFloat(1, 2))
+    RegisterForSingleUpdate(Utility.RandomFloat(0.1, 0.3))
     SLGP_Time3 = Utility.GetCurrentRealTime() - Start_time
     Log("SLGP Prepare:" + SLGP_Time1 + " Prepare_sync:" + SLGP_Time2 + " StartAnimating:" + SLGP_Time3 + " FINAL TIME:" + (SLGP_Time1 + SLGP_Time2 + SLGP_Time3) + " on TH:" + thread.TID + " Actors:" + thread.ActorCount)
   endfunction
