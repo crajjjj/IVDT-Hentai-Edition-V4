@@ -4345,6 +4345,7 @@ endfunction
 function UpdateEnjoymentandOrgasms()
   ;run this multiple times during update because expressions take time to move
   ;reset orgasm NPC expressions
+  printdebug(ActorName + "-ActorRef- TimertoUpdate:" + TimertoUpdate + "Thread.totaltime:" + Thread.totaltime)
   if IsOrgasming && LastOrgasmtime + utility.randomfloat(3.0, 6.0) <= Thread.totaltime
     IsOrgasming = false
   endif
@@ -4476,32 +4477,30 @@ function UpdateLabels(sslBaseAnimation anim, int stageno, int actorpos)
   Labelsconcat = "1" + Stimulationlabel + "1" + PenisActionLabel + "1" + OralLabel + "1" + PenetrationLabel + "1" + EndingLabel
 endfunction
 
-Armor function WearingMask(actor char)
-  if Maskslots.length == 0
-    return none
-  endif
-  int slotlength = Maskslots.length
-  int slotindex = 0
-  int masklength = Masks.length
-  int maskindex = 0
-  Armor Mask
-  Armor WearingMask = none
-  string Maskname
-  while slotindex < slotlength
-    Mask = char.GetWornForm(Armor.GetMaskForSlot(Maskslots[slotindex] as int)) as armor
-    Maskname = Mask.getname()
-    while maskindex < masklength
-      if stringutil.find(Maskname, Masks[slotindex]) > -1
-        WearingMask = Mask
-        maskindex = 100
-        slotindex = 100
-      endif
-      maskindex += 1
-    endwhile
-    slotindex += 1
-  endwhile
-  return WearingMask
-endfunction
+Armor Function WearingMask(Actor char)
+	if MaskSlots.Length == 0
+		return None
+	endif
+
+	int slotIndex = 0
+	while slotIndex < MaskSlots.Length
+		Armor wornItem = char.GetWornForm(MaskSlots[slotIndex] as int) as Armor
+		if wornItem
+			string maskName = wornItem.GetName()
+			
+			int maskIndex = 0
+			while maskIndex < Masks.Length
+				if StringUtil.Find(maskName, Masks[maskIndex]) > -1
+					return wornItem ; Found matching mask, return it immediately
+				endif
+				maskIndex += 1
+			endwhile
+		endif
+		slotIndex += 1
+	endwhile
+
+	return None ; No mask matched
+EndFunction
 
 form function get_form(int id, string filename)
   if Game.GetModbyName(filename) == 255
