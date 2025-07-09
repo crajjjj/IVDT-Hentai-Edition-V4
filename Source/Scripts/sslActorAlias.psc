@@ -1614,9 +1614,10 @@ endfunction
 
 String function GetPCBodyArmorType()
   Armor PCWornBodyArmor = playerref.GetWornForm(Armor.GetMaskForSlot(32)) as armor
-  if PCWornBodyArmor.getweightclass() == 0
+
+  if PCWornBodyArmor && PCWornBodyArmor.getweightclass() == 0
     return "Light"
-  elseif PCWornBodyArmor.getweightclass() == 1
+  elseif PCWornBodyArmor && PCWornBodyArmor.getweightclass() == 1
     return "Heavy"
   elseif PCWornBodyArmor != None
     return "Clothing"

@@ -645,8 +645,8 @@ function ChangeSpeedGear(int value , bool absolute = false)
 	if Gear < 0
 		Gear = 0
 	endif
-	if Gear > 5
-		Gear = 5
+	if Gear > 10
+		Gear = 10
 	endif
 	
 	StorageUtil.SetintValue(None, "HentairimSpeedGear", Gear)
@@ -668,26 +668,22 @@ Bool function HentairimGameReset()
 	ChangeSpeedGear(0 , true)
 	
 	int v = 0
-	while v <= Actorsinplay.length
+	while v < Actorsinplay.length
 		AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[v], 1 , 1 , 0)
 		v += 1
 	endwhile
 	return true
 endfunction
 
-BOol Function ActorisinArray(actor[] actorarr , actor char)
-
-int g = 0
-bool exist = false
-while g+1 <= actorarr.length
-	if Actorarr[g] == char
-		exist = true
-	g += 100
-	endif
-	g += 1
-endwhile
-
-return exist
+bool Function ActorIsInArray(Actor[] actorArr, Actor char)
+	int g = 0
+	while g < actorArr.Length
+		if actorArr[g] == char
+			return true
+		endif
+		g += 1
+	endwhile
+	return false
 EndFunction
 
 bool function HaveStamina(actor char)
