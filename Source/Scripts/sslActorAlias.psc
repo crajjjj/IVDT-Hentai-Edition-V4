@@ -787,8 +787,16 @@ function AddTongue()
   else
     if Game.GetModbyName("sr_fillherup.esp") != 255
       armor temptongue
-      actorref.addItem(FHUTongueTypeArmor, abSilent=true)
-      actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
+      If (FHUTongueTypeArmor)
+         actorref.addItem(FHUTongueTypeArmor, abSilent=true)
+         actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
+        else
+          FHUTongueTypeArmor = GetTongueType()
+          if FHUTongueTypeArmor
+             actorref.addItem(FHUTongueTypeArmor, abSilent=true)
+             actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
+          endif
+      EndIf
     endif
   endif
 endfunction
@@ -1326,7 +1334,10 @@ function EquipStrapon()
 endfunction
 
 Bool function EquippedTongue()
-  return actorref.IsEquipped(FHUTongueTypeArmor)
+  if FHUTongueTypeArmor
+    return actorref.IsEquipped(FHUTongueTypeArmor)
+  endif
+  return false
 endfunction
 
 float function ExpressionSpeed()
@@ -1788,7 +1799,8 @@ function GetPositionInfo()
     PrevStage = stage - 1
     Animation = Thread.Animation
     StageCount = Animation.StageCount
-    if Stage > StageCount
+    if Stage < 1 || Stage > StageCount
+      Log("Invalid stage: " + Stage + " of " + StageCount)
       return
     endif
     Log("Animation:" + Animation.Name + " AdjustKey:" + AdjustKey + " Position:" + Position + " Stage:" + Stage)
@@ -1988,7 +2000,7 @@ Armor function GetTongueType()
   if isplayer
     TongueType = FHUTongueType
   elseif enablenpctongue == 1
-    TongueType = JsonUtil.GetIntValue(NPCTongueFile, name, 99)
+    TongueType = JsonUtil.GetIntValue(NPCTongueFile, name, FHUTongueType)
   endif
   if TongueType == 1
     Tongue = Game.GetFormFromFile(0x263B2, "sr_fillherup.esp") as Armor
@@ -2530,6 +2542,7 @@ Bool function IshugePP()
   if stringutil.find(Racename, "Brute") > -1 || stringutil.find(Racename, "Spider") > -1 || stringutil.find(Racename, "Lurker") > -1 || stringutil.find(Racename, "Daedroth") > -1 || stringutil.find(Racename, "Horse") > -1 || stringutil.find(Racename, "Bear") > -1 || stringutil.find(Racename, "Chaurus") > -1 || stringutil.find(Racename, "Dragon") > -1 || Racename == "Frost Atronach" || stringutil.find(Racename, "Giant") > -1 || Racename == "Mammoth" || Racename == "Sabre Cat" || stringutil.find(Racename, "Troll") > -1 || Racename == "Werewolf" || stringutil.find(Racename, "Gargoyle") > -1 || Racename == "Dwarven Centurion" || stringutil.find(Racename, "Ogre") > -1 || Racename == "Ogrim" || Racename == "Nest Ant Flier" || stringutil.find(Racename, "OGrim") > -1
     return True
   endif
+  return false
 endfunction
 
 Bool function Isintense()

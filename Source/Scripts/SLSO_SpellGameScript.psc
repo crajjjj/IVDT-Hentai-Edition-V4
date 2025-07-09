@@ -255,13 +255,13 @@ endif
 			int f = 0
 			while f+1 <= Receiversarr.length
 				float receiverenjoymentmult
-				if Attackersarr[s] == playerref
+				if Attackersarr[f] == playerref
 					receiverenjoymentmult = pcpartnerenjoymentmult
 				else
 					receiverenjoymentmult = npcpartnerenjoymentmult
 				endif
 				
-				ModEnjoyment(Receiversarr[f] , 0, GetEnjoymentChanges(Receiversarr[s]) * receiverenjoymentmult * GetSpeedGear())
+				ModEnjoyment(Receiversarr[f] , 0, GetEnjoymentChanges(Receiversarr[f]) * receiverenjoymentmult * GetSpeedGear())
 				f += 1
 			endwhile
 
@@ -645,6 +645,9 @@ function ChangeSpeedGear(int value , bool absolute = false)
 	if Gear < 0
 		Gear = 0
 	endif
+	if Gear > 5
+		Gear = 5
+	endif
 	
 	StorageUtil.SetintValue(None, "HentairimSpeedGear", Gear)
 	if EnablePrintDebug > 0
@@ -669,6 +672,7 @@ Bool function HentairimGameReset()
 		AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[v], 1 , 1 , 0)
 		v += 1
 	endwhile
+	return true
 endfunction
 
 BOol Function ActorisinArray(actor[] actorarr , actor char)
