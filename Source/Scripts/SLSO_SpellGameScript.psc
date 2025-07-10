@@ -662,18 +662,21 @@ float function GetEnjoymentChanges(actor char)
 	return controller.ActorAlias(char).GetEnjoymentChanges()
 endfunction
 
+bool Function HentairimGameReset()
+	ChangeSpeedGear(0, true)
 
-Bool function HentairimGameReset()
-	
-	ChangeSpeedGear(0 , true)
-	
 	int v = 0
-	while v < Actorsinplay.length
-		AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[v], 1 , 1 , 0)
+	while v < ActorsInPlay.Length
+		if ActorsInPlay[v]
+			AnimSpeedHelper.SetAnimationSpeed(ActorsInPlay[v], 1, 1, 0)
+		else
+			printdebug("HentairimGameReset: ActorsInPlay[" + v + "] is None")
+		endif
 		v += 1
 	endwhile
+
 	return true
-endfunction
+EndFunction
 
 bool Function ActorIsInArray(Actor[] actorArr, Actor char)
 	int g = 0
