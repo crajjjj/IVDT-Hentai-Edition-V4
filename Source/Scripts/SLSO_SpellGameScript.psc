@@ -221,7 +221,7 @@ endif
 			
 			int v = 0
 			;apply speed changes if have anim speed helper
-			while v <= Actorsinplay.length && HasAnimSpeedHelper()
+			while v < Actorsinplay.length && HasAnimSpeedHelper()
 				printdebug("apply speed : " + Speed + " to " + Actorsinplay[v].GetDisplayName())
 				
 				if Speed != AnimSpeedHelper.GetAnimationSpeed(Actorsinplay[v] , 0)
@@ -234,7 +234,7 @@ endif
 			;Process all attackers. Damage stamina, add enjoyment
 			int s = 0
 			
-			while s+1 <= attackersarr.length
+			while s < attackersarr.length
 				float attackingenjoymentmult
 				float ConsumeStamina
 				if Attackersarr[s] == playerref
@@ -253,7 +253,7 @@ endif
 			
 			;add enjoyment of all receivers
 			int f = 0
-			while f+1 <= Receiversarr.length
+			while f < Receiversarr.length
 				float receiverenjoymentmult
 				if Attackersarr[f] == playerref
 					receiverenjoymentmult = pcpartnerenjoymentmult
@@ -276,7 +276,7 @@ endif
 
 		int y = 0
 		;Restore speed
-		while HasAnimSpeedHelper() && y <= Actorsinplay.length
+		while HasAnimSpeedHelper() && y < Actorsinplay.length
 
 			ChangeSpeedGear( 0 , true)
 			AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[y], 1 , secondstoreachtargetspeed , 0)
@@ -663,7 +663,7 @@ function ChangeSpeedGear(int value , bool absolute = false)
 endfunction
 
 float function GetEnjoymentChanges(actor char)
-	printdebug("Enjoyment Changes : " && controller.ActorAlias(char).GetEnjoymentChanges())
+	printdebug("Enjoyment Changes : " + controller.ActorAlias(char).GetEnjoymentChanges())
 	return controller.ActorAlias(char).GetEnjoymentChanges()
 endfunction
 
