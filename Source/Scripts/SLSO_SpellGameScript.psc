@@ -112,7 +112,7 @@ else
 		npcselfenjoymentmod = npcselfenjoymentmod * -1
 	endif
 	if GetMagickaDamage(GetTargetActor()) <= GetTargetActor().GetActorValue("Magicka")
-		GetTargetActor().DamageActorValue("npcmagickaconsumption", GetMagickaDamage(GetTargetActor()))
+		GetTargetActor().DamageActorValue("Magicka", GetMagickaDamage(GetTargetActor()))
 		ModEnjoyment(GetTargetActor() , 0, npcselfenjoymentmod)
 		printdebug(GetTargetActor().GetDisplayName() + " is modifying own enjoyment : " + npcselfenjoymentmod)
 	endif
@@ -350,8 +350,13 @@ EndEvent
 
 Function PrintDebug(string Contents = "")
 if EnablePrintDebug > 0
+	if GetTargetActor()
+		miscutil.printconsole("HentaiRim Game : (" + GetTargetActor().GetDisplayName() + " - " + ")" + Contents)
+	else
+		miscutil.printconsole("HentaiRim Game : " + Contents)
+	endif
 ;bool function WriteToFile(string fileName, string text, bool append = true, bool timestamp = false) global native
-	miscutil.printconsole("HentaiRim Game : (" + GetTargetActor().GetDisplayName() + " - " + ")" + Contents)
+	
 endif
 endfunction 
 
