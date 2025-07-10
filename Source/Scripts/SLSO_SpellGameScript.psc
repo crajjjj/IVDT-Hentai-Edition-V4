@@ -790,7 +790,7 @@ endif
 printdebug("Sexlab Magicka Regen Value : " + MagickaRegenValue)
 printdebug("Sexlab Stamina Regen Value : " + StaminaRegenValue)
 
-Char.SetActorValue("MagickaRate", originalmagickaregen)
+Char.SetActorValue("MagickaRate", MagickaRegenValue)
 Char.SetActorValue("StaminaRate", StaminaRegenValue)
 AppliedRegenValues = true
 endif

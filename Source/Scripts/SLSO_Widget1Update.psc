@@ -315,8 +315,6 @@ SirCumalot = Game.GetFormFromFile(0x830, "Hentairim Enjoyment Expressions Traits
 		NPCTrait = Masochist
 	elseif self.GetActorRef().IsInFaction(MissCumalot)
 		NPCTrait = MissCumalot
-	elseif self.GetActorRef().IsInFaction(Normal)
-		NPCTrait = Normal
 	elseif self.GetActorRef().IsInFaction(FutaLoving)
 		NPCTrait = FutaLoving
 	elseif self.GetActorRef().IsInFaction(Sadistic)
