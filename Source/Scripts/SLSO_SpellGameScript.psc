@@ -24,7 +24,8 @@ int Property Position auto
 int Property RelationshipRank auto
 float originalmagickaregen
 float originalstaminaregen
-
+float lastKeyTime = 0.0
+float keyCooldown = 1.0 ; seconds
 
 Event OnEffectStart( Actor akTarget, Actor akCaster )
 	File = "/SLSO/Config.json"
@@ -325,28 +326,34 @@ Function RegisterKey(int RKey = 0)
 EndFunction
 
 Event OnKeyDown(int keyCode)
-	if !Utility.IsInMenuMode()
-		if isplayer
-			If enablegameuserinput == 1
-				;Debug.Notification("SLSO OnKeyDown : " + keyCode)
-				If JsonUtil.GetIntValue(File, "hotkey_bonusenjoyment") == keyCode && (CheckifCanChangeSpeed(GetTargetActor()) || userinputignoreposition == 1)
-					if Input.IsKeyPressed(JsonUtil.GetIntValue(File, "hotkey_utility"))
-						
-						ChangeSpeedGear(-1)
-					else
-						ChangeSpeedGear(1)	
-					endif
-				ElseIf JsonUtil.GetIntValue(File, "hotkey_edge") == keyCode && (CheckifCanmodselfenjoyment() || userinputignoreposition == 1)
-					if Input.IsKeyPressed(JsonUtil.GetIntValue(File, "hotkey_utility")) 
-						ModSelfEnjoyment(true)
-					else
-						ModSelfEnjoyment()
-					endif
-				endif
-			EndIf
-		EndIf
-	EndIf
+	if !Utility.IsInMenuMode() && isplayer && enablegameuserinput == 1
+		float now = Utility.GetCurrentRealTime()
+		if now - lastKeyTime < keyCooldown
+			return ; skip if cooldown not passed
+		endif
+		lastKeyTime = now
+
+		int hotkeyBonus = JsonUtil.GetIntValue(File, "hotkey_bonusenjoyment")
+		int hotkeyEdge = JsonUtil.GetIntValue(File, "hotkey_edge")
+		int hotkeyUtility = JsonUtil.GetIntValue(File, "hotkey_utility")
+
+		if keyCode == hotkeyBonus && (CheckifCanChangeSpeed(GetTargetActor()) || userinputignoreposition == 1)
+			if Input.IsKeyPressed(hotkeyUtility)
+				ChangeSpeedGear(-1)
+			else
+				ChangeSpeedGear(1)
+			endif
+
+		elseif keyCode == hotkeyEdge && (CheckifCanmodselfenjoyment() || userinputignoreposition == 1)
+			if Input.IsKeyPressed(hotkeyUtility)
+				ModSelfEnjoyment(true)
+			else
+				ModSelfEnjoyment()
+			endif
+		endif
+	endif
 EndEvent
+
 
 Function PrintDebug(string Contents = "")
 if EnablePrintDebug > 0
@@ -649,9 +656,6 @@ function ChangeSpeedGear(int value , bool absolute = false)
 	
 	if Gear < 0
 		Gear = 0
-	endif
-	if Gear > 10
-		Gear = 10
 	endif
 	
 	StorageUtil.SetintValue(None, "HentairimSpeedGear", Gear)
