@@ -91,14 +91,9 @@ Event OnSexLabEnd(string EventName, string argString, Float argNum, form sender)
 	endif
 EndEvent
 
-
-
 Function ModSelfEnjoyment(bool inverse = false) ;use magicka to mod self Enjoyment
 ;GetTargetActor().GetBaseActorValue("Magicka")
-
 if IsPlayer
-
-	
 	if inverse
 		pcselfenjoymentmod = pcselfenjoymentmod * -1
 	endif
@@ -673,6 +668,10 @@ endfunction
 
 bool Function HentairimGameReset()
 	ChangeSpeedGear(0, true)
+	
+	if !ActorsInPlay
+		return false
+	endif
 
 	int v = 0
 	while v < ActorsInPlay.Length
@@ -688,6 +687,9 @@ bool Function HentairimGameReset()
 EndFunction
 
 bool Function ActorIsInArray(Actor[] actorArr, Actor char)
+	if !actorArr || !char 
+		return false
+	endif
 	int g = 0
 	while g < actorArr.Length
 		if actorArr[g] == char
