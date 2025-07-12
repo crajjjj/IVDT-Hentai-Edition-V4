@@ -653,6 +653,9 @@ Function RestoreArmor()
 		endif
 		slotIndex += 1
 	endwhile
+  ;clean up
+  BaseArmorArr = new Form[1]
+	LewdArmorArr = new Form[1]
 EndFunction
 
 ; Event received when an item is removed from this object's inventory. If the item is a persistant reference, akItemReference
