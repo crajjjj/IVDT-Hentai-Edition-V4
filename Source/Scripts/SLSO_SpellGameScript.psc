@@ -77,9 +77,8 @@ Float staminaregenmult
 int userinputignoreposition
 
 event OnEffectFinish(Actor akTarget, Actor akCaster)
-    Remove()
-    HentairimGameReset()
-  endif
+     Remove()
+     HentairimGameReset()
 endevent
 
 event OnEffectStart(Actor akTarget, Actor akCaster)
@@ -130,12 +129,12 @@ event OnSexLabEnd(string EventName, string argString, Float argNum, form sender)
 endevent
 
 Event OnUpdate()
-	printdebug(" on update")
+	printdebug("on update")
 
 	if isplayer
 		Findattackersandreceivers()
 
-		; NPC speed change (skip player)
+		; Run NPC speed change logic
 		int f = 0
 		while f < Attackersarr.length
 			if Attackersarr[f] != playerref && CheckifCanChangeSpeed(Attackersarr[f])
@@ -149,39 +148,35 @@ Event OnUpdate()
 
 	ApplyRegenvalues()
 
+	; PC autoplay
 	if isplayer && enablepcgameautoplay == 1
-		if GetSpeedGear() == 0 && CheckifCanmodselfenjoyment()
-			if Utility.RandomInt(1, 100) <= chanceforpctomodselfenjoyment
-				ModSelfEnjoyment()
-			endif
+		if GetSpeedGear() == 0 && CheckifCanmodselfenjoyment() && Utility.RandomInt(1, 100) <= chanceforpctomodselfenjoyment
+			ModSelfEnjoyment()
 		endif
 
-		if GetSpeedGear() <= 0 && CheckifCanChangeSpeed(GetTargetActor()) && Staminaisfull(GetTargetActor())
-			if Utility.RandomInt(1, 100) <= chanceforpctochangespeed
-				ChangeSpeedGear(Utility.RandomInt(1, GetSpeedsteps()))
-			endif
+		if Utility.RandomInt(1, 100) <= chanceforpctochangespeed && CheckifCanChangeSpeed(GetTargetActor()) && GetSpeedGear() <= 0 && Staminaisfull(GetTargetActor())
+			ChangeSpeedGear(Utility.RandomInt(1, GetSpeedsteps()))
 		endif
 	else
-		if GetSpeedGear() == 0 && CheckifCanmodselfenjoyment()
-			if Utility.RandomInt(1, 100) <= chancefornpctomodselfenjoyment
-				ModSelfEnjoyment()
-			endif
+		; NPC autoplay
+		if GetSpeedGear() == 0 && CheckifCanmodselfenjoyment() && Utility.RandomInt(1, 100) <= chancefornpctomodselfenjoyment
+			ModSelfEnjoyment()
 		endif
 	endif
 
 	;-------------------Speed Up Gear-----------------
 	if Receiversarr.length > 0 && GetSpeedGear() > 0 && IsPlayer
-		if Attackersarr != None && Attackersarr.length > 0 && HaveStamina(Attackersarr[0])
+		float SecondsCounter = 0.0
+		printdebug(Attackersarr[0].GetDisplayName() + " stamina : " + Attackersarr[0].GetActorValue("Stamina"))
+    int safeguard = 10
+		while GetSpeedGear() != 0 && HaveStamina(Attackersarr[0]) && safeguard>0
 			float Speed = 1 + (speedchangestep * GetSpeedGear())
-			bool debugMode = true
 
-			; Apply animation speed
+			; Apply speed to actors
 			if HasAnimSpeedHelper()
 				int v = 0
 				while v < Actorsinplay.length
-					if debugMode
-						printdebug("apply speed : " + Speed + " to " + Actorsinplay[v].GetDisplayName())
-					endif
+					printdebug("apply speed : " + Speed + " to " + Actorsinplay[v].GetDisplayName())
 					if Speed != AnimSpeedHelper.GetAnimationSpeed(Actorsinplay[v], 0)
 						AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[v], Speed, secondstoreachtargetspeed, 0)
 					endif
@@ -192,54 +187,49 @@ Event OnUpdate()
 			; Process attackers
 			int s = 0
 			while s < Attackersarr.length
-				Actor attacker = Attackersarr[s]
-				float enjoymentMult = npcreceiveenjoymentmultwhenattackingpartnerduringpenetration
-				if attacker == playerref
-					enjoymentMult = pcreceiveenjoymentmultwhenattackingpartnerduringpenetration
+				float attackingenjoymentmult = npcreceiveenjoymentmultwhenattackingpartnerduringpenetration
+				if Attackersarr[s] == playerref
+					attackingenjoymentmult = pcreceiveenjoymentmultwhenattackingpartnerduringpenetration
 				endif
-
-				float consumeStamina = GetStaminaDamage(attacker) * GetSpeedGear() * Attackersarr.length
-				attacker.DamageActorValue("Stamina", consumeStamina)
-				ModEnjoyment(attacker, 0, GetEnjoymentChanges(attacker) * enjoymentMult * GetSpeedGear())
-
+				float ConsumeStamina = GetStaminaDamage(Attackersarr[s]) * GetSpeedGear() * Attackersarr.length
+				Attackersarr[s].DamageActorValue("Stamina", ConsumeStamina)
+				ModEnjoyment(Attackersarr[s], 0, GetEnjoymentChanges(Attackersarr[s]) * attackingenjoymentmult * GetSpeedGear())
 				s += 1
 			endwhile
 
 			; Process receivers
 			int r = 0
 			while r < Receiversarr.length
-				Actor receiver = Receiversarr[r]
-				float enjoymentDelta = GetEnjoymentChanges(receiver) * GetSpeedGear()
-
-				if r >= Attackersarr.length
-					ModEnjoyment(receiver, 0, enjoymentDelta * npcpartnerenjoymentmult)
-				else
-					Actor attacker = Attackersarr[r]
-					if attacker == None
-						ModEnjoyment(receiver, 0, enjoymentDelta * npcpartnerenjoymentmult)
-					else
-						float receiverMult = npcpartnerenjoymentmult
-						if attacker == playerref
-							receiverMult = pcpartnerenjoymentmult
-						endif
-						ModEnjoyment(receiver, 0, enjoymentDelta * receiverMult)
-					endif
+				float receiverenjoymentmult = npcpartnerenjoymentmult
+				if r < Attackersarr.length && Attackersarr[r] == playerref
+					receiverenjoymentmult = pcpartnerenjoymentmult
 				endif
-
+				ModEnjoyment(Receiversarr[r], 0, GetEnjoymentChanges(Receiversarr[r]) * receiverenjoymentmult * GetSpeedGear())
 				r += 1
 			endwhile
+
+			Utility.WaitMenuMode(1.0)
 
 			if GetSpeedGear() > 0 && ShouldSlowdown(Attackersarr[0])
 				ChangeSpeedGear(0, true)
 			endif
-		else
-			; attackers exist but first one has no stamina
-			ChangeSpeedGear(0, true)
+      safeguard-=1
+		endwhile
+
+		; Restore speed
+		if HasAnimSpeedHelper()
+			int y = 0
+			while y < Actorsinplay.length
+				ChangeSpeedGear(0, true)
+				AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[y], 1, secondstoreachtargetspeed, 0)
+				y += 1
+			endwhile
 		endif
 	endif
 
 	RegisterForSingleUpdate(secondstoupdate)
 EndEvent
+
 
 
 

@@ -80,6 +80,12 @@ sslBaseExpression[] Expressions
 String ExpressionsFile = ""
 int FHUTongueType
 armor FHUTongueTypeArmor
+form[] BaseArmorArr
+form[] LewdArmorArr
+Int EnableArmorSwapping
+String ConfigFile  = "IVDTHentai/Config.json"
+String ArmorSwappingFile  = "IVDTHentai/ArmorSwapping.json"
+String[] ArmorSlotsToSwitch
 
 ; Storage
 int[] Flags
@@ -569,6 +575,86 @@ event OnActorStrip(form akTarget)
     Strip()
   endif
 endevent
+
+Function BodySwitchtoLewdArmor()
+; this is meant for slot 32 body armor switching only at the beginning of the stage.
+PrintDebug("EnableArmorSwapping:" + EnableArmorSwapping)
+if EnableArmorSwapping != 1
+        return
+endif
+
+int slotlength = ArmorSlotsToSwitch.length
+int slotindex = 0
+Armor BaseArmor
+Armor LewdArmor
+	;miscutil.PrintConsole ("wearing lewd armor...")
+	while slotindex < slotlength
+		BaseArmor = ActorRef.GetWornForm(Armor.GetMaskForSlot(ArmorSlotsToSwitch[slotindex] as int)) as armor
+		;miscutil.PrintConsole ("BaseArmor : " + BaseArmor.getname())
+		if BaseArmor
+			LewdArmor = jsonutil.GetFormValue(ArmorSwappingFile, BaseArmor.getname(), none)	as armor
+		endif
+	;	miscutil.PrintConsole ("LewdArmor : " + LewdArmor.getname())
+		if LewdArmor != none && BaseArmor!=none
+	;	miscutil.PrintConsole (slotindex + " Trying to add  : "+ LewdArmor.getname())
+			ActorRef.addItem(LewdArmor , abSilent=true)
+		  printdebug(ActorRef.GetLeveledActorBase().getName() + ":Added LewdArmor: " + LewdArmor.GetName())	
+		;miscutil.PrintConsole (slotindex + " Trying to unequip  : "+ BaseArmor.getname())
+			ActorRef.unEquipItem(BaseArmor , abSilent=true)
+		  printdebug(ActorRef.GetLeveledActorBase().getName() + ":Unequipped BaseArmor: " + BaseArmor.GetName())	
+	;	miscutil.PrintConsole (slotindex + " Trying to equip  : "+ LewdArmor.getname())
+			ActorRef.EquipItem(LewdArmor , abSilent=true)
+		  printdebug(ActorRef.GetLeveledActorBase().getName() + ":Equipped LewdArmor: " + LewdArmor.GetName())
+			BaseArmorArr = papyrusutil.pushform(BaseArmorArr , BaseArmor)
+			LewdArmorArr = papyrusutil.pushform(LewdArmorArr , LewdArmor)
+		endif
+	
+	slotindex += 1
+	endwhile
+	if BaseArmorArr && BaseArmorArr.Length > 0
+		printdebug("SwitchtoLewdArmoreArmor-swapped: " + BaseArmorArr.Length + ".Character:" +ActorRef.GetLeveledActorBase().GetName())
+	else
+		printdebug("SwitchtoLewdArmoreArmor-swapped 0" + ".Character:" +ActorRef.GetLeveledActorBase().GetName())
+	endif
+	
+endfunction
+
+Function RestoreArmor()
+    if EnableArmorSwapping != 1
+      return
+    endif
+  Armor BaseArmor
+  Armor LewdArmor
+	int slotLength = BaseArmorArr.Length
+	
+	if BaseArmorArr
+		printdebug("RestoreArmor-BaseArmorArr: " + BaseArmorArr.Length + ".Character" + ActorRef.GetLeveledActorBase().GetName())
+	endif
+	if LewdArmorArr
+		printdebug("RestoreArmor-LewdArmorArr: " + LewdArmorArr.Length + ".Character" + ActorRef.GetLeveledActorBase().GetName())
+	endif
+
+	int slotIndex = 0
+
+	while slotIndex < slotLength
+		baseArmor = BaseArmorArr[slotIndex] as Armor
+		lewdArmor = LewdArmorArr[slotIndex] as Armor
+		
+		if baseArmor
+			ActorRef.EquipItem(baseArmor, abSilent=true)
+      printdebug(ActorRef.GetLeveledActorBase().getName() + ":Equipped BaseArmor: " + baseArmor.GetName())	
+		
+		endif
+
+		if lewdArmor
+			ActorRef.RemoveItem(lewdArmor, abSilent=true)
+      printdebug(ActorRef.GetLeveledActorBase().getName() + ":Removed LewdArmor: " + lewdArmor.GetName())
+			
+		endif
+		slotIndex += 1
+	endwhile
+EndFunction
+
 ; Event received when an item is removed from this object's inventory. If the item is a persistant reference, akItemReference
 ; will point at it - otherwise the parameter will be None
 event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
@@ -2257,7 +2343,10 @@ function Initialize()
       zbfWornPreventBreast = Keyword.GetKeyword("zbfWornPreventBreast")
     endif
   endif
-
+  EnableArmorSwapping = JsonUtil.GetIntValue(ConfigFile,"enablearmorswapping",0)
+  if EnableArmorSwapping
+    ArmorSlotsToSwitch = papyrusutil.stringsplit(JsonUtil.GetStringValue(ArmorSwappingFile,"armorslots","") ,",")
+  endif
   ;SLU+ ---END------------------------------------
   ; Make sure alias is emptied
   SLSO_Initialize()
@@ -2972,8 +3061,8 @@ endfunction
 
 function PrintDebug(string Contents="")
   if EnablePrintDebug > 0
-    ;bool function WriteToFile(string fileName, string text, bool append = true, bool timestamp = false) global native
-    miscutil.printconsole("HentaiRim Enjoyment/Expressions/Traits : (" + Actorname + ")" + Contents)
+    hentairim_log.WriteLog("(" + Actorname + ")" + Contents, 0, "hentairim_sslActor")
+    miscutil.printconsole("hentairim_sslActor  : (" + Actorname + ")" + Contents)
   endif
 endfunction
 
@@ -4155,7 +4244,7 @@ function Strip()
     Utility.WaitMenuMode(2.0)
   endwhile
   IsStripping = True
-
+  BodySwitchtoLewdArmor()
   ; Select stripping array
   bool[] Strip
   if StripOverride.Length == 33 && !AmmoChecked
@@ -4187,6 +4276,7 @@ function Strip()
   if Config.RemoveHeelEffect && ActorRef.GetWornForm(0x00000080)
     UpdateNiOHeelEffect()
   endif
+  
 endfunction
 
 bool function UpdateNiOHeelEffect(bool Forced=false)
@@ -4254,10 +4344,15 @@ function TrackedEvent(string EventName)
 endfunction
 
 function UnStrip()
-  if !ActorRef || IsCreature || Equipment.Length == 0
+  if !ActorRef || IsCreature 
     return
   endif
 
+  RestoreArmor()
+
+  if Equipment.Length == 0
+    return
+  endif
   ; Remove nudesuit if present
   int n = ActorRef.GetItemCount(Config.NudeSuit)
   if n > 0
@@ -4281,6 +4376,7 @@ function UnStrip()
       ActorRef.EquipItemEx(Equipment[i], hand, false)
     endif
   endwhile
+  
 endfunction
 
 function UnequipStrapon()
