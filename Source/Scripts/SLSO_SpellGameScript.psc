@@ -1,4 +1,5 @@
 Scriptname SLSO_SpellGameScript extends activemagiceffect
+import Debug 
 
 String property File auto
 Bool property Forced auto
@@ -39,7 +40,7 @@ int enablegameuserinput
 int enablepcgameautoplay
 int enablespeedchange
 bool isprocessing = false
-float keyCooldown = 1.0 ; seconds
+float keyCooldown = 0.5 ; seconds
 float lastKeyTime = 0.0
 Float magickregenmult
 int npccanchangespeedwhennonvictim
@@ -76,6 +77,9 @@ Float staminaregenmult
 int userinputignoreposition
 
 event OnEffectFinish(Actor akTarget, Actor akCaster)
+    Remove()
+    HentairimGameReset()
+  endif
 endevent
 
 event OnEffectStart(Actor akTarget, Actor akCaster)
@@ -92,10 +96,12 @@ event OnKeyDown(int keyCode)
     if now - lastKeyTime < keyCooldown
       return ; skip if cooldown not passed
     endif
+    PrintDebug("OnKeyDown")
     lastKeyTime = now
     int hotkeyBonus = JsonUtil.GetIntValue(File, "hotkey_bonusenjoyment")
     int hotkeyEdge = JsonUtil.GetIntValue(File, "hotkey_edge")
     int hotkeyUtility = JsonUtil.GetIntValue(File, "hotkey_utility")
+    PrintDebug("OnKeyDown-check:" + CheckifCanChangeSpeed(GetTargetActor()))
     if keyCode == hotkeyBonus && (CheckifCanChangeSpeed(GetTargetActor()) || userinputignoreposition == 1)
       if Input.IsKeyPressed(hotkeyUtility)
         ChangeSpeedGear(-1)
@@ -388,7 +394,7 @@ Bool function CheckifCanmodselfenjoyment()
 endfunction
 
 function Findattackersandreceivers()
-  if Actorsinplay.length <= 1 || isprocessing
+  if Actorsinplay.length < 1 || isprocessing
     return
   endif
   isprocessing = true
@@ -416,10 +422,10 @@ function Findattackersandreceivers()
     if IsCowgirl(Actorsinplay[x])
       printdebug(Actorsinplay[x].getdisplayname() + " is femdom/cowgirl. add to attackers")
       Attacker = Actorsinplay[x]
-	elseif IsMasturbation(Actorsinplay[x])
-	  printdebug(Actorsinplay[x].getdisplayname() + " is masturbating. add to attackers and receivers")
-	  Attacker = Actorsinplay[x]
-	  receiver = Actorsinplay[x]
+	    elseif IsMasturbation(Actorsinplay[x])
+	     printdebug(Actorsinplay[x].getdisplayname() + " is masturbating. add to attackers and receivers")
+	     Attacker = Actorsinplay[x]
+	     receiver = Actorsinplay[x]
     elseif IsgettingPenetrated(Actorsinplay[x])
       printdebug(Actorsinplay[x].getdisplayname() + " is getting penetrated.add to receivers")
       receiver = Actorsinplay[x]
@@ -670,7 +676,7 @@ Bool function IsgettingPenetrated(actor char)
 endfunction
 
 Bool function IsMasturbation(actor char)
-  return controller.HasTag("Masturbation")
+  return controller.Animation.HasTag("Masturbation")
 endfunction
 
 Bool function Isintense()
@@ -717,18 +723,29 @@ String function PenisActionLabel(actor char)
   return controller.ActorAlias(char).GetPenisActionLabel()
 endfunction
 
-function PrintDebug(string Contents="")
-  if EnablePrintDebug > 0
-    if GetTargetActor()
-      miscutil.printconsole("HentaiRim Game : (" + GetTargetActor().GetDisplayName() + " - " + ")" + Contents)
-    else
-      miscutil.printconsole("HentaiRim Game : " + Contents)
-    endif
+Function PrintDebug(String asMessage, Int aiPriority = 0)
+	if EnablePrintDebug == 1
+		hentairim_log.WriteLog(asMessage, aiPriority, "SLSO_SpellGameScript")
+    miscutil.printconsole(asMessage)
+	endif
+EndFunction
 
-    ;bool function WriteToFile(string fileName, string text, bool append = true, bool timestamp = false) global native
-  endif
-endfunction
+; function PrintDebug(string Contents="")
+;    String debugMessage 
+;   if EnablePrintDebug > 0
+;     if GetTargetActor()
+;        debugMessage = "HentaiRim Game : (" + GetTargetActor().GetDisplayName() + " - " + ")" + Contents
+;       miscutil.printconsole(debugMessage)
+;       Debug.Trace(debugMessage, 0)
+;     else
+;        debugMessage = "HentaiRim Game : " + Contents
+;       miscutil.printconsole(debugMessage)
+;       Debug.Trace(debugMessage, 0)
+;     endif
 
+;     ;bool function WriteToFile(string fileName, string text, bool append = true, bool timestamp = false) global native
+;   endif
+; endfunction
 ;----------------------------------------------------------------------------
 ;Hotkeys
 ;----------------------------------------------------------------------------
