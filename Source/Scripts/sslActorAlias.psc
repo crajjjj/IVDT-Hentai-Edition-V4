@@ -4698,8 +4698,12 @@ state Animating
     endif
 
     ; Check if still among the living and able.
-    if !ActorRef || ActorRef == none || !ActorRef.Is3DLoaded() || ActorRef.IsDisabled() || ActorRef.IsDead() ;SLGP - && ActorRef.GetActorValue("Health") < 1.0)
+    if !ActorRef || ActorRef == none || ActorRef.IsDisabled() || (ActorRef.IsDead() && ActorRef.GetActorValue("Health") < 1.0)
       Thread.EndAnimation(true)
+    elseif !ActorRef.Is3DLoaded()
+      Log("Actor is out of cell or 3D unloaded - Unable to be animated will be ignored for now")
+      ; Loop
+      RegisterForSingleUpdate(VoiceDelay * 0.35)
     else
       if GetState() == "Animating"
         UpdateEnjoymentandOrgasms()
