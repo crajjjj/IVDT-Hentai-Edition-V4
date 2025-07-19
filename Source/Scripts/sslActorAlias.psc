@@ -867,22 +867,21 @@ function AddResistanceDamage(float value)
   endif
 endfunction
 
-function AddTongue()
+function EquipTongue()
   if MFEEAddAhegao || WearingMask(actorref) != none || IsSuckingoffOther() || EnableTongue != 1 || HasDeviousGag(actorref) || IsUnconcious() || EquippedTongue()
     return
   endif
+
   if HasMFEE && EnabledMFEETongue == 1 ;erin tongue expression
     MFEEAddTongue = true
   else
     if Game.GetModbyName("sr_fillherup.esp") != 255
       armor temptongue
       If (FHUTongueTypeArmor)
-         actorref.addItem(FHUTongueTypeArmor, abSilent=true)
          actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
         else
           FHUTongueTypeArmor = GetTongueType()
           if FHUTongueTypeArmor
-             actorref.addItem(FHUTongueTypeArmor, abSilent=true)
              actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
           endif
       EndIf
@@ -2091,6 +2090,9 @@ Armor function GetTongueType()
     TongueType = FHUTongueType
   elseif enablenpctongue == 1
     TongueType = JsonUtil.GetIntValue(NPCTongueFile, name, FHUTongueType)
+    If (!TongueType)
+      TongueType = FHUTongueType
+    EndIf
   endif
   if TongueType == 1
     Tongue = Game.GetFormFromFile(0x263B2, "sr_fillherup.esp") as Armor
@@ -2110,9 +2112,10 @@ Armor function GetTongueType()
     Tongue = Game.GetFormFromFile(0x263B9, "sr_fillherup.esp") as Armor
   elseif TongueType == 9
     Tongue = Game.GetFormFromFile(0x263BA, "sr_fillherup.esp") as Armor
-  elseif TongueType == 10
+  else
     Tongue = Game.GetFormFromFile(0x263BB, "sr_fillherup.esp") as Armor
   endif
+  printdebug("GetTongueType : " + TongueType)
   FHUTongueTypeArmor = Tongue
   return Tongue
 endfunction
@@ -2360,6 +2363,10 @@ function InitializeAddNPCTongue()
   printdebug("enablenpctongue : " + enablenpctongue)
   enablenpctongue = JsonUtil.GetIntValue(NPCTongueFile, "enablenpctongue", 0)
   FHUTongueTypeArmor = GetTongueType()
+  if FHUTongueTypeArmor
+     printdebug("Adding tongue")
+     ActorRef.addItem(FHUTongueTypeArmor, abSilent=true)
+  endif
 endfunction
 
 function InitializeAggressorResistanceConfigValues()
@@ -3127,7 +3134,7 @@ function RegisterEvents()
   RegisterForModEvent(e + "Startup", "StartAnimating")
 endfunction
 
-function RemoveTongue()
+function UnEquipTongue()
   if !isplayer
     return
   endif
@@ -3136,7 +3143,6 @@ function RemoveTongue()
   else
     if EquippedTongue()
       actorref.unEquipItem(FHUTongueTypeArmor, abSilent=true)
-      actorref.removeItem(FHUTongueTypeArmor, abSilent=true)
     endif
   endif
 endfunction
@@ -3166,7 +3172,6 @@ endfunction
 
 function RestoreActorDefaults()
   ; Make sure  have actor, can't afford to miss this block
-  RemoveTongue()
   resetexpressions()
   if !ActorRef
     ActorRef = GetReference() as Actor
@@ -4248,6 +4253,7 @@ function Strip()
   endwhile
   IsStripping = True
   BodySwitchtoLewdArmor()
+  InitializeAddNPCTongue()
   ; Select stripping array
   bool[] Strip
   if StripOverride.Length == 33 && !AmmoChecked
@@ -4350,8 +4356,18 @@ function UnStrip()
   if !ActorRef || IsCreature 
     return
   endif
+  printdebug("UnStrip: Character" + ActorRef.GetLeveledActorBase().GetName())
 
+  if AnimatingFaction && ActorRef.IsInFaction(AnimatingFaction) 
+    printdebug("UnStrip skipped by faction: Character" + ActorRef.GetLeveledActorBase().GetName())
+    return
+  endif
+ 
   RestoreArmor()
+  UnEquipTongue()
+  If (FHUTongueTypeArmor)
+     actorref.removeItem(FHUTongueTypeArmor, abSilent=true)
+  EndIf
 
   if Equipment.Length == 0
     return
@@ -4684,16 +4700,16 @@ state Animating
       MFEEAddAhegao = false
     endif
     if IsSuckingoffOther() && removetongueonblowjob == 1
-      RemoveTongue()
+      UnEquipTongue()
     elseif IsBroken() && HasMFEE && EnabledMFEEAhegao == 1
-      RemoveTongue()
+      UnEquipTongue()
       MFEEAddAhegao = true
     elseif !EquippedTongue()
       int rand = utility.randomint(1, 100)
 
       ;isplayer
       if (IsBroken() && enableahegao == 1) || (IsCunnilingus() && cunusetongue == 1) || (Isintense() && IsgettingPenetrated() && rand <= chancetostickouttongueduringintense && DisableChanceforAutotongue == false) || ((IsCowgirl() || IsGivingAnalPenetration() || IsGivingVaginalPenetration()) && !IsVictim && rand <= chancetostickouttongueduringattacking && DisableChanceforAutotongue == false)
-        AddTongue()
+        EquipTongue()
       endif
     endif
 
@@ -4911,7 +4927,7 @@ state Animating
   endevent
 
   event ResetActor()
-    RemoveTongue()
+    UnEquipTongue()
     if MarkerRef && ActorRef.GetDistance(MarkerRef) > 3000
       ActorRef.MoveTo(MarkerRef)
     endif
@@ -5423,7 +5439,6 @@ state Prepare
     InitializeHentaiEnjoymentConfigValues()
     InitializeHentaiExpressionconfig()
     CalculateStartupResistance()
-    InitializeAddNPCTongue()
     if !SchlongFaction && isDependencyReady("Schlongs of Skyrim.esp")
       SchlongFaction = Game.GetFormFromFile(0xAFF8, "Schlongs of Skyrim.esp") as Faction
     endif
