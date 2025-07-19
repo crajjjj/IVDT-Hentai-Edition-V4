@@ -170,7 +170,7 @@ Function UpdateWidget(Actor akActor, Float Enjoyment , int Resistance)
 	;EnjoymentValue = "E:" + StringUtil.Substring(controller.ActorAlias(self.GetActorRef()).GetFullEnjoymentMod(), 0, 5) + "%"
 	EnjoymentValue = math.ceiling(Enjoyment) + "%"
 	;Widget.SetTexts(ActorName, EnjoymentValue)
-	Widget.SetTexts(HentaiActorName, EnjoymentValue)
+	;Widget.SetTexts(HentaiActorName, EnjoymentValue)
 	;hentairim change
 	;Enjoyment /= 100
 	If Resistance <= 25
@@ -186,7 +186,8 @@ Function UpdateWidget(Actor akActor, Float Enjoyment , int Resistance)
 	;	Enjoyment = 1
 ;	EndIf
 	;Widget.SetMeterPercent(Enjoyment*100)
-	Widget.SetMeterPercent(Resistance)
+	Widget.SetMeterPercent(math.ceiling(Enjoyment))
+	Widget.SetTexts(HentaiActorName, Resistance + "%")
 	;If Enjoyment >= 0.90
 	;	GetCurrentHourOfDay()		;flash
 	;EndIf

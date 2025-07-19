@@ -579,7 +579,7 @@ endevent
 Function BodySwitchtoLewdArmor()
 ; this is meant for slot 32 body armor switching only at the beginning of the stage.
 PrintDebug("EnableArmorSwapping:" + EnableArmorSwapping)
-if EnableArmorSwapping != 1
+if EnableArmorSwapping != 1 || gender == 0 || Gender >= 2
         return
 endif
 
@@ -620,9 +620,9 @@ Armor LewdArmor
 endfunction
 
 Function RestoreArmor()
-    if EnableArmorSwapping != 1
-      return
-    endif
+  if EnableArmorSwapping != 1 || gender == 0 || Gender >= 2
+        return
+  endif
   Armor BaseArmor
   Armor LewdArmor
 	int slotLength = BaseArmorArr.Length

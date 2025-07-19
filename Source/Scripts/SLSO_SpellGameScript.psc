@@ -168,7 +168,7 @@ Event OnUpdate()
 	if Receiversarr.length > 0 && GetSpeedGear() > 0 && IsPlayer
 		float SecondsCounter = 0.0
 		printdebug(Attackersarr[0].GetDisplayName() + " stamina : " + Attackersarr[0].GetActorValue("Stamina"))
-    int safeguard = 10
+    int safeguard = 5
 		while GetSpeedGear() != 0 && HaveStamina(Attackersarr[0]) && safeguard>0
 			float Speed = 1 + (speedchangestep * GetSpeedGear())
 
