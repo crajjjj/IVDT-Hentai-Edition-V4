@@ -165,11 +165,11 @@ Event OnUpdate()
 	endif
 
 	;-------------------Speed Up Gear-----------------
-	if Receiversarr.length > 0 && GetSpeedGear() > 0 && IsPlayer
+	if Receiversarr && Receiversarr.length > 0 && GetSpeedGear() > 0 && IsPlayer
 		float SecondsCounter = 0.0
 		printdebug(Attackersarr[0].GetDisplayName() + " stamina : " + Attackersarr[0].GetActorValue("Stamina"))
     int safeguard = 5
-		while GetSpeedGear() != 0 && HaveStamina(Attackersarr[0]) && safeguard>0
+		while GetSpeedGear() != 0 && HaveStamina(Attackersarr[0]) && safeguard > 0
 			float Speed = 1 + (speedchangestep * GetSpeedGear())
 
 			; Apply speed to actors
@@ -180,7 +180,7 @@ Event OnUpdate()
 					if Speed != AnimSpeedHelper.GetAnimationSpeed(Actorsinplay[v], 0)
 						AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[v], Speed, secondstoreachtargetspeed, 0)
 					endif
-					v += 1
+					v = v + 1
 				endwhile
 			endif
 
@@ -194,7 +194,7 @@ Event OnUpdate()
 				float ConsumeStamina = GetStaminaDamage(Attackersarr[s]) * GetSpeedGear() * Attackersarr.length
 				Attackersarr[s].DamageActorValue("Stamina", ConsumeStamina)
 				ModEnjoyment(Attackersarr[s], 0, GetEnjoymentChanges(Attackersarr[s]) * attackingenjoymentmult * GetSpeedGear())
-				s += 1
+				s = s + 1
 			endwhile
 
 			; Process receivers
@@ -205,26 +205,26 @@ Event OnUpdate()
 					receiverenjoymentmult = pcpartnerenjoymentmult
 				endif
 				ModEnjoyment(Receiversarr[r], 0, GetEnjoymentChanges(Receiversarr[r]) * receiverenjoymentmult * GetSpeedGear())
-				r += 1
+				r = r + 1
 			endwhile
 
-			Utility.WaitMenuMode(1.0)
+			Utility.Wait(0.1)
 
 			if GetSpeedGear() > 0 && ShouldSlowdown(Attackersarr[0])
 				ChangeSpeedGear(0, true)
 			endif
-      safeguard-=1
+      safeguard = safeguard - 1
 		endwhile
-
+    
 		; Restore speed
-		if HasAnimSpeedHelper()
 			int y = 0
 			while y < Actorsinplay.length
 				ChangeSpeedGear(0, true)
-				AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[y], 1, secondstoreachtargetspeed, 0)
+        if HasAnimSpeedHelper()
+				  AnimSpeedHelper.SetAnimationSpeed(Actorsinplay[y], 1, secondstoreachtargetspeed, 0)
+        endif
 				y += 1
 			endwhile
-		endif
 	endif
 
 	RegisterForSingleUpdate(secondstoupdate)
