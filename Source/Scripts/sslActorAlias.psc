@@ -1487,28 +1487,6 @@ endfunction
 
 int function GetEnjoyment()
   return SLSO_GetEnjoyment()
-
-  ;	Log(ActorName +"- RealTime:["+Utility.GetCurrentRealTime()+"], GameTime:["+SexLabUtil.GetCurrentGameRealTime()+"] IsMenuMode:"+Utility.IsInMenuMode(), "GetEnjoyment()")
-  if !ActorRef
-    Log(ActorName + "- WARNING: ActorRef if Missing or Invalid", "GetEnjoyment()")
-    FullEnjoyment = 0
-    return 0
-  elseif !IsSkilled
-    FullEnjoyment = BaseEnjoyment + (PapyrusUtil.ClampFloat(((RealTime[0] - StartedAt) + 1.0) / 5.0, 0.0, 40.0) + ((Stage as float / StageCount as float) * 60.0)) as int
-  else
-    if Position == 0
-      Thread.RecordSkills()
-      Thread.SetBonuses()
-    endif
-    FullEnjoyment = BaseEnjoyment + CalcEnjoyment(SkillBonus, Skills, LeadIn, IsFemale, (RealTime[0] - StartedAt), Stage, StageCount)
-
-    ; Log("FullEnjoyment["+FullEnjoyment+"] / BaseEnjoyment["+BaseEnjoyment+"] / Enjoyment["+(FullEnjoyment - BaseEnjoyment)+"]")
-  endif
-  int Enjoyment = FullEnjoyment - QuitEnjoyment
-  if Enjoyment > 0
-    return Enjoyment
-  endif
-  return 0
 endfunction
 
 float function GetEnjoymentChanges()

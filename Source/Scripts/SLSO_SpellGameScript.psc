@@ -168,8 +168,8 @@ Event OnUpdate()
 	if Receiversarr && Receiversarr.length > 0 && GetSpeedGear() > 0 && IsPlayer
 		float SecondsCounter = 0.0
 		printdebug(Attackersarr[0].GetDisplayName() + " stamina : " + Attackersarr[0].GetActorValue("Stamina"))
-    int safeguard = 5
-		while GetSpeedGear() != 0 && HaveStamina(Attackersarr[0]) && safeguard > 0
+    ; int safeguard = 5
+		if GetSpeedGear() != 0 && HaveStamina(Attackersarr[0])
 			float Speed = 1 + (speedchangestep * GetSpeedGear())
 
 			; Apply speed to actors
@@ -208,13 +208,12 @@ Event OnUpdate()
 				r = r + 1
 			endwhile
 
-			Utility.Wait(0.1)
+			Utility.Wait(1)
 
 			if GetSpeedGear() > 0 && ShouldSlowdown(Attackersarr[0])
 				ChangeSpeedGear(0, true)
 			endif
-      safeguard = safeguard - 1
-		endwhile
+		endif
     
 		; Restore speed
 			int y = 0
