@@ -603,7 +603,7 @@ Armor LewdArmor
 			ActorRef.unEquipItem(BaseArmor , abSilent=true)
 		  printdebug(ActorRef.GetLeveledActorBase().getName() + ":Unequipped BaseArmor: " + BaseArmor.GetName())	
 	;	miscutil.PrintConsole (slotindex + " Trying to equip  : "+ LewdArmor.getname())
-			ActorRef.EquipItem(LewdArmor , abSilent=true)
+			ActorRef.EquipItemEx(LewdArmor , equipsound=false)
 		  printdebug(ActorRef.GetLeveledActorBase().getName() + ":Equipped LewdArmor: " + LewdArmor.GetName())
 			BaseArmorArr = papyrusutil.pushform(BaseArmorArr , BaseArmor)
 			LewdArmorArr = papyrusutil.pushform(LewdArmorArr , LewdArmor)
@@ -641,7 +641,7 @@ Function RestoreArmor()
 		lewdArmor = LewdArmorArr[slotIndex] as Armor
 		
 		if baseArmor
-			ActorRef.EquipItem(baseArmor, abSilent=true)
+			ActorRef.EquipItemEx(baseArmor, equipsound=false)
       printdebug(ActorRef.GetLeveledActorBase().getName() + ":Equipped BaseArmor: " + baseArmor.GetName())	
 		
 		endif
@@ -878,11 +878,11 @@ function EquipTongue()
     if Game.GetModbyName("sr_fillherup.esp") != 255
       armor temptongue
       If (FHUTongueTypeArmor)
-         actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
+         actorref.EquipItemEx(FHUTongueTypeArmor, equipsound=false)
         else
           FHUTongueTypeArmor = GetTongueType()
           if FHUTongueTypeArmor
-             actorref.EquipItem(FHUTongueTypeArmor, abSilent=true)
+             actorref.EquipItemEx(FHUTongueTypeArmor, equipsound=true)
           endif
       EndIf
     endif
@@ -2504,6 +2504,7 @@ function InitializeHentaiEnjoymentConfigValues()
   npcnonintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcnonintenseexpressionupdateinseconds", 1.0)
   npcintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcintenseexpressionupdateinseconds", 0.5)
   blocknpcorgasmtags = papyrusutil.stringsplit(JsonUtil.GetStringValue(HentaiEnjoymentConfigFile, "blocknpcorgasmtags", ""), ",")
+  npcorgasmresistancedamage = JsonUtil.GetIntValue(AggressorResistanceFile, "npcorgasmresistancedamage", 50)
 endfunction
 
 function InitializeHentaiExpressionconfig()
