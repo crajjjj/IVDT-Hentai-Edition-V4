@@ -2504,7 +2504,8 @@ function InitializeHentaiEnjoymentConfigValues()
   npcnonintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcnonintenseexpressionupdateinseconds", 1.0)
   npcintenseexpressionupdateinseconds = jsonUtil.GetFloatValue(HentaiEnjoymentConfigFile, "npcintenseexpressionupdateinseconds", 0.5)
   blocknpcorgasmtags = papyrusutil.stringsplit(JsonUtil.GetStringValue(HentaiEnjoymentConfigFile, "blocknpcorgasmtags", ""), ",")
-  npcorgasmresistancedamage = JsonUtil.GetIntValue(AggressorResistanceFile, "npcorgasmresistancedamage", 50)
+  npcorgasmresistancedamage = JsonUtil.GetIntValue(RaceOrgasmResistanceDamage, racename, 200)
+
 endfunction
 
 function InitializeHentaiExpressionconfig()

@@ -1,6 +1,6 @@
 {
    "float":{
-      "pcldi":0.5,
+      "pcldi":3.0,
       "pcsst":2.0,
       "pcfst":2.0,
       "pcbst":3.0,
@@ -43,7 +43,7 @@
       "pcreceivehugeppmultiplier":1.4,
       "pcnonintenseexpressionupdateinseconds":0.7,
       "pcintenseexpressionupdateinseconds":0.4,
-      "npcldi":4.0,
+      "npcldi":3.0,
       "npcsst":2.0,
       "npcfst":2.0,
       "npcbst":2.5,
@@ -85,7 +85,7 @@
       "npcisvictimmultiplier":1.0,
       "npcafterorgasmmultiplier":0.8,
       "npcnonintenseexpressionupdateinseconds":0.7,
-      "npcintenseexpressionupdateinseconds":0.4,
+      "npcintenseexpressionupdateinseconds":0.4
    },
    "string":{
       "blockpcorgasmtags":"kis",
