@@ -2341,7 +2341,7 @@ function InitializeAddNPCTongue()
   printdebug("enablenpctongue : " + enablenpctongue)
   enablenpctongue = JsonUtil.GetIntValue(NPCTongueFile, "enablenpctongue", 0)
   FHUTongueTypeArmor = GetTongueType()
-  if FHUTongueTypeArmor
+  if FHUTongueTypeArmor && EnableTongue != 0
      printdebug("Adding tongue")
      ActorRef.addItem(FHUTongueTypeArmor, abSilent=true)
   endif
