@@ -35,9 +35,9 @@ Function WriteLogAndPrintConsole(String asMessage, Int aiPriority = 0) Global
 EndFunction
 
 Function Notification(String msg) Global
-    Debug.Notification("[SLWidgets] " + msg)
+    Debug.Notification("[Hentairim] " + msg)
 EndFunction
 
 Function PrintConsole(String msg) Global
-    MiscUtil.PrintConsole("[SLWidgets] " + msg)
+    MiscUtil.PrintConsole("[Hentairim] " + msg)
 EndFunction

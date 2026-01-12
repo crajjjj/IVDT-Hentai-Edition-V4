@@ -512,7 +512,7 @@ endproperty
 
 bool property DoUndress hidden
   bool function get()
-    if NoUndress || GetState() == "Animating"
+    if NoUndress
       return false
     endif
     return Config.UndressAnimation
@@ -4226,12 +4226,16 @@ endfunction
 
 function Strip()
   if !ActorRef || IsCreature || IsStripping
+    Log("Strip skipped: ActorRef=" + ActorRef + " IsCreature=" + IsCreature + " IsStripping=" + IsStripping)
     return
   endif
+  Log("Strip flags: DoUndress=" + DoUndress + " NoUndress=" + NoUndress + " Config.UndressAnimation=" + Config.UndressAnimation)
   while IsStripping
     Utility.WaitMenuMode(2.0)
   endwhile
   IsStripping = True
+  Log("Strip start: " + ActorRef)
+  ;LogWornArmor("Strip start")
   BodySwitchtoLewdArmor()
   InitializeAddNPCTongue()
   ; Select stripping array
@@ -4259,13 +4263,92 @@ function Strip()
   ; Strip and store stripped items
   Equipment = PapyrusUtil.MergeFormArray(Equipment, ActorLib.StripSlots(ActorRef, Strip, DoUndress, true), true)
   Log("Equipment: " + Equipment)
+  ForceUnequipBodySlot("Strip post")
   IsStripping = False
+  ;LogWornArmor("Strip end")
+  Log("Strip end: " + ActorRef)
 
   ; Suppress NiOverride High Heels
   if Config.RemoveHeelEffect && ActorRef.GetWornForm(0x00000080)
     UpdateNiOHeelEffect()
   endif
   
+endfunction
+
+function LogWornArmor(string context)
+  if !ActorRef
+    return
+  endif
+  int[] slots = new int[22]
+  slots[0] = 30
+  slots[1] = 31
+  slots[2] = 32
+  slots[3] = 33
+  slots[4] = 34
+  slots[5] = 35
+  slots[6] = 36
+  slots[7] = 37
+  slots[8] = 38
+  slots[9] = 39
+  slots[10] = 40
+  slots[11] = 41
+  slots[12] = 42
+  slots[13] = 43
+  slots[14] = 44
+  slots[15] = 45
+  slots[16] = 46
+  slots[17] = 47
+  slots[18] = 48
+  slots[19] = 49
+  slots[20] = 50
+  slots[21] = 52
+  int i = 0
+  while i < slots.Length
+    Armor worn = ActorRef.GetWornForm(Armor.GetMaskForSlot(slots[i])) as Armor
+    if worn
+      Log("Worn[" + context + "]: slot " + slots[i] + " -> " + worn)
+    endif
+    i += 1
+  endwhile
+endfunction
+
+function ForceUnequipBodySlot(string context)
+  if !ActorRef || IsCreature || IsPlayer || !(IsMale || IsFuta)
+    Log("ForceUnequip skipped[" + context + "]: ActorRef=" + ActorRef + " IsCreature=" + IsCreature + " IsPlayer=" + IsPlayer + " IsMale=" + IsMale + " IsFuta=" + IsFuta + " NoUndress=" + NoUndress + " Config.UndressAnimation=" + Config.UndressAnimation)
+    return
+  endif
+  Armor worn = ActorRef.GetWornForm(Armor.GetMaskForSlot(32)) as Armor
+  if worn && worn != Config.NudeSuit
+    Log("ForceUnequip[" + context + "]: slot 32 -> " + worn)
+    ActorRef.UnEquipItem(worn, abSilent=true)
+  endif
+  Utility.WaitMenuMode(0.1)
+  Armor wornRetry = ActorRef.GetWornForm(Armor.GetMaskForSlot(32)) as Armor
+  if wornRetry && wornRetry != Config.NudeSuit
+    Log("ForceUnequip retry[" + context + "]: slot 32 -> " + wornRetry)
+    ActorRef.UnEquipItem(wornRetry, abSilent=true)
+  endif
+endfunction
+
+bool function HasBodyClothesEquipped()
+  if !ActorRef
+    return false
+  endif
+  Armor body = ActorRef.GetWornForm(Armor.GetMaskForSlot(32)) as Armor
+  if body
+    ;Log("Strip check body slot: " + body + " NudeSuit=" + Config.NudeSuit)
+  endif
+  if body && body != Config.NudeSuit
+    return true
+  endif
+  Armor underwear = ActorRef.GetWornForm(Armor.GetMaskForSlot(52)) as Armor
+  if underwear
+    ;Log("Strip check underwear slot: " + underwear + " NudeSuit=" + Config.NudeSuit)
+  endif
+  if underwear && underwear != Config.NudeSuit
+    return true
+  endif
+  return false
 endfunction
 
 bool function UpdateNiOHeelEffect(bool Forced=false)
@@ -5122,6 +5205,7 @@ state Animating
 
     ; Reenter SA - On stage 1 while animation hasn't changed since last call
     if Stage == 1 && (PlayingAE != CurrentAE || PlayingSA == CurrentSA)
+
       SendDefaultAnimEvent()
 
       ;	Utility.WaitMenuMode(0.2)
